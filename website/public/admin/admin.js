@@ -1377,28 +1377,171 @@ function exportDevisPdf() {
   });
 }
 
-function prepareDevisForProject(projectId) {
-  const proj = state.projects.find(p => p.id === projectId);
-  if (!proj) return;
+// In-Context Project Devis Creator (Without leaving the Projects Pipeline)
+let modalDevisItems = [];
 
-  switchTab('devis');
+function openProjectDevisModal(projectId) {
+  const p = state.projects.find(x => x.id === projectId);
+  if (!p) return;
 
-  if (proj.clientId) {
-    const select = document.getElementById('devis-client-select');
-    if (select) select.value = proj.clientId;
-    onDevisClientChange();
+  const client = p.client || {};
+  const company = client.companyName || 'No Client';
+
+  document.getElementById('modal-devis-project-id').value = p.id;
+  document.getElementById('modal-devis-client-id').value = p.clientId || '';
+  document.getElementById('modal-devis-client-name').value = `${company} (${client.wilaya || 'DZ'})`;
+  document.getElementById('modal-devis-project-title').value = p.title || '';
+  document.getElementById('modal-devis-domain-check').checked = Boolean(p.domainIncluded);
+  document.getElementById('modal-devis-hosting-check').checked = Boolean(p.hostingIncluded);
+  document.getElementById('modal-devis-notes').value = p.notes || '';
+
+  const total = Number(p.priceTotalDzd) || 0;
+  if (total > 0) {
+    modalDevisItems = [
+      { title: `Full Solution Architecture & Implementation: ${p.title}`, price: total }
+    ];
+  } else {
+    modalDevisItems = [
+      { title: `Core Platform Architecture & Custom Engineering`, price: 0 }
+    ];
   }
 
-  document.getElementById('devis-project-title').value = proj.title;
-  document.getElementById('devis-domain-check').checked = proj.domainIncluded;
-  document.getElementById('devis-hosting-check').checked = proj.hostingIncluded;
+  renderModalDevisItems();
+  calcModalDevisSummary();
+  openModal('project-devis-modal');
+}
 
-  const total = Number(proj.priceTotalDzd) || 0;
-  state.devisItems = [
-    { title: `Full Solution Development: ${proj.title}`, price: total },
-  ];
-  renderDevisRows();
-  renderDevisLive();
+function renderModalDevisItems() {
+  const container = document.getElementById('modal-devis-items-list');
+  if (!container) return;
+
+  container.innerHTML = modalDevisItems.map((item, idx) => `
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <input type="text" value="${escapeHtml(item.title)}" placeholder="Service / Deliverable description" 
+             style="flex: 2; padding: 6px 10px; font-size: 0.8rem;" 
+             oninput="updateModalDevisItem(${idx}, 'title', this.value)">
+      <div style="display: flex; align-items: center; gap: 4px; flex: 1;">
+        <input type="number" value="${item.price || ''}" placeholder="DZD" 
+               style="width: 100%; padding: 6px 10px; font-size: 0.8rem;" 
+               oninput="updateModalDevisItem(${idx}, 'price', this.value)">
+        <span style="font-size: 0.72rem; color: var(--ink-muted); font-weight: 600;">DZD</span>
+      </div>
+      <button type="button" class="btn btn-secondary btn-sm" 
+              style="padding: 4px 8px; color: #DC2626; border-color: var(--border);" 
+              onclick="removeModalDevisItemRow(${idx})">✕</button>
+    </div>
+  `).join('');
+}
+
+function addModalDevisItemRow() {
+  modalDevisItems.push({ title: '', price: 0 });
+  renderModalDevisItems();
+}
+
+function removeModalDevisItemRow(index) {
+  if (modalDevisItems.length <= 1) {
+    modalDevisItems = [{ title: '', price: 0 }];
+  } else {
+    modalDevisItems.splice(index, 1);
+  }
+  renderModalDevisItems();
+  calcModalDevisSummary();
+}
+
+function updateModalDevisItem(index, field, value) {
+  if (!modalDevisItems[index]) return;
+  if (field === 'price') {
+    modalDevisItems[index].price = Number(value) || 0;
+  } else {
+    modalDevisItems[index].title = value;
+  }
+  calcModalDevisSummary();
+}
+
+function calcModalDevisSummary() {
+  let total = 0;
+  modalDevisItems.forEach(i => {
+    total += Number(i.price) || 0;
+  });
+
+  const m1 = Math.round(total * 0.50);
+  const m2 = Math.round(total * 0.20);
+  const m3 = total - m1 - m2;
+
+  const totalEl = document.getElementById('modal-devis-total-price');
+  const m1El = document.getElementById('modal-devis-m1');
+  const m2El = document.getElementById('modal-devis-m2');
+  const m3El = document.getElementById('modal-devis-m3');
+
+  if (totalEl) totalEl.textContent = `${formatDzd(total)} DZD`;
+  if (m1El) m1El.textContent = `${formatDzd(m1)} DZD`;
+  if (m2El) m2El.textContent = `${formatDzd(m2)} DZD`;
+  if (m3El) m3El.textContent = `${formatDzd(m3)} DZD`;
+}
+
+async function saveModalDevis(approveImmediately = false) {
+  const projectId = document.getElementById('modal-devis-project-id').value;
+  const clientId = document.getElementById('modal-devis-client-id').value;
+  const projectTitle = document.getElementById('modal-devis-project-title').value.trim();
+  const domainIncluded = document.getElementById('modal-devis-domain-check').checked;
+  const hostingIncluded = document.getElementById('modal-devis-hosting-check').checked;
+  const notes = document.getElementById('modal-devis-notes').value.trim();
+
+  if (!projectId || !clientId) {
+    showToast('Project or client reference missing', 'error');
+    return;
+  }
+
+  // Filter items
+  const validItems = modalDevisItems.filter(i => (i.title && i.title.trim().length > 0) || Number(i.price) > 0);
+  if (validItems.length === 0) {
+    showToast('Please add at least one line item deliverable.', 'error');
+    return;
+  }
+
+  const items = validItems.map(i => ({
+    description: i.title.trim() || 'Custom Software Solution Development',
+    priceDzd: Number(i.price) || 0
+  }));
+
+  try {
+    const res = await fetch('/api/invoices', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        projectId,
+        clientId,
+        items,
+        domainIncluded,
+        hostingIncluded,
+        notes: notes || projectTitle,
+        approved: approveImmediately
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to save quote');
+    }
+
+    const data = await res.json();
+    closeModal('project-devis-modal');
+
+    if (approveImmediately) {
+      showToast(`Quote ${data.invoiceNumber} saved & approved successfully.`);
+    } else {
+      showToast(`Quote ${data.invoiceNumber} saved as draft.`);
+    }
+
+    await fetchProjects();
+    await fetchStats();
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+function prepareDevisForProject(projectId) {
+  openProjectDevisModal(projectId);
 }
 
 // ==========================================

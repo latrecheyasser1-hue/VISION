@@ -868,8 +868,90 @@
   </div>
 </div>
 
+<!-- In-Context Project Quote (Devis) Modal -->
+<div class="modal-overlay" id="project-devis-modal">
+  <div class="modal-content" style="max-width: 680px;">
+    <div class="modal-header">
+      <div>
+        <h3 class="modal-title">Create Quote (Devis)</h3>
+        <p style="font-size: 0.8rem; color: var(--ink-muted); margin-top: 2px;">Configure scope items, deliverables, and milestone pricing</p>
+      </div>
+      <button class="modal-close" onclick="closeModal('project-devis-modal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="modal-devis-project-id">
+      <input type="hidden" id="modal-devis-client-id">
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+        <div class="form-group">
+          <label>Client</label>
+          <input type="text" id="modal-devis-client-name" readonly style="background: var(--paper); font-weight: 700; color: var(--ink);">
+        </div>
+        <div class="form-group">
+          <label>Project Title</label>
+          <input type="text" id="modal-devis-project-title" style="font-weight: 600;">
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 16px; margin-bottom: 16px;">
+        <label class="form-checkbox">
+          <input type="checkbox" id="modal-devis-domain-check" checked>
+          <span style="font-size: 0.82rem; font-weight: 600;">Domain Included</span>
+        </label>
+        <label class="form-checkbox">
+          <input type="checkbox" id="modal-devis-hosting-check" checked>
+          <span style="font-size: 0.82rem; font-weight: 600;">Hosting & SSL Included</span>
+        </label>
+      </div>
+
+      <!-- Line Items Section -->
+      <div style="border-top: 1px solid var(--border); padding-top: 14px; margin-bottom: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <label style="font-size: 0.82rem; font-weight: 700; color: var(--ink);">Scope Deliverables & Pricing (DZD)</label>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="addModalDevisItemRow()">+ Add Item</button>
+        </div>
+        <div id="modal-devis-items-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto;">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- Live Split Preview Box -->
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 14px; margin-bottom: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <span style="font-size: 0.85rem; font-weight: 700; color: var(--ink);">Agreed Total Budget:</span>
+          <strong id="modal-devis-total-price" style="font-size: 1.15rem; color: var(--ink);">0 DZD</strong>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding-top: 8px; border-top: 1px dashed var(--border);">
+          <div style="background: #fff; padding: 6px 10px; border-radius: 4px; border: 1px solid var(--border);">
+            <div style="font-size: 0.68rem; color: var(--ink-muted); font-weight: 700; text-transform: uppercase;">M1 · Deposit (50%)</div>
+            <strong id="modal-devis-m1" style="font-size: 0.88rem; color: #D97706;">0 DZD</strong>
+          </div>
+          <div style="background: #fff; padding: 6px 10px; border-radius: 4px; border: 1px solid var(--border);">
+            <div style="font-size: 0.68rem; color: var(--ink-muted); font-weight: 700; text-transform: uppercase;">M2 · Design (20%)</div>
+            <strong id="modal-devis-m2" style="font-size: 0.88rem; color: #8B5CF6;">0 DZD</strong>
+          </div>
+          <div style="background: #fff; padding: 6px 10px; border-radius: 4px; border: 1px solid var(--border);">
+            <div style="font-size: 0.68rem; color: var(--ink-muted); font-weight: 700; text-transform: uppercase;">M3 · Delivery (30%)</div>
+            <strong id="modal-devis-m3" style="font-size: 0.88rem; color: #059669;">0 DZD</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Notes / Requirements</label>
+        <textarea id="modal-devis-notes" rows="2" placeholder="Specific technical requirements or notes..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
+      <button type="button" class="btn btn-secondary" onclick="closeModal('project-devis-modal')">Cancel</button>
+      <button type="button" class="btn btn-secondary" onclick="saveModalDevis(false)">Save Draft</button>
+      <button type="button" class="btn btn-primary" style="background: #059669; border-color: #059669;" onclick="saveModalDevis(true)">Save & Approve Quote</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast-container" id="toast-container"></div>
 <script src="html2pdf.bundle.min.js"></script>
-<script src="admin.js?v=15"></script>
+<script src="admin.js?v=16"></script>
 </body>
 </html>

@@ -357,6 +357,8 @@ app.post('/api/invoices', async (req, res) => {
 
     const invoiceNumber = `DEV-${new Date().getFullYear()}-${String(Math.floor(100 + Math.random() * 900))}`;
 
+    const isApproved = req.body.approved === true || req.body.status === 'accepted';
+
     const [inserted] = await db.insert(schema.invoices).values({
       invoiceNumber,
       projectId,
@@ -369,6 +371,7 @@ app.post('/api/invoices', async (req, res) => {
       domainIncluded: Boolean(domainIncluded),
       hostingIncluded: Boolean(hostingIncluded),
       itemsJson: items,
+      status: isApproved ? 'accepted' : 'draft',
       notes,
     }).returning();
 
@@ -378,7 +381,7 @@ app.post('/api/invoices', async (req, res) => {
       m1AmountDzd: String(m1),
       m2AmountDzd: String(m2),
       m3AmountDzd: String(m3),
-      devisStatus: 'draft',
+      devisStatus: isApproved ? 'approved' : 'draft',
       domainIncluded: Boolean(domainIncluded),
       hostingIncluded: Boolean(hostingIncluded),
     }).where(eq(schema.projects.id, projectId));
