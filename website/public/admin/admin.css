@@ -1327,6 +1327,56 @@ tr:hover td {
   background: rgba(255, 255, 255, 0.4);
 }
 
+/* Scoping Card Box */
+.kanban-scoping-box {
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kanban-scoping-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #4F46E5;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.kanban-scoping-text {
+  font-size: 0.74rem;
+  color: var(--ink-muted);
+  line-height: 1.35;
+  margin: 0;
+}
+
+/* Devis Card Box */
+.kanban-devis-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Card Actions Row */
+.kanban-card-actions-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.kanban-card-actions-row .btn {
+  font-size: 0.72rem;
+  padding: 4px 10px;
+}
+
 /* Responsive */
 @media (max-width: 900px) {
   .sidebar {

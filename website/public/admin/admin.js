@@ -551,6 +551,227 @@ function renderProjectsKanban(projects) {
           const currentStage = normalizeKanbanStage(p.stage);
           const typeLabel = p.type ? p.type.replace(/_/g, ' ') : 'Custom';
 
+          // Stage-specific content
+          let stageContentHtml = '';
+
+          if (currentStage === 'scoping') {
+            // Rule 1: In scoping, price and 50/20/30 are hidden
+            stageContentHtml = `
+              <div class="kanban-scoping-box">
+                <span class="kanban-scoping-badge">Discovery & Meeting</span>
+                <p class="kanban-scoping-text">Requirements analysis in progress. Pricing will be calculated in Quote (Devis).</p>
+              </div>
+              <div class="kanban-card-actions-row">
+                <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); prepareDevisForProject('${p.id}')">
+                  Prepare Quote
+                </button>
+              </div>
+            `;
+          } else if (currentStage === 'devis') {
+            // Rule 2: Devis stage - Quote draft or approved
+            const isApproved = p.devisStatus === 'approved';
+            stageContentHtml = `
+              <div class="kanban-devis-box">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span class="badge ${isApproved ? 'badge-green' : 'badge-yellow'}" style="font-size: 0.68rem;">
+                    ${isApproved ? 'Quote Approved' : 'Quote Pending'}
+                  </span>
+                  <strong style="font-size: 0.95rem; color: var(--ink);">${formatDzd(total)} DZD</strong>
+                </div>
+                ${!isApproved ? `
+                  <div class="kanban-card-actions-row" style="margin-top: 6px;">
+                    <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); prepareDevisForProject('${p.id}')">
+                      Edit Quote
+                    </button>
+                    <button class="btn btn-primary btn-sm" style="background: #059669; border-color: #059669;" onclick="event.stopPropagation(); approveProjectQuote('${p.id}')">
+                      Approve Quote
+                    </button>
+                  </div>
+                ` : `
+                  <div style="font-size: 0.72rem; color: #059669; font-weight: 600; margin-top: 4px;">
+                    Quote signed. Ready for Deposit (50%).
+                  </div>
+                `}
+              </div>
+            `;
+          } else if (currentStage === 'deposit_50') {
+            // Rule 3: 50% deposit required
+            stageContentHtml = `
+              <div class="kanban-milestone-track">
+                <div class="kanban-milestone-bars">
+                  <div class="kanban-milestone-bar ${p.m1Paid ? 'paid' : ''}" style="flex: 50;"></div>
+                  <div class="kanban-milestone-bar" style="flex: 20;"></div>
+                  <div class="kanban-milestone-bar" style="flex: 30;"></div>
+                </div>
+                <div class="kanban-milestone-labels">
+                  <span class="${p.m1Paid ? 'text-paid' : ''}">M1: 50%</span>
+                  <span>M2: 20%</span>
+                  <span>M3: 30%</span>
+                </div>
+              </div>
+              <div class="kanban-card-financials">
+                <div class="kanban-card-price">${formatDzd(total)} <small style="font-size: 0.7rem; color: var(--ink-muted); font-weight: 600;">DZD</small></div>
+                <div class="kanban-card-ratio ${p.m1Paid ? 'fully-paid' : ''}">
+                  ${p.m1Paid ? '50% Paid' : 'M1 Due: ' + formatDzd(m1Amount) + ' DZD'}
+                </div>
+              </div>
+              ${!p.m1Paid ? `
+                <div class="kanban-card-actions-row" style="margin-top: 6px;">
+                  <button class="btn btn-primary btn-sm" style="width: 100%; background: #F59E0B; border-color: #F59E0B;" onclick="event.stopPropagation(); openUploadReceiptModal('${p.id}', '${escapeHtml(p.title)}', 'm1')">
+                    Upload 50% Receipt
+                  </button>
+                </div>
+              ` : `
+                <div style="font-size: 0.72rem; color: #059669; font-weight: 600; margin-top: 4px;">
+                  Deposit verified. Ready for Design.
+                </div>
+              `}
+            `;
+          } else if (currentStage === 'design') {
+            // Rule 4: Design in progress, buttons for approval or changes
+            stageContentHtml = `
+              <div class="kanban-milestone-track">
+                <div class="kanban-milestone-bars">
+                  <div class="kanban-milestone-bar paid" style="flex: 50;"></div>
+                  <div class="kanban-milestone-bar" style="flex: 20;"></div>
+                  <div class="kanban-milestone-bar" style="flex: 30;"></div>
+                </div>
+                <div class="kanban-milestone-labels">
+                  <span class="text-paid">50% Paid</span>
+                  <span>20% Design</span>
+                  <span>30% Delivery</span>
+                </div>
+              </div>
+              <div class="kanban-card-financials">
+                <div class="kanban-card-price">${formatDzd(total)} <small style="font-size: 0.7rem; color: var(--ink-muted); font-weight: 600;">DZD</small></div>
+                <div style="font-size: 0.72rem; color: #8B5CF6; font-weight: 700;">
+                  ${p.designStatus === 'revisions_requested' ? 'Revisions In Progress' : 'Design Mockups'}
+                </div>
+              </div>
+              <div class="kanban-card-actions-row" style="margin-top: 6px;">
+                <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); promptDesignReview('${p.id}', false)">
+                  Changes
+                </button>
+                <button class="btn btn-primary btn-sm" style="background: #059669; border-color: #059669;" onclick="event.stopPropagation(); promptDesignReview('${p.id}', true)">
+                  Approve Design
+                </button>
+              </div>
+            `;
+          } else if (currentStage === 'design_approved_20') {
+            // Rule 5: Design approved, M2 20% deposit required
+            stageContentHtml = `
+              <div class="kanban-milestone-track">
+                <div class="kanban-milestone-bars">
+                  <div class="kanban-milestone-bar paid" style="flex: 50;"></div>
+                  <div class="kanban-milestone-bar ${p.m2Paid ? 'paid' : ''}" style="flex: 20;"></div>
+                  <div class="kanban-milestone-bar" style="flex: 30;"></div>
+                </div>
+                <div class="kanban-milestone-labels">
+                  <span class="text-paid">50%</span>
+                  <span class="${p.m2Paid ? 'text-paid' : ''}">20%</span>
+                  <span>30%</span>
+                </div>
+              </div>
+              <div class="kanban-card-financials">
+                <div class="kanban-card-price">${formatDzd(total)} <small style="font-size: 0.7rem; color: var(--ink-muted); font-weight: 600;">DZD</small></div>
+                <div class="kanban-card-ratio ${p.m2Paid ? 'fully-paid' : ''}">
+                  ${p.m2Paid ? '20% Paid' : 'M2 Due: ' + formatDzd(m2Amount) + ' DZD'}
+                </div>
+              </div>
+              ${!p.m2Paid ? `
+                <div class="kanban-card-actions-row" style="margin-top: 6px;">
+                  <button class="btn btn-primary btn-sm" style="width: 100%; background: #EC4899; border-color: #EC4899;" onclick="event.stopPropagation(); openUploadReceiptModal('${p.id}', '${escapeHtml(p.title)}', 'm2')">
+                    Upload 20% Receipt
+                  </button>
+                </div>
+              ` : `
+                <div style="font-size: 0.72rem; color: #059669; font-weight: 600; margin-top: 4px;">
+                  M2 Verified. Ready for Development.
+                </div>
+              `}
+            `;
+          } else if (currentStage === 'development') {
+            // Rule 6: Coding in progress
+            stageContentHtml = `
+              <div class="kanban-milestone-track">
+                <div class="kanban-milestone-bars">
+                  <div class="kanban-milestone-bar paid" style="flex: 50;"></div>
+                  <div class="kanban-milestone-bar paid" style="flex: 20;"></div>
+                  <div class="kanban-milestone-bar" style="flex: 30;"></div>
+                </div>
+                <div class="kanban-milestone-labels">
+                  <span class="text-paid">50% Paid</span>
+                  <span class="text-paid">20% Paid</span>
+                  <span>30% Due</span>
+                </div>
+              </div>
+              <div class="kanban-card-financials">
+                <div class="kanban-card-price">${formatDzd(total)} <small style="font-size: 0.7rem; color: var(--ink-muted); font-weight: 600;">DZD</small></div>
+                <div style="font-size: 0.72rem; color: #2563EB; font-weight: 700;">
+                  Backend & Frontend
+                </div>
+              </div>
+            `;
+          } else if (currentStage === 'security_qa') {
+            // Rule 7: QA testing, final 30% receipt needed for delivery
+            stageContentHtml = `
+              <div class="kanban-milestone-track">
+                <div class="kanban-milestone-bars">
+                  <div class="kanban-milestone-bar paid" style="flex: 50;"></div>
+                  <div class="kanban-milestone-bar paid" style="flex: 20;"></div>
+                  <div class="kanban-milestone-bar ${p.m3Paid ? 'paid' : ''}" style="flex: 30;"></div>
+                </div>
+                <div class="kanban-milestone-labels">
+                  <span class="text-paid">50%</span>
+                  <span class="text-paid">20%</span>
+                  <span class="${p.m3Paid ? 'text-paid' : ''}">30%</span>
+                </div>
+              </div>
+              <div class="kanban-card-financials">
+                <div class="kanban-card-price">${formatDzd(total)} <small style="font-size: 0.7rem; color: var(--ink-muted); font-weight: 600;">DZD</small></div>
+                <div class="kanban-card-ratio ${p.m3Paid ? 'fully-paid' : ''}">
+                  ${p.m3Paid ? '30% Paid' : 'M3 Due: ' + formatDzd(m3Amount) + ' DZD'}
+                </div>
+              </div>
+              ${!p.m3Paid ? `
+                <div class="kanban-card-actions-row" style="margin-top: 6px;">
+                  <button class="btn btn-primary btn-sm" style="width: 100%; background: #DC2626; border-color: #DC2626;" onclick="event.stopPropagation(); openUploadReceiptModal('${p.id}', '${escapeHtml(p.title)}', 'm3')">
+                    Upload 30% Receipt
+                  </button>
+                </div>
+              ` : `
+                <div style="font-size: 0.72rem; color: #059669; font-weight: 600; margin-top: 4px;">
+                  M3 Verified. Ready for Delivery.
+                </div>
+              `}
+            `;
+          } else {
+            // Rule 8: Delivered (100% complete)
+            stageContentHtml = `
+              <div class="kanban-milestone-track">
+                <div class="kanban-milestone-bars">
+                  <div class="kanban-milestone-bar paid" style="flex: 50;"></div>
+                  <div class="kanban-milestone-bar paid" style="flex: 20;"></div>
+                  <div class="kanban-milestone-bar paid" style="flex: 30;"></div>
+                </div>
+                <div class="kanban-milestone-labels">
+                  <span class="text-paid">50%</span>
+                  <span class="text-paid">20%</span>
+                  <span class="text-paid">30%</span>
+                </div>
+              </div>
+              <div class="kanban-card-financials">
+                <div class="kanban-card-price">${formatDzd(total)} <small style="font-size: 0.7rem; color: var(--ink-muted); font-weight: 600;">DZD</small></div>
+                <div class="kanban-card-ratio fully-paid">
+                  100% Paid
+                </div>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+                <span class="badge badge-green" style="font-size: 0.65rem;">Handover Complete</span>
+              </div>
+            `;
+          }
+
           return `
             <div class="kanban-card" 
                  draggable="true" 
@@ -572,27 +793,8 @@ function renderProjectsKanban(projects) {
                 ${client.wilaya ? `<span class="kanban-card-wilaya">· ${escapeHtml(client.wilaya)}</span>` : ''}
               </div>
 
-              <!-- 50 / 20 / 30 Milestone Progress Track -->
-              <div class="kanban-milestone-track">
-                <div class="kanban-milestone-bars">
-                  <div class="kanban-milestone-bar ${p.m1Paid ? 'paid' : ''}" style="flex: 50;" title="Deposit 50%: ${p.m1Paid ? 'Paid' : 'Pending'}"></div>
-                  <div class="kanban-milestone-bar ${p.m2Paid ? 'paid' : ''}" style="flex: 20;" title="Design 20%: ${p.m2Paid ? 'Paid' : 'Pending'}"></div>
-                  <div class="kanban-milestone-bar ${p.m3Paid ? 'paid' : ''}" style="flex: 30;" title="Delivery 30%: ${p.m3Paid ? 'Paid' : 'Pending'}"></div>
-                </div>
-                <div class="kanban-milestone-labels">
-                  <span class="${p.m1Paid ? 'text-paid' : ''}">50%</span>
-                  <span class="${p.m2Paid ? 'text-paid' : ''}">20%</span>
-                  <span class="${p.m3Paid ? 'text-paid' : ''}">30%</span>
-                </div>
-              </div>
-
-              <!-- Financials -->
-              <div class="kanban-card-financials">
-                <div class="kanban-card-price">${formatDzd(total)} <small style="font-size: 0.7rem; color: var(--ink-muted); font-weight: 600;">DZD</small></div>
-                <div class="kanban-card-ratio ${collected === total && total > 0 ? 'fully-paid' : ''}">
-                  ${collected === total && total > 0 ? '100% Paid' : `${formatDzd(collected)} collected`}
-                </div>
-              </div>
+              <!-- Stage-Specific Content & Milestones -->
+              ${stageContentHtml}
 
               <!-- Features (Domain, Hosting) -->
               <div class="kanban-card-features">
@@ -646,12 +848,177 @@ function handleKanbanDragLeave(e) {
   e.currentTarget.classList.remove('drag-over');
 }
 
-function handleKanbanDrop(e, targetStage) {
+async function handleKanbanDrop(e, targetStage) {
   e.preventDefault();
   e.currentTarget.classList.remove('drag-over');
   const projectId = e.dataTransfer.getData('text/plain');
-  if (projectId && targetStage) {
-    updateProjectStage(projectId, targetStage);
+  if (!projectId || !targetStage) return;
+
+  const p = state.projects.find(x => x.id === projectId);
+  if (!p) return;
+
+  const currentStage = normalizeKanbanStage(p.stage);
+  if (currentStage === targetStage) return;
+
+  // RULE 1: Moving from scoping to devis -> Open Quote Creator
+  if (targetStage === 'devis') {
+    await updateProjectStage(projectId, 'devis');
+    prepareDevisForProject(projectId);
+    showToast('Project moved to Devis. Please configure quote items and pricing.');
+    return;
+  }
+
+  // RULE 2: Cannot move to deposit_50 unless quote is created and approved
+  if (targetStage === 'deposit_50') {
+    if (p.devisStatus !== 'approved') {
+      showQuoteGateModal(p);
+      return;
+    }
+    await updateProjectStage(projectId, 'deposit_50');
+    if (!p.m1Paid) {
+      openUploadReceiptModal(p.id, p.title, 'm1');
+    }
+    return;
+  }
+
+  // RULE 3: Cannot move to design unless M1 (50%) receipt is uploaded and verified
+  if (targetStage === 'design') {
+    if (!p.m1Paid) {
+      showToast('First milestone deposit (50%) receipt required before moving to Design.', 'error');
+      openUploadReceiptModal(p.id, p.title, 'm1');
+      return;
+    }
+    await updateProjectStage(projectId, 'design');
+    return;
+  }
+
+  // RULE 4: Moving to design_approved_20 requires Design Review sign-off
+  if (targetStage === 'design_approved_20') {
+    openDesignReviewModal(p);
+    return;
+  }
+
+  // RULE 5: Cannot move to development unless M2 (20%) receipt is uploaded and verified
+  if (targetStage === 'development') {
+    if (!p.m2Paid) {
+      showToast('Second milestone payment (20%) receipt required before starting Development.', 'error');
+      openUploadReceiptModal(p.id, p.title, 'm2');
+      return;
+    }
+    await updateProjectStage(projectId, 'development');
+    return;
+  }
+
+  // RULE 6: Moving to security_qa is standard
+  if (targetStage === 'security_qa') {
+    await updateProjectStage(projectId, 'security_qa');
+    return;
+  }
+
+  // RULE 7: Cannot move to delivered unless M3 (30%) final handover receipt is uploaded
+  if (targetStage === 'delivered') {
+    if (!p.m3Paid) {
+      showToast('Final handover payment (30%) receipt required before marking Delivered.', 'error');
+      openUploadReceiptModal(p.id, p.title, 'm3');
+      return;
+    }
+    await updateProjectStage(projectId, 'delivered');
+    return;
+  }
+
+  await updateProjectStage(projectId, targetStage);
+}
+
+// Quote Gate & Approval Functions
+async function approveProjectQuote(projectId) {
+  try {
+    const res = await fetch(`/api/projects/${projectId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ devisStatus: 'approved' }),
+    });
+    if (!res.ok) throw new Error('Could not approve quote');
+    showToast('Quote approved by client successfully.');
+    await fetchProjects();
+    await fetchStats();
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+function showQuoteGateModal(project) {
+  document.getElementById('quote-gate-project-id').value = project.id;
+  document.getElementById('quote-gate-project-name').textContent = project.title;
+  openModal('quote-gate-modal');
+}
+
+async function handleQuoteGateApprove() {
+  const projectId = document.getElementById('quote-gate-project-id').value;
+  if (!projectId) return;
+  closeModal('quote-gate-modal');
+  await approveProjectQuote(projectId);
+  await updateProjectStage(projectId, 'deposit_50');
+  const p = state.projects.find(x => x.id === projectId);
+  if (p && !p.m1Paid) {
+    openUploadReceiptModal(p.id, p.title, 'm1');
+  }
+}
+
+function handleQuoteGateEdit() {
+  const projectId = document.getElementById('quote-gate-project-id').value;
+  closeModal('quote-gate-modal');
+  if (projectId) prepareDevisForProject(projectId);
+}
+
+// Design Review & Sign-Off Functions
+function openDesignReviewModal(project) {
+  document.getElementById('design-review-project-id').value = project.id;
+  document.getElementById('design-review-project-name').textContent = project.title;
+  openModal('design-review-modal');
+}
+
+async function handleDesignReviewDecision(isApproved) {
+  const projectId = document.getElementById('design-review-project-id').value;
+  if (!projectId) return;
+  closeModal('design-review-modal');
+  await promptDesignReview(projectId, isApproved);
+}
+
+async function promptDesignReview(projectId, isApproved) {
+  const p = state.projects.find(x => x.id === projectId);
+  if (!p) return;
+
+  try {
+    if (isApproved) {
+      const res = await fetch(`/api/projects/${projectId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          designStatus: 'approved',
+          stage: 'design_approved_20',
+        }),
+      });
+      if (!res.ok) throw new Error('Could not update design status');
+      showToast('Design approved by client. Milestone 2 (20%) deposit now due.');
+      await fetchProjects();
+      await fetchStats();
+      if (!p.m2Paid) {
+        openUploadReceiptModal(p.id, p.title, 'm2');
+      }
+    } else {
+      const res = await fetch(`/api/projects/${projectId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          designStatus: 'revisions_requested',
+        }),
+      });
+      if (!res.ok) throw new Error('Could not update design status');
+      showToast('Design changes requested. Project kept in UI/UX Design stage.');
+      await fetchProjects();
+    }
+  } catch (err) {
+    showToast(err.message, 'error');
   }
 }
 

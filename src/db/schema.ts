@@ -86,6 +86,10 @@ export const projects = pgTable('projects', {
   m3ReceiptUrl: text('m3_receipt_url'),
   m3PaidAt: timestamp('m3_paid_at'),
 
+  // Stage Approval States
+  devisStatus: varchar('devis_status', { length: 50 }).default('pending'),
+  designStatus: varchar('design_status', { length: 50 }).default('pending'),
+
   // Technical links
   repoUrl: text('repo_url'),
   stagingUrl: text('staging_url'),

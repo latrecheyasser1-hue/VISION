@@ -209,7 +209,7 @@ app.patch('/api/projects/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const updateData: any = {};
-    const allowed = ['title', 'stage', 'type', 'priceTotalDzd', 'domainIncluded', 'hostingIncluded', 'repoUrl', 'stagingUrl', 'productionUrl', 'isPublicPortfolio', 'notes'];
+    const allowed = ['title', 'stage', 'type', 'priceTotalDzd', 'domainIncluded', 'hostingIncluded', 'repoUrl', 'stagingUrl', 'productionUrl', 'isPublicPortfolio', 'notes', 'devisStatus', 'designStatus', 'm1Paid', 'm2Paid', 'm3Paid'];
 
     for (const key of allowed) {
       if (req.body[key] !== undefined) {
@@ -359,6 +359,17 @@ app.post('/api/invoices', async (req, res) => {
       itemsJson: items,
       notes,
     }).returning();
+
+    // Sync calculated pricing and status back to the project
+    await db.update(schema.projects).set({
+      priceTotalDzd: String(total),
+      m1AmountDzd: String(m1),
+      m2AmountDzd: String(m2),
+      m3AmountDzd: String(m3),
+      devisStatus: 'draft',
+      domainIncluded: Boolean(domainIncluded),
+      hostingIncluded: Boolean(hostingIncluded),
+    }).where(eq(schema.projects.id, projectId));
 
     res.status(201).json(inserted);
   } catch (err: any) {

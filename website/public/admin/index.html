@@ -743,8 +743,8 @@
           </select>
         </div>
         <div class="form-group">
-          <label>Agreed Price (DZD)</label>
-          <input type="number" id="proj-price" placeholder="Ex: 180000" required oninput="calcProjectSplitPreview()">
+          <label>Estimated Price (DZD) <small style="color: var(--ink-muted); font-weight: normal;">(Optional for Scoping)</small></label>
+          <input type="number" id="proj-price" placeholder="To be defined in Quote (or enter estimate)" oninput="calcProjectSplitPreview()">
           <small id="proj-split-preview" style="color: var(--cyan-dark); font-weight: 600; font-size: 0.8rem; margin-top: 4px;">
             50% = 0 DZD | 20% = 0 DZD | 30% = 0 DZD
           </small>
@@ -814,7 +814,61 @@
   </div>
 </div>
 
+<!-- Design Review Modal -->
+<div class="modal-overlay" id="design-review-modal">
+  <div class="modal-content" style="max-width: 480px;">
+    <div class="modal-header">
+      <h3 class="modal-title">Design Review & Client Sign-Off</h3>
+      <button class="modal-close" onclick="closeModal('design-review-modal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="design-review-project-id">
+      <p id="design-review-project-name" style="font-weight: 700; font-size: 1rem; color: var(--ink); margin-bottom: 6px;"></p>
+      <p style="font-size: 0.85rem; color: var(--ink-muted); margin-bottom: 16px;">
+        Did the client approve the UI/UX mockups and prototype during the review meeting?
+      </p>
+      <div id="design-review-notes-wrap" style="display: none; margin-bottom: 14px;">
+        <label style="font-size: 0.8rem; font-weight: 600; color: var(--ink);">Revision Notes / Feedback</label>
+        <textarea id="design-review-notes" rows="2" placeholder="What needs to be changed..." style="width: 100%; margin-top: 4px; padding: 8px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.82rem;"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
+      <button type="button" class="btn btn-secondary" onclick="handleDesignReviewDecision(false)">
+        Changes Requested
+      </button>
+      <button type="button" class="btn btn-primary" style="background: #059669; border-color: #059669;" onclick="handleDesignReviewDecision(true)">
+        Approve Design
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Quote Gate Modal -->
+<div class="modal-overlay" id="quote-gate-modal">
+  <div class="modal-content" style="max-width: 480px;">
+    <div class="modal-header">
+      <h3 class="modal-title">Quote Approval Required</h3>
+      <button class="modal-close" onclick="closeModal('quote-gate-modal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="quote-gate-project-id">
+      <p id="quote-gate-project-name" style="font-weight: 700; font-size: 1rem; color: var(--ink); margin-bottom: 6px;"></p>
+      <p style="font-size: 0.85rem; color: var(--ink-muted); margin-bottom: 16px;">
+        This project cannot advance to Deposit (50%) until a quote (devis) has been created and approved by the client.
+      </p>
+    </div>
+    <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
+      <button type="button" class="btn btn-secondary" onclick="handleQuoteGateEdit()">
+        Open Quote Editor
+      </button>
+      <button type="button" class="btn btn-primary" style="background: #059669; border-color: #059669;" onclick="handleQuoteGateApprove()">
+        Confirm Client Approval
+      </button>
+    </div>
+  </div>
+</div>
+
 <div class="toast-container" id="toast-container"></div>
-<script src="admin.js?v=12"></script>
+<script src="admin.js?v=13"></script>
 </body>
 </html>
