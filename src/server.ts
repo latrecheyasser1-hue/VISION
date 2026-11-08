@@ -220,11 +220,15 @@ app.patch('/api/projects/:id', async (req, res) => {
     if (updateData.stage) {
       const stageMap: Record<string, any> = {
         scoping: 'scoping',
+        devis: 'devis',
+        deposit_50: 'deposit_50',
         design: 'design',
-        design_20: 'design',
+        design_20: 'design_approved_20',
+        design_approved_20: 'design_approved_20',
         dev_30: 'development',
         development: 'development',
-        qa_testing: 'qa_testing',
+        security_qa: 'security_qa',
+        qa_testing: 'security_qa',
         delivered: 'delivered',
         delivered_30: 'delivered',
         maintenance: 'maintenance',

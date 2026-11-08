@@ -259,7 +259,7 @@ async function fetchProjects() {
 
     document.getElementById('nav-projects-count').textContent = data.length;
     renderOverviewProjects(data);
-    renderProjectsTable(data);
+    renderProjectsKanban(data);
     renderStorageExplorer();
     updateProjectSelects();
   } catch (err) {
@@ -318,17 +318,28 @@ function formatFullDateTime(dateVal) {
   });
 }
 
+function formatDateShort(dateVal) {
+  if (!dateVal) return '-';
+  const d = new Date(dateVal);
+  if (isNaN(d.getTime())) return '-';
+  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
 function getStageBadge(stage) {
   const map = {
     scoping: { label: 'Scoping', class: 'stage-scoping' },
-    design: { label: 'Design (20%)', class: 'stage-design_20' },
-    design_20: { label: 'Design (20%)', class: 'stage-design_20' },
-    development: { label: 'Development (30%)', class: 'stage-dev_30' },
-    dev_30: { label: 'Development (30%)', class: 'stage-dev_30' },
-    qa_testing: { label: 'QA & Testing', class: 'stage-dev_30' },
+    devis: { label: 'Devis', class: 'stage-scoping' },
+    deposit_50: { label: 'Deposit (50%)', class: 'stage-deposit' },
+    design: { label: 'Design UI/UX', class: 'stage-design_20' },
+    design_20: { label: 'Design Approved', class: 'stage-design_20' },
+    design_approved_20: { label: 'Design Approved', class: 'stage-design_20' },
+    development: { label: 'Development', class: 'stage-dev_30' },
+    dev_30: { label: 'Development', class: 'stage-dev_30' },
+    security_qa: { label: 'Security QA', class: 'stage-qa' },
+    qa_testing: { label: 'Security QA', class: 'stage-qa' },
     delivered: { label: 'Delivered', class: 'stage-delivered' },
     delivered_30: { label: 'Delivered', class: 'stage-delivered' },
-    maintenance: { label: 'Maintenance', class: 'stage-delivered' },
+    maintenance: { label: 'Delivered', class: 'stage-delivered' },
   };
   const item = map[stage] || { label: stage || 'Scoping', class: 'stage-scoping' };
   return `<span class="badge-stage ${item.class}">${item.label}</span>`;
@@ -476,91 +487,196 @@ function renderOverviewProjects(projects) {
   }).join('');
 }
 
-// 2. Full Projects Table
-function renderProjectsTable(projects) {
-  const tbody = document.getElementById('projects-table-tbody');
-  if (!tbody) return;
+// 2. Full Projects Kanban Board (8 Stages Pipeline)
+const KANBAN_STAGES = [
+  { id: 'scoping', title: '1. Scoping', subtitle: 'Needs & Meeting', color: '#6366F1' },
+  { id: 'devis', title: '2. Devis', subtitle: 'Quote & Proposal', color: '#0EA5E9' },
+  { id: 'deposit_50', title: '3. Deposit (50%)', subtitle: 'M1 Paid · Kickoff', color: '#F59E0B' },
+  { id: 'design', title: '4. Design UI/UX', subtitle: 'Mockups & Flow', color: '#8B5CF6' },
+  { id: 'design_approved_20', title: '5. Design Approved', subtitle: 'M2 Paid · Sign-off', color: '#EC4899' },
+  { id: 'development', title: '6. Development', subtitle: 'Backend & Logic', color: '#2563EB' },
+  { id: 'security_qa', title: '7. Security QA', subtitle: 'Audits & Testing', color: '#DC2626' },
+  { id: 'delivered', title: '8. Delivered (30%)', subtitle: 'M3 Paid · Handover', color: '#059669' },
+];
 
-  if (projects.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--ink-muted); padding: 32px;">No projects recorded yet.</td></tr>`;
-    return;
-  }
+function normalizeKanbanStage(stage) {
+  if (!stage) return 'scoping';
+  if (stage === 'design_20') return 'design_approved_20';
+  if (stage === 'dev_30') return 'development';
+  if (stage === 'delivered_30' || stage === 'maintenance') return 'delivered';
+  if (stage === 'qa_testing') return 'security_qa';
+  const found = KANBAN_STAGES.some(s => s.id === stage);
+  return found ? stage : 'scoping';
+}
 
-  tbody.innerHTML = projects.map(p => {
-    const client = p.client || {};
-    const company = client.companyName || 'No Client';
-    const contact = client.contactName || '-';
-    const phone = client.phone || '';
-    const total = Number(p.priceTotalDzd) || 0;
+function renderProjectsKanban(projects) {
+  const container = document.getElementById('projects-kanban-board');
+  if (!container) return;
 
-    const renderMCell = (milestoneKey, label, pct, paid, amount, receiptUrl) => {
-      const amtStr = formatDzd(amount);
-      if (paid) {
-        return `
-          <div style="display: flex; flex-direction: column; gap: 4px;">
-            <div style="display: flex; align-items: center; gap: 6px;">
-              <span class="badge badge-green">Paid</span>
-              <strong style="font-size: 0.85rem;">${amtStr} DZD</strong>
+  const list = Array.isArray(projects) ? projects : [];
+
+  // Group projects by normalized stage
+  const grouped = {};
+  KANBAN_STAGES.forEach(s => {
+    grouped[s.id] = [];
+  });
+
+  list.forEach(p => {
+    const stageKey = normalizeKanbanStage(p.stage);
+    if (grouped[stageKey]) {
+      grouped[stageKey].push(p);
+    } else {
+      grouped['scoping'].push(p);
+    }
+  });
+
+  container.innerHTML = KANBAN_STAGES.map(col => {
+    const colProjects = grouped[col.id] || [];
+    
+    const cardsHtml = colProjects.length === 0
+      ? `<div class="kanban-empty-placeholder">No projects in this stage</div>`
+      : colProjects.map(p => {
+          const client = p.client || {};
+          const company = client.companyName || 'No Client';
+          const total = Number(p.priceTotalDzd) || 0;
+          const m1Amount = Number(p.m1AmountDzd) || Math.round(total * 0.50);
+          const m2Amount = Number(p.m2AmountDzd) || Math.round(total * 0.20);
+          const m3Amount = Number(p.m3AmountDzd) || (total - m1Amount - m2Amount);
+
+          let collected = 0;
+          if (p.m1Paid) collected += m1Amount;
+          if (p.m2Paid) collected += m2Amount;
+          if (p.m3Paid) collected += m3Amount;
+
+          const currentStage = normalizeKanbanStage(p.stage);
+          const typeLabel = p.type ? p.type.replace(/_/g, ' ') : 'Custom';
+
+          return `
+            <div class="kanban-card" 
+                 draggable="true" 
+                 data-project-id="${p.id}"
+                 ondragstart="handleKanbanDragStart(event, '${p.id}')"
+                 onclick="openProjectDetailsModal('${p.id}')">
+              
+              <div class="kanban-card-top">
+                <span class="badge ${p.type === 'ecommerce' ? 'badge-purple' : 'badge-cyan'}" style="font-size: 0.65rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.03em;">
+                  ${escapeHtml(typeLabel)}
+                </span>
+                <span class="kanban-card-date">${formatDateShort(p.createdAt)}</span>
+              </div>
+
+              <div class="kanban-card-title">${escapeHtml(p.title)}</div>
+
+              <div class="kanban-card-client">
+                <span>${escapeHtml(company)}</span>
+                ${client.wilaya ? `<span class="kanban-card-wilaya">· ${escapeHtml(client.wilaya)}</span>` : ''}
+              </div>
+
+              <!-- 50 / 20 / 30 Milestone Progress Track -->
+              <div class="kanban-milestone-track">
+                <div class="kanban-milestone-bars">
+                  <div class="kanban-milestone-bar ${p.m1Paid ? 'paid' : ''}" style="flex: 50;" title="Deposit 50%: ${p.m1Paid ? 'Paid' : 'Pending'}"></div>
+                  <div class="kanban-milestone-bar ${p.m2Paid ? 'paid' : ''}" style="flex: 20;" title="Design 20%: ${p.m2Paid ? 'Paid' : 'Pending'}"></div>
+                  <div class="kanban-milestone-bar ${p.m3Paid ? 'paid' : ''}" style="flex: 30;" title="Delivery 30%: ${p.m3Paid ? 'Paid' : 'Pending'}"></div>
+                </div>
+                <div class="kanban-milestone-labels">
+                  <span class="${p.m1Paid ? 'text-paid' : ''}">50%</span>
+                  <span class="${p.m2Paid ? 'text-paid' : ''}">20%</span>
+                  <span class="${p.m3Paid ? 'text-paid' : ''}">30%</span>
+                </div>
+              </div>
+
+              <!-- Financials -->
+              <div class="kanban-card-financials">
+                <div class="kanban-card-price">${formatDzd(total)} <small style="font-size: 0.7rem; color: var(--ink-muted); font-weight: 600;">DZD</small></div>
+                <div class="kanban-card-ratio ${collected === total && total > 0 ? 'fully-paid' : ''}">
+                  ${collected === total && total > 0 ? '100% Paid' : `${formatDzd(collected)} collected`}
+                </div>
+              </div>
+
+              <!-- Features (Domain, Hosting) -->
+              <div class="kanban-card-features">
+                ${p.domainIncluded ? '<span class="kanban-feat-pill">Domain</span>' : ''}
+                ${p.hostingIncluded ? '<span class="kanban-feat-pill">Hosting</span>' : ''}
+              </div>
+
+              <!-- Stage Move & Details Footer -->
+              <div class="kanban-card-footer">
+                <select class="kanban-stage-select" 
+                        onclick="event.stopPropagation()" 
+                        onchange="updateProjectStage('${p.id}', this.value)">
+                  ${KANBAN_STAGES.map(s => `
+                    <option value="${s.id}" ${s.id === currentStage ? 'selected' : ''}>
+                      Move: ${s.title}
+                    </option>
+                  `).join('')}
+                </select>
+
+                <button class="btn btn-secondary btn-sm" 
+                        style="padding: 3px 8px; font-size: 0.72rem;" 
+                        onclick="event.stopPropagation(); openProjectDetailsModal('${p.id}')">
+                  Details
+                </button>
+              </div>
+
             </div>
-            ${receiptUrl ? `
-              <button class="btn btn-secondary btn-sm" style="padding: 2px 8px; font-size: 0.72rem;" onclick="viewReceipt('${escapeHtml(p.title)} - ${label}', '${receiptUrl}')">
-                View Receipt
-              </button>
-            ` : '<small style="color: var(--ink-muted); font-size: 0.7rem;">No receipt</small>'}
-          </div>
-        `;
-      } else {
-        return `
-          <div style="display: flex; flex-direction: column; gap: 4px;">
-            <div style="display: flex; align-items: center; gap: 6px;">
-              <span class="badge badge-yellow">Pending</span>
-              <span style="font-size: 0.85rem; color: var(--ink-muted);">${amtStr} DZD</span>
-            </div>
-            <button class="btn btn-secondary btn-sm" style="padding: 2px 8px; font-size: 0.72rem; border-color: var(--cyan); color: var(--cyan-dark);" onclick="openUploadReceiptModal('${p.id}', '${escapeHtml(p.title)}', '${milestoneKey}')">
-              Upload Receipt
-            </button>
-          </div>
-        `;
-      }
-    };
+          `;
+        }).join('');
 
     return `
-      <tr>
-        <td>
-          <strong style="color: var(--ink); font-size: 0.95rem;">${escapeHtml(p.title)}</strong>
-          <div style="font-size: 0.8rem; color: var(--ink-muted); font-weight: 600;">${escapeHtml(company)}</div>
-          <div style="display: flex; gap: 6px; margin-top: 4px;">
-            ${p.domainIncluded ? '<span class="badge badge-cyan" style="font-size: 0.65rem;">Domain Inc</span>' : ''}
-            ${p.hostingIncluded ? '<span class="badge badge-purple" style="font-size: 0.65rem;">Hosting Inc</span>' : ''}
+      <div class="kanban-column" 
+           data-stage-id="${col.id}"
+           ondragover="handleKanbanDragOver(event)"
+           ondragleave="handleKanbanDragLeave(event)"
+           ondrop="handleKanbanDrop(event, '${col.id}')">
+        
+        <div class="kanban-column-header" style="border-top: 3px solid ${col.color};">
+          <div class="kanban-column-title-box">
+            <div class="kanban-column-title-wrap">
+              <span class="kanban-column-dot" style="background-color: ${col.color};"></span>
+              <span class="kanban-column-title">${col.title}</span>
+            </div>
+            <span class="kanban-column-count">${colProjects.length}</span>
           </div>
-        </td>
-        <td>
-          <div>${escapeHtml(contact)}</div>
-          ${phone ? `<a href="tel:${escapeHtml(phone)}" class="phone-link" style="font-size: 0.8rem;">${escapeHtml(phone)}</a>` : ''}
-        </td>
-        <td>
-          <strong style="font-size: 1.05rem; color: var(--ink);">${formatDzd(total)}</strong>
-          <small style="color: var(--ink-muted); font-weight: 600;"> DZD</small>
-        </td>
-        <td>${renderMCell('m1', 'M1 (50%)', 50, p.m1Paid, p.m1AmountDzd, p.m1ReceiptUrl)}</td>
-        <td>${renderMCell('m2', 'M2 (20%)', 20, p.m2Paid, p.m2AmountDzd, p.m2ReceiptUrl)}</td>
-        <td>${renderMCell('m3', 'M3 (30%)', 30, p.m3Paid, p.m3AmountDzd, p.m3ReceiptUrl)}</td>
-        <td>
-          <select onchange="updateProjectStage('${p.id}', this.value)" style="padding: 4px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border); font-size: 0.78rem; font-weight: 600;">
-            <option value="scoping" ${p.stage === 'scoping' ? 'selected' : ''}>Scoping</option>
-            <option value="design_20" ${p.stage === 'design_20' ? 'selected' : ''}>Design (20%)</option>
-            <option value="dev_30" ${p.stage === 'dev_30' ? 'selected' : ''}>Development (30%)</option>
-            <option value="delivered_30" ${p.stage === 'delivered_30' ? 'selected' : ''}>Delivered</option>
-          </select>
-        </td>
-        <td>
-          <button class="btn btn-secondary btn-sm" onclick="prepareDevisForProject('${p.id}')">
-            Create Quote
-          </button>
-        </td>
-      </tr>
+          <div class="kanban-column-subtitle">${col.subtitle}</div>
+        </div>
+
+        <div class="kanban-column-cards">
+          ${cardsHtml}
+        </div>
+
+      </div>
     `;
   }).join('');
+}
+
+function handleKanbanDragStart(e, projectId) {
+  e.dataTransfer.setData('text/plain', projectId);
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function handleKanbanDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  e.currentTarget.classList.add('drag-over');
+}
+
+function handleKanbanDragLeave(e) {
+  e.currentTarget.classList.remove('drag-over');
+}
+
+function handleKanbanDrop(e, targetStage) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  const projectId = e.dataTransfer.getData('text/plain');
+  if (projectId && targetStage) {
+    updateProjectStage(projectId, targetStage);
+  }
+}
+
+// Backward-compatibility wrapper for any table calls
+function renderProjectsTable(projects) {
+  renderProjectsKanban(projects);
 }
 
 // 3. Clients Table
@@ -1093,7 +1209,7 @@ function initSearch() {
         p.title.toLowerCase().includes(q) ||
         (p.client && p.client.companyName.toLowerCase().includes(q))
       );
-      renderProjectsTable(filtered);
+      renderProjectsKanban(filtered);
     } else if (state.activeTab === 'clients') {
       const filtered = state.clients.filter(c => 
         c.companyName.toLowerCase().includes(q) ||

@@ -2,10 +2,14 @@ import { pgTable, text, varchar, timestamp, boolean, numeric, jsonb, uuid, pgEnu
 
 export const projectStageEnum = pgEnum('project_stage', [
   'scoping',
+  'devis',
+  'deposit_50',
   'design',
+  'design_approved_20',
   'development',
-  'qa_testing',
+  'security_qa',
   'delivered',
+  'qa_testing',
   'maintenance'
 ]);
 

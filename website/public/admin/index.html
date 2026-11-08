@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>VISION - Founder Dashboard</title>
-  <link rel="stylesheet" href="admin.css?v=10">
+  <link rel="stylesheet" href="admin.css?v=11">
   <style>
     .tab-section { display: none; }
     .tab-section.active { display: block; }
@@ -243,45 +243,19 @@
 
       </section>
 
-      <!-- TAB 2: PROJECTS -->
+      <!-- TAB 2: PROJECTS (Kanban Pipeline Board) -->
       <section id="tab-projects" class="tab-section">
         
-        <div class="card">
-          <div class="card-header">
-            <div style="display: flex; align-items: center; gap: 16px;">
-              <div class="card-title">
-                <span>Projects</span>
-              </div>
-              <div class="filter-pills" id="projects-filter-pills">
-                <button class="filter-pill active" data-filter="all">All</button>
-                <button class="filter-pill" data-filter="scoping">Scoping</button>
-                <button class="filter-pill" data-filter="design_20">Design (20%)</button>
-                <button class="filter-pill" data-filter="dev_30">Development (30%)</button>
-                <button class="filter-pill" data-filter="delivered_30">Delivered</button>
-              </div>
-            </div>
-            <button class="btn btn-primary btn-sm" onclick="openModal('new-project-modal')">New Project</button>
+        <div class="projects-board-header">
+          <div>
+            <h2 class="projects-board-title">Projects Pipeline</h2>
+            <p style="font-size: 0.82rem; color: var(--ink-muted); margin-top: 2px;">End-to-end project lifecycle tracking</p>
           </div>
+          <button class="btn btn-primary btn-sm" onclick="openModal('new-project-modal')">New Project</button>
+        </div>
 
-          <div class="table-responsive">
-            <table>
-              <thead>
-                <tr>
-                  <th>Project & Client</th>
-                  <th>Contact</th>
-                  <th>Total Price</th>
-                  <th>M1 (50%)</th>
-                  <th>M2 (20%)</th>
-                  <th>M3 (30%)</th>
-                  <th>Stage</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody id="projects-table-tbody">
-                <tr><td colspan="8" style="text-align: center; color: var(--ink-muted);">Loading...</td></tr>
-              </tbody>
-            </table>
-          </div>
+        <div class="kanban-board-container" id="projects-kanban-board">
+          <!-- Kanban Columns Rendered by JS -->
         </div>
 
       </section>
@@ -841,6 +815,6 @@
 </div>
 
 <div class="toast-container" id="toast-container"></div>
-<script src="admin.js?v=10"></script>
+<script src="admin.js?v=11"></script>
 </body>
 </html>
