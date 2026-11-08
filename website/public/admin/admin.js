@@ -270,15 +270,135 @@ function formatDzd(val) {
   return num.toLocaleString('en-US');
 }
 
+function formatFullDateTime(dateVal) {
+  if (!dateVal) return 'Not recorded';
+  const d = new Date(dateVal);
+  if (isNaN(d.getTime())) return String(dateVal);
+
+  return d.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }) + ' at ' + d.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+}
+
 function getStageBadge(stage) {
   const map = {
     scoping: { label: 'Scoping', class: 'stage-scoping' },
+    design: { label: 'Design (20%)', class: 'stage-design_20' },
     design_20: { label: 'Design (20%)', class: 'stage-design_20' },
+    development: { label: 'Development (30%)', class: 'stage-dev_30' },
     dev_30: { label: 'Development (30%)', class: 'stage-dev_30' },
-    delivered_30: { label: 'Delivered', class: 'stage-delivered_30' },
+    qa_testing: { label: 'QA & Testing', class: 'stage-dev_30' },
+    delivered: { label: 'Delivered', class: 'stage-delivered' },
+    delivered_30: { label: 'Delivered', class: 'stage-delivered' },
+    maintenance: { label: 'Maintenance', class: 'stage-delivered' },
   };
-  const item = map[stage] || { label: stage, class: 'stage-scoping' };
+  const item = map[stage] || { label: stage || 'Scoping', class: 'stage-scoping' };
   return `<span class="badge-stage ${item.class}">${item.label}</span>`;
+}
+
+// Open Read-Only Project Details Modal
+function openProjectDetailsModal(projectId) {
+  const p = state.projects.find(x => x.id === projectId);
+  if (!p) {
+    showToast('Project details not found', 'error');
+    return;
+  }
+
+  const client = p.client || {};
+  const total = Number(p.priceTotalDzd) || 0;
+  const m1Amt = Number(p.m1AmountDzd) || Math.round(total * 0.5);
+  const m2Amt = Number(p.m2AmountDzd) || Math.round(total * 0.2);
+  const m3Amt = Number(p.m3AmountDzd) || (total - m1Amt - m2Amt);
+
+  let collected = 0;
+  if (p.m1Paid) collected += m1Amt;
+  if (p.m2Paid) collected += m2Amt;
+  if (p.m3Paid) collected += m3Amt;
+
+  const pctCollected = total > 0 ? Math.round((collected / total) * 100) : 0;
+
+  // Title & Header
+  document.getElementById('pd-title').textContent = p.title || 'Project Details';
+  document.getElementById('pd-subtitle').textContent = client.companyName ? `Client: ${client.companyName}` : 'Project Specification';
+  document.getElementById('pd-stage-badge').innerHTML = getStageBadge(p.stage);
+
+  // Client Details
+  document.getElementById('pd-client-company').textContent = client.companyName || '-';
+  document.getElementById('pd-client-contact').textContent = client.contactName || '-';
+  document.getElementById('pd-client-wilaya').textContent = client.wilaya || '-';
+  if (client.phone) {
+    document.getElementById('pd-client-phone').innerHTML = `<a href="tel:${escapeHtml(client.phone)}" class="phone-link">${escapeHtml(client.phone)}</a>`;
+  } else {
+    document.getElementById('pd-client-phone').textContent = '-';
+  }
+
+  // Project Info
+  const typeLabels = {
+    ecommerce: 'E-Commerce Platform',
+    custom_software: 'Custom Desktop / Software',
+    desktop_offline: 'Offline POS & Desktop Accounting',
+    saas: 'SaaS / Web Application',
+    landing: 'Landing Page & Showcase',
+    mobile: 'Mobile Application',
+  };
+  document.getElementById('pd-type').textContent = typeLabels[p.type] || p.type || '-';
+  document.getElementById('pd-date').textContent = formatFullDateTime(p.createdAt);
+
+  // Financials
+  document.getElementById('pd-total-budget').textContent = formatDzd(total);
+  document.getElementById('pd-payment-ratio').textContent = `${formatDzd(collected)} / ${formatDzd(total)} DZD (${pctCollected}%)`;
+  document.getElementById('pd-payment-ratio').style.color = (collected === total && total > 0) ? '#059669' : '#D97706';
+
+  // Progress Bar
+  const barM1 = document.getElementById('pd-bar-m1');
+  const barM2 = document.getElementById('pd-bar-m2');
+  const barM3 = document.getElementById('pd-bar-m3');
+  barM1.className = `progress-segment seg-50 ${p.m1Paid ? 'paid' : 'unpaid'}`;
+  barM2.className = `progress-segment seg-20 ${p.m2Paid ? 'paid' : 'unpaid'}`;
+  barM3.className = `progress-segment seg-30 ${p.m3Paid ? 'paid' : 'unpaid'}`;
+
+  // Milestone Cards
+  const cardM1 = document.getElementById('pd-card-m1');
+  cardM1.className = `milestone-detail-card ${p.m1Paid ? 'paid' : 'pending'}`;
+  document.getElementById('pd-badge-m1').className = `badge ${p.m1Paid ? 'badge-green' : 'badge-yellow'}`;
+  document.getElementById('pd-badge-m1').textContent = p.m1Paid ? 'Paid' : 'Pending';
+  document.getElementById('pd-amount-m1').textContent = formatDzd(m1Amt);
+  document.getElementById('pd-receipt-m1').innerHTML = p.m1ReceiptUrl
+    ? `<a href="#" onclick="viewReceipt('${escapeHtml(p.title)} - M1 (50%)', '${p.m1ReceiptUrl}'); return false;" style="color: var(--cyan-dark); font-weight: 600; text-decoration: underline;">View BaridiMob Receipt</a>`
+    : (p.m1Paid ? 'Verified via BaridiMob' : 'Awaiting payment');
+
+  const cardM2 = document.getElementById('pd-card-m2');
+  cardM2.className = `milestone-detail-card ${p.m2Paid ? 'paid' : 'pending'}`;
+  document.getElementById('pd-badge-m2').className = `badge ${p.m2Paid ? 'badge-green' : 'badge-yellow'}`;
+  document.getElementById('pd-badge-m2').textContent = p.m2Paid ? 'Paid' : 'Pending';
+  document.getElementById('pd-amount-m2').textContent = formatDzd(m2Amt);
+  document.getElementById('pd-receipt-m2').innerHTML = p.m2ReceiptUrl
+    ? `<a href="#" onclick="viewReceipt('${escapeHtml(p.title)} - M2 (20%)', '${p.m2ReceiptUrl}'); return false;" style="color: var(--cyan-dark); font-weight: 600; text-decoration: underline;">View BaridiMob Receipt</a>`
+    : (p.m2Paid ? 'Verified via BaridiMob' : 'Awaiting payment');
+
+  const cardM3 = document.getElementById('pd-card-m3');
+  cardM3.className = `milestone-detail-card ${p.m3Paid ? 'paid' : 'pending'}`;
+  document.getElementById('pd-badge-m3').className = `badge ${p.m3Paid ? 'badge-green' : 'badge-yellow'}`;
+  document.getElementById('pd-badge-m3').textContent = p.m3Paid ? 'Paid' : 'Pending';
+  document.getElementById('pd-amount-m3').textContent = formatDzd(m3Amt);
+  document.getElementById('pd-receipt-m3').innerHTML = p.m3ReceiptUrl
+    ? `<a href="#" onclick="viewReceipt('${escapeHtml(p.title)} - M3 (30%)', '${p.m3ReceiptUrl}'); return false;" style="color: var(--cyan-dark); font-weight: 600; text-decoration: underline;">View BaridiMob Receipt</a>`
+    : (p.m3Paid ? 'Verified via BaridiMob' : 'Awaiting payment');
+
+  // Scope Notes
+  document.getElementById('pd-notes').textContent = p.notes || 'No extra notes recorded for this project.';
+
+  // Inclusions
+  document.getElementById('pd-domain-status').textContent = p.domainIncluded ? 'Included (Covered by VISION)' : 'Not Included';
+  document.getElementById('pd-hosting-status').textContent = p.hostingIncluded ? 'Included (Covered by VISION)' : 'Not Included';
+
+  openModal('project-details-modal');
 }
 
 // 1. Overview Projects Table
@@ -296,7 +416,7 @@ function renderOverviewProjects(projects) {
     const total = Number(p.priceTotalDzd) || 0;
 
     return `
-      <tr>
+      <tr class="clickable-row" onclick="openProjectDetailsModal('${p.id}')">
         <td>
           <strong style="color: var(--ink); font-size: 0.92rem;">${escapeHtml(p.title)}</strong>
           <div style="font-size: 0.78rem; color: var(--ink-muted);">${escapeHtml(clientName)}</div>
@@ -317,7 +437,7 @@ function renderOverviewProjects(projects) {
         </td>
         <td>${getStageBadge(p.stage)}</td>
         <td>
-          <button class="btn btn-secondary btn-sm" onclick="switchTab('projects')">Details</button>
+          <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); openProjectDetailsModal('${p.id}')">Details</button>
         </td>
       </tr>
     `;

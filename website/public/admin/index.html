@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>VISION - Founder Dashboard</title>
-  <link rel="stylesheet" href="admin.css?v=3">
+  <link rel="stylesheet" href="admin.css?v=4">
   <style>
     .tab-section { display: none; }
     .tab-section.active { display: block; }
@@ -48,6 +48,7 @@
     .stage-design_20 { background: #E0F2FE; color: #0369A1; }
     .stage-dev_30 { background: #F3E8FF; color: #6B21A8; }
     .stage-delivered_30 { background: #DCFCE7; color: #166534; }
+    .stage-delivered { background: #DCFCE7; color: #166534; }
     .phone-link {
       color: var(--ink);
       text-decoration: none;
@@ -580,6 +581,136 @@
   </div>
 </div>
 
+<!-- Read-Only Project Details Modal -->
+<div class="modal-overlay" id="project-details-modal">
+  <div class="modal-content" style="max-width: 760px;">
+    <div class="modal-header">
+      <div>
+        <h3 class="modal-title" id="pd-title">Project Details</h3>
+        <p id="pd-subtitle" style="font-size: 0.8rem; color: var(--ink-muted); margin-top: 4px;">Comprehensive project summary</p>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span id="pd-stage-badge"></span>
+        <button class="modal-close" onclick="closeModal('project-details-modal')">&times;</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <!-- Client & Project Metadata Grid -->
+      <div class="project-details-grid">
+        <div class="detail-item">
+          <span class="detail-label">Client / Company</span>
+          <span class="detail-value" id="pd-client-company">-</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Contact Person</span>
+          <span class="detail-value" id="pd-client-contact">-</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Wilaya / Location</span>
+          <span class="detail-value" id="pd-client-wilaya">-</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Phone Number</span>
+          <span class="detail-value" id="pd-client-phone">-</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Project Type</span>
+          <span class="detail-value" id="pd-type">-</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Start Date & Time</span>
+          <span class="detail-value" id="pd-date">-</span>
+        </div>
+      </div>
+
+      <!-- Financial Overview -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; padding: 4px 2px;">
+        <div>
+          <span class="detail-label">Total Contracted Budget</span>
+          <div class="detail-value highlight" style="font-size: 1.4rem; color: var(--ink); margin-top: 2px;">
+            <span id="pd-total-budget">0</span> <span style="font-size: 0.95rem; font-weight: 600; color: var(--ink-muted);">DZD</span>
+          </div>
+        </div>
+        <div style="text-align: right;">
+          <span class="detail-label">Payment Progress</span>
+          <div id="pd-payment-ratio" style="font-size: 0.92rem; font-weight: 700; color: #059669; margin-top: 2px;">0 / 0 DZD (0%)</div>
+        </div>
+      </div>
+
+      <!-- Progress Track Bar -->
+      <div class="milestone-progress" style="width: 100%;">
+        <div class="progress-track" style="height: 10px;">
+          <div class="progress-segment seg-50" id="pd-bar-m1"></div>
+          <div class="progress-segment seg-20" id="pd-bar-m2"></div>
+          <div class="progress-segment seg-30" id="pd-bar-m3"></div>
+        </div>
+        <div class="milestone-labels" style="margin-top: 4px;">
+          <span>Deposit (50%)</span>
+          <span>Design Approval (20%)</span>
+          <span>Final Delivery (30%)</span>
+        </div>
+      </div>
+
+      <!-- Milestone Cards (50% / 20% / 30%) -->
+      <div class="milestones-breakdown-container">
+        <span class="detail-label">Milestone Payment Breakdown</span>
+        <div class="milestones-cards-grid">
+          <!-- M1 Card -->
+          <div class="milestone-detail-card" id="pd-card-m1">
+            <div class="milestone-detail-header">
+              <span class="milestone-detail-title">M1 - 50% Deposit</span>
+              <span id="pd-badge-m1" class="badge"></span>
+            </div>
+            <div class="milestone-detail-amount"><span id="pd-amount-m1">0</span> DZD</div>
+            <div id="pd-receipt-m1" style="font-size: 0.78rem; color: var(--ink-muted);"></div>
+          </div>
+
+          <!-- M2 Card -->
+          <div class="milestone-detail-card" id="pd-card-m2">
+            <div class="milestone-detail-header">
+              <span class="milestone-detail-title">M2 - 20% Design</span>
+              <span id="pd-badge-m2" class="badge"></span>
+            </div>
+            <div class="milestone-detail-amount"><span id="pd-amount-m2">0</span> DZD</div>
+            <div id="pd-receipt-m2" style="font-size: 0.78rem; color: var(--ink-muted);"></div>
+          </div>
+
+          <!-- M3 Card -->
+          <div class="milestone-detail-card" id="pd-card-m3">
+            <div class="milestone-detail-header">
+              <span class="milestone-detail-title">M3 - 30% Delivery</span>
+              <span id="pd-badge-m3" class="badge"></span>
+            </div>
+            <div class="milestone-detail-amount"><span id="pd-amount-m3">0</span> DZD</div>
+            <div id="pd-receipt-m3" style="font-size: 0.78rem; color: var(--ink-muted);"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Technical Scope & Deliverable Notes -->
+      <div class="form-group">
+        <span class="detail-label">Scope Description & Deliverable Notes</span>
+        <div class="scope-notes-box" id="pd-notes">-</div>
+      </div>
+
+      <!-- Inclusions -->
+      <div style="display: flex; gap: 16px;">
+        <div class="detail-item" style="flex: 1; background: var(--paper); padding: 10px 14px; border-radius: var(--radius-md); border: 1px solid var(--border);">
+          <span class="detail-label">Domain Name</span>
+          <span class="detail-value" id="pd-domain-status">-</span>
+        </div>
+        <div class="detail-item" style="flex: 1; background: var(--paper); padding: 10px 14px; border-radius: var(--radius-md); border: 1px solid var(--border);">
+          <span class="detail-label">Cloud Hosting</span>
+          <span class="detail-value" id="pd-hosting-status">-</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" onclick="closeModal('project-details-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
 <!-- View Receipt Modal -->
 <div class="modal-overlay" id="view-receipt-modal">
   <div class="modal-content" style="max-width: 720px;">
@@ -697,6 +828,6 @@
 </div>
 
 <div class="toast-container" id="toast-container"></div>
-<script src="admin.js?v=3"></script>
+<script src="admin.js?v=4"></script>
 </body>
 </html>

@@ -55,7 +55,7 @@ app.get('/api/stats', async (req, res) => {
       totalPendingDzd += (total - collected);
     }
 
-    const activeProjects = allProjects.filter(p => p.stage !== 'delivered_30');
+    const activeProjects = allProjects.filter(p => p.stage !== 'delivered');
 
     res.json({
       totalRevenueDzd,
@@ -215,6 +215,21 @@ app.patch('/api/projects/:id', async (req, res) => {
       if (req.body[key] !== undefined) {
         updateData[key] = req.body[key];
       }
+    }
+
+    if (updateData.stage) {
+      const stageMap: Record<string, any> = {
+        scoping: 'scoping',
+        design: 'design',
+        design_20: 'design',
+        dev_30: 'development',
+        development: 'development',
+        qa_testing: 'qa_testing',
+        delivered: 'delivered',
+        delivered_30: 'delivered',
+        maintenance: 'maintenance',
+      };
+      updateData.stage = stageMap[updateData.stage] || updateData.stage;
     }
 
     if (updateData.priceTotalDzd) {

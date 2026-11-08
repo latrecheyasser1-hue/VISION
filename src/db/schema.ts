@@ -1,16 +1,12 @@
 import { pgTable, text, varchar, timestamp, boolean, numeric, jsonb, uuid, pgEnum } from 'drizzle-orm/pg-core';
 
 export const projectStageEnum = pgEnum('project_stage', [
-  'scoping',             // 01. Meeting & Scoping
-  'devis_sent',          // 02. Devis envoyé & négociation
-  'deposit_50_received', // 03. Acompte 50% reçu (Lancement)
-  'design_phase',        // 04. Design UI/UX & Mockups
-  'design_approved_20',  // 05. Design validé (Paiement 20%)
-  'backend_dev',         // 06. Backend, Database & Logique
-  'dev_review',          // 07. Meeting de revue & ajustements
-  'security_qa',         // 08. Security check & Tests finaux
-  'delivered_30',        // 09. Livraison finale (Paiement 30%)
-  'maintenance'          // 10. Support & maintenance
+  'scoping',
+  'design',
+  'development',
+  'qa_testing',
+  'delivered',
+  'maintenance'
 ]);
 
 export const leadStatusEnum = pgEnum('lead_status', [
