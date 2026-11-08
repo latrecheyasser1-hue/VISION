@@ -636,12 +636,48 @@ tr:hover td {
 
 .modal-close {
   background: none;
-  border: none;
-  font-size: 1.5rem;
+  border: 1px solid var(--border);
+  font-size: 1.15rem;
   line-height: 1;
   color: var(--ink-muted);
   cursor: pointer;
-  padding: 4px;
+  padding: 4px 10px;
+  border-radius: var(--radius-md);
+  transition: all 0.15s ease;
+}
+
+.modal-close:hover {
+  background: var(--paper);
+  color: var(--ink);
+  border-color: var(--ink);
+}
+
+.lang-btn-group {
+  display: flex;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: 3px;
+  gap: 4px;
+}
+
+.lang-btn {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  color: var(--ink-muted);
+  transition: all 0.15s ease;
+}
+
+.lang-btn.active {
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
 }
 
 .modal-body {
