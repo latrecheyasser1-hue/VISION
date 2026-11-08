@@ -330,7 +330,6 @@
               <div class="filter-pills" id="history-category-pills">
                 <button class="filter-pill active" data-category="projects" onclick="switchHistoryCategory('projects')">Projects History</button>
                 <button class="filter-pill" data-category="leads" onclick="switchHistoryCategory('leads')">Leads History</button>
-                <button class="filter-pill" data-category="financials" onclick="switchHistoryCategory('financials')">Receipts & Quotes</button>
               </div>
             </div>
             <div id="history-search-wrap">
@@ -404,44 +403,7 @@
           </div>
         </div>
 
-        <!-- Category 3: Receipts & Quotes History -->
-        <div id="history-cat-financials" class="history-category-panel" style="display: none;">
-          <div class="card" style="margin-bottom: 20px;">
-            <div class="card-header">
-              <div class="card-title">
-                <span>Verified Payment Receipts (BaridiMob)</span>
-              </div>
-            </div>
-            <div class="card-body">
-              <div id="history-receipts-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;"></div>
-            </div>
-          </div>
 
-          <div class="card">
-            <div class="card-header">
-              <div class="card-title">
-                <span>Generated Quotes (Devis)</span>
-              </div>
-            </div>
-            <div class="table-responsive">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Quote N°</th>
-                    <th>Client & Project</th>
-                    <th>Total Amount</th>
-                    <th>Status</th>
-                    <th>Issue Date</th>
-                    <th style="text-align: right;">Action</th>
-                  </tr>
-                </thead>
-                <tbody id="history-invoices-tbody">
-                  <!-- Populated by JS -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
 
       </section>
 
@@ -985,6 +947,6 @@
 
 <div class="toast-container" id="toast-container"></div>
 <script src="html2pdf.bundle.min.js"></script>
-<script src="admin.js?v=18"></script>
+<script src="admin.js?v=19"></script>
 </body>
 </html>

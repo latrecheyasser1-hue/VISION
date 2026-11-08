@@ -217,7 +217,7 @@ function initTabs() {
 function switchTab(tabId) {
   if (tabId === 'storage' || tabId === 'devis') {
     tabId = 'history';
-    state.historyCategory = 'financials';
+    state.historyCategory = 'projects';
   }
 
   state.activeTab = tabId;
@@ -1139,6 +1139,9 @@ function renderLeadsTable(leads) {
 // ==========================================
 
 function switchHistoryCategory(category) {
+  if (category !== 'projects' && category !== 'leads') {
+    category = 'projects';
+  }
   state.historyCategory = category;
 
   // Toggle active class on pills
@@ -1150,11 +1153,9 @@ function switchHistoryCategory(category) {
   // Toggle visible category section
   const pSection = document.getElementById('history-cat-projects');
   const lSection = document.getElementById('history-cat-leads');
-  const fSection = document.getElementById('history-cat-financials');
 
   if (pSection) pSection.style.display = (category === 'projects') ? 'block' : 'none';
   if (lSection) lSection.style.display = (category === 'leads') ? 'block' : 'none';
-  if (fSection) fSection.style.display = (category === 'financials') ? 'block' : 'none';
 
   renderHistoryView();
 }
@@ -1176,12 +1177,10 @@ function filterHistorySearch(query) {
 }
 
 function renderHistoryView() {
-  if (state.historyCategory === 'projects') {
-    renderHistoryProjectsTable();
-  } else if (state.historyCategory === 'leads') {
+  if (state.historyCategory === 'leads') {
     renderHistoryLeadsTable();
-  } else if (state.historyCategory === 'financials') {
-    renderHistoryFinancials();
+  } else {
+    renderHistoryProjectsTable();
   }
 }
 
