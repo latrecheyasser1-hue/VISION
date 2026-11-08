@@ -600,25 +600,6 @@ function renderProjectsKanban(projects) {
                 ${p.hostingIncluded ? '<span class="kanban-feat-pill">Hosting</span>' : ''}
               </div>
 
-              <!-- Stage Move & Details Footer -->
-              <div class="kanban-card-footer">
-                <select class="kanban-stage-select" 
-                        onclick="event.stopPropagation()" 
-                        onchange="updateProjectStage('${p.id}', this.value)">
-                  ${KANBAN_STAGES.map(s => `
-                    <option value="${s.id}" ${s.id === currentStage ? 'selected' : ''}>
-                      Move: ${s.title}
-                    </option>
-                  `).join('')}
-                </select>
-
-                <button class="btn btn-secondary btn-sm" 
-                        style="padding: 3px 8px; font-size: 0.72rem;" 
-                        onclick="event.stopPropagation(); openProjectDetailsModal('${p.id}')">
-                  Details
-                </button>
-              </div>
-
             </div>
           `;
         }).join('');
