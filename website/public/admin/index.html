@@ -394,8 +394,8 @@
                 <button class="btn btn-primary" onclick="saveDevisToDb()">
                   <span>Save Quote</span>
                 </button>
-                <button class="btn btn-secondary" onclick="window.print()">
-                  <span>Print / PDF</span>
+                <button class="btn btn-secondary" onclick="exportDevisPdf()" id="btn-export-devis-pdf">
+                  <span>Save PDF</span>
                 </button>
               </div>
 
@@ -869,6 +869,7 @@
 </div>
 
 <div class="toast-container" id="toast-container"></div>
-<script src="admin.js?v=13"></script>
+<script src="html2pdf.bundle.min.js"></script>
+<script src="admin.js?v=14"></script>
 </body>
 </html>

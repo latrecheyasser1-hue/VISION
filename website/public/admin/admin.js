@@ -1333,6 +1333,40 @@ async function saveDevisToDb() {
   }
 }
 
+function exportDevisPdf() {
+  const element = document.getElementById('devis-printable-area');
+  if (!element) {
+    showToast('Quote sheet not found', 'error');
+    return;
+  }
+
+  const clientName = (document.getElementById('devis-view-client-name')?.textContent || 'Client').trim().replace(/[^a-zA-Z0-9_\u0600-\u06FF]/g, '_');
+  const quoteNum = (document.getElementById('devis-view-number')?.textContent || 'DEV').trim().replace(/[^a-zA-Z0-9_-]/g, '');
+  const filename = `${quoteNum}_${clientName}.pdf`;
+
+  if (typeof html2pdf === 'undefined') {
+    window.print();
+    return;
+  }
+
+  showToast('Generating and saving PDF file...');
+
+  const opt = {
+    margin: [10, 10, 10, 10],
+    filename: filename,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true, logging: false },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+
+  html2pdf().set(opt).from(element).save().then(() => {
+    showToast('PDF file saved successfully to Downloads.');
+  }).catch(err => {
+    console.error('PDF export error:', err);
+    window.print();
+  });
+}
+
 function prepareDevisForProject(projectId) {
   const proj = state.projects.find(p => p.id === projectId);
   if (!proj) return;
