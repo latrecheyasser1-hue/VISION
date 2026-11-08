@@ -1,7 +1,7 @@
 /**
  * VISION Admin Dashboard & CRM
- * Algorithmic & UI Controller
- * Powered by Neon Serverless Postgres & Cloudflare R2
+ * Minimalist Pure Typographic Controller
+ * 0 Emojis, 0 Icons Policy
  */
 
 let state = {
@@ -12,9 +12,9 @@ let state = {
   activeTab: 'overview',
   devisItems: [
     { title: 'Conception UI/UX sur-mesure & Prototype interactif', price: 60000 },
-    { title: 'Développement Frontend Haute Performance (Next.js / Vanilla)', price: 80000 },
+    { title: 'Développement Frontend Haute Performance', price: 80000 },
     { title: 'Backend API, Base de Données Neon Postgres & Cloudflare R2', price: 70000 },
-    { title: 'Intégration Paiement BaridiMob & Tableau de Bord Admin', price: 40000 },
+    { title: 'Intégration Paiement BaridiMob & Dashboard Admin', price: 40000 },
   ],
 };
 
@@ -28,10 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
   renderDevisRows();
   renderDevisLive();
 
-  // Load all initial data
   fetchAllData();
 
-  // Handle URL hash navigation
   if (window.location.hash) {
     const tab = window.location.hash.replace('#', '');
     if (['overview', 'projects', 'clients', 'leads', 'devis', 'storage'].includes(tab)) {
@@ -50,17 +48,14 @@ async function fetchAllData() {
 }
 
 // ==========================================
-// TOAST NOTIFICATIONS
+// TOAST NOTIFICATIONS (NO EMOJIS)
 // ==========================================
 function showToast(message, type = 'success') {
   const container = document.getElementById('toast-container');
   if (!container) return;
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
-  toast.innerHTML = `
-    <span>${type === 'success' ? '✓' : '⚠'}</span>
-    <span>${message}</span>
-  `;
+  toast.innerHTML = `<span>${message}</span>`;
   container.appendChild(toast);
   setTimeout(() => {
     toast.style.opacity = '0';
@@ -95,26 +90,22 @@ function switchTab(tabId) {
   state.activeTab = tabId;
   window.location.hash = tabId;
 
-  // Update nav buttons
   document.querySelectorAll('.sidebar-nav .nav-item').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.tab === tabId);
   });
 
-  // Update tab sections
   document.querySelectorAll('.tab-section').forEach(sec => {
     sec.classList.remove('active');
   });
   const target = document.getElementById(`tab-${tabId}`);
   if (target) target.classList.add('active');
 
-  // Update titles
   const meta = TAB_TITLES[tabId] || TAB_TITLES.overview;
   const titleEl = document.getElementById('page-title-text');
   const subEl = document.getElementById('page-subtitle-text');
   if (titleEl) titleEl.textContent = meta.title;
   if (subEl) subEl.textContent = meta.sub;
 
-  // Re-render specific views if needed
   if (tabId === 'storage') renderStorageExplorer();
 }
 
@@ -261,7 +252,7 @@ function renderProjectsTable(projects) {
   if (!tbody) return;
 
   if (projects.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--ink-muted); padding: 32px;">Aucun projet pour le moment. Cliquez sur "+ Nouveau Projet" pour commencer.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--ink-muted); padding: 32px;">Aucun projet pour le moment.</td></tr>`;
     return;
   }
 
@@ -272,19 +263,18 @@ function renderProjectsTable(projects) {
     const phone = client.phone || '';
     const total = Number(p.priceTotalDzd) || 0;
 
-    // Helper for milestone cell
     const renderMCell = (milestoneKey, label, pct, paid, amount, receiptUrl) => {
       const amtStr = formatDzd(amount);
       if (paid) {
         return `
           <div style="display: flex; flex-direction: column; gap: 4px;">
             <div style="display: flex; align-items: center; gap: 6px;">
-              <span class="badge badge-green">✓ Payé</span>
+              <span class="badge badge-green">Payé</span>
               <strong style="font-size: 0.85rem;">${amtStr} DZD</strong>
             </div>
             ${receiptUrl ? `
               <button class="btn btn-secondary btn-sm" style="padding: 2px 8px; font-size: 0.72rem;" onclick="viewReceipt('${escapeHtml(p.title)} - ${label}', '${receiptUrl}')">
-                🔍 Voir Reçu (R2)
+                Voir Reçu (R2)
               </button>
             ` : '<small style="color: var(--ink-muted); font-size: 0.7rem;">Pas de reçu</small>'}
           </div>
@@ -297,7 +287,7 @@ function renderProjectsTable(projects) {
               <span style="font-size: 0.85rem; color: var(--ink-muted);">${amtStr} DZD</span>
             </div>
             <button class="btn btn-secondary btn-sm" style="padding: 2px 8px; font-size: 0.72rem; border-color: var(--cyan); color: var(--cyan-dark);" onclick="openUploadReceiptModal('${p.id}', '${escapeHtml(p.title)}', '${milestoneKey}')">
-              + Reçu BaridiMob
+              Ajouter Reçu BaridiMob
             </button>
           </div>
         `;
@@ -316,7 +306,7 @@ function renderProjectsTable(projects) {
         </td>
         <td>
           <div>${escapeHtml(contact)}</div>
-          ${phone ? `<a href="${formatWhatsAppLink(phone)}" target="_blank" class="wa-link" style="margin-top: 3px;">💬 ${escapeHtml(phone)}</a>` : ''}
+          ${phone ? `<a href="${formatWhatsAppLink(phone)}" target="_blank" class="wa-link" style="margin-top: 3px;">${escapeHtml(phone)}</a>` : ''}
         </td>
         <td>
           <strong style="font-size: 1.05rem; color: var(--ink);">${formatDzd(total)}</strong>
@@ -334,8 +324,8 @@ function renderProjectsTable(projects) {
           </select>
         </td>
         <td>
-          <button class="btn btn-secondary btn-sm" onclick="prepareDevisForProject('${p.id}')" title="Créer un Devis pour ce projet">
-            Devis 📄
+          <button class="btn btn-secondary btn-sm" onclick="prepareDevisForProject('${p.id}')">
+            Devis
           </button>
         </td>
       </tr>
@@ -361,7 +351,7 @@ function renderClientsTable(clients) {
       <td>${escapeHtml(c.contactName)}</td>
       <td><span class="badge badge-gray">${escapeHtml(c.wilaya || '-')}</span></td>
       <td>
-        ${c.phone ? `<a href="${formatWhatsAppLink(c.phone)}" target="_blank" class="wa-link">💬 ${escapeHtml(c.phone)}</a>` : '-'}
+        ${c.phone ? `<a href="${formatWhatsAppLink(c.phone)}" target="_blank" class="wa-link">${escapeHtml(c.phone)}</a>` : '-'}
       </td>
       <td><small style="color: var(--ink-muted);">${escapeHtml(c.email || '-')}</small></td>
       <td>${escapeHtml(c.industry || '-')}</td>
@@ -388,7 +378,7 @@ function renderLeadsTable(leads) {
       <tr>
         <td><strong style="color: var(--ink);">${escapeHtml(l.name)}</strong></td>
         <td>
-          ${l.phone ? `<a href="${formatWhatsAppLink(l.phone)}" target="_blank" class="wa-link">💬 ${escapeHtml(l.phone)}</a>` : '-'}
+          ${l.phone ? `<a href="${formatWhatsAppLink(l.phone)}" target="_blank" class="wa-link">${escapeHtml(l.phone)}</a>` : '-'}
         </td>
         <td><span class="badge badge-cyan">${escapeHtml(l.activity)}</span></td>
         <td style="max-width: 280px; font-size: 0.82rem; color: var(--ink);">
@@ -433,7 +423,6 @@ function renderStorageExplorer() {
     grid.innerHTML = `
       <div style="grid-column: 1 / -1; padding: 40px; text-align: center; background: var(--paper); border: 1px dashed var(--border); border-radius: var(--radius-lg);">
         <p style="color: var(--ink-muted); font-size: 0.95rem;">Aucun reçu BaridiMob n'a encore été uploadé sur le bucket Cloudflare R2.</p>
-        <p style="color: var(--ink-muted); font-size: 0.8rem; margin-top: 6px;">Dès qu'un client effectue un virement BaridiMob et que vous uploadez sa capture d'écran, elle s'affichera ici en temps réel.</p>
       </div>
     `;
     return;
@@ -448,7 +437,7 @@ function renderStorageExplorer() {
           <span style="color: var(--ink-muted);">${escapeHtml(r.clientName)}</span>
           <span class="badge badge-green" style="font-size: 0.65rem;">${r.milestone}</span>
         </div>
-        <a href="${r.url}" target="_blank" style="font-size: 0.72rem; color: var(--cyan-dark); text-decoration: none; margin-top: 4px;">Lien Cloudflare R2 ↗</a>
+        <a href="${r.url}" target="_blank" style="font-size: 0.72rem; color: var(--cyan-dark); text-decoration: none; margin-top: 4px;">Lien Cloudflare R2</a>
       </div>
     </div>
   `).join('');
@@ -465,7 +454,7 @@ function renderDevisRows() {
     <div style="display: flex; gap: 6px; align-items: center;">
       <input type="text" value="${escapeHtml(item.title)}" placeholder="Description" style="flex: 2; padding: 6px 10px; font-size: 0.8rem;" oninput="updateDevisItem(${idx}, 'title', this.value)">
       <input type="number" value="${item.price}" placeholder="DZD" style="width: 100px; padding: 6px 10px; font-size: 0.8rem;" oninput="updateDevisItem(${idx}, 'price', this.value)">
-      <button type="button" class="btn btn-secondary btn-sm" style="padding: 4px 8px; color: #DC2626;" onclick="removeDevisItemRow(${idx})">×</button>
+      <button type="button" class="btn btn-secondary btn-sm" style="padding: 4px 8px; color: #DC2626;" onclick="removeDevisItemRow(${idx})">x</button>
     </div>
   `).join('');
 }
@@ -511,14 +500,13 @@ function renderDevisLive() {
   document.getElementById('devis-view-client-contact').textContent = clientContact;
   document.getElementById('devis-view-project-title').textContent = projectTitle;
 
-  // Domain & hosting status
   const domainEl = document.getElementById('devis-view-domain');
   if (domainEl) {
     if (domainCheck && domainCheck.checked) {
-      domainEl.textContent = '✓ Nom de domaine inclus (pris en charge par VISION)';
+      domainEl.textContent = 'Nom de domaine inclus (pris en charge par VISION)';
       domainEl.style.color = '#059669';
     } else {
-      domainEl.textContent = '✗ Nom de domaine : Aux frais du client';
+      domainEl.textContent = 'Nom de domaine : Aux frais du client';
       domainEl.style.color = '#B45309';
     }
   }
@@ -526,15 +514,14 @@ function renderDevisLive() {
   const hostingEl = document.getElementById('devis-view-hosting');
   if (hostingEl) {
     if (hostingCheck && hostingCheck.checked) {
-      hostingEl.textContent = '✓ Hébergement Cloud haute performance inclus';
+      hostingEl.textContent = 'Hébergement Cloud inclus';
       hostingEl.style.color = '#059669';
     } else {
-      hostingEl.textContent = '✗ Hébergement Cloud : Aux frais du client';
+      hostingEl.textContent = 'Hébergement Cloud : Aux frais du client';
       hostingEl.style.color = '#B45309';
     }
   }
 
-  // Items table
   let total = 0;
   const tbody = document.getElementById('devis-view-items-tbody');
   if (tbody) {
@@ -549,7 +536,6 @@ function renderDevisLive() {
     }).join('');
   }
 
-  // Calculate 50 / 20 / 30
   const m1 = Math.round(total * 0.50);
   const m2 = Math.round(total * 0.20);
   const m3 = total - m1 - m2;
@@ -559,7 +545,6 @@ function renderDevisLive() {
   document.getElementById('devis-view-m2').textContent = `${formatDzd(m2)} DZD`;
   document.getElementById('devis-view-m3').textContent = `${formatDzd(m3)} DZD`;
 
-  // Number & Date
   const d = new Date();
   document.getElementById('devis-view-date').textContent = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
 }
@@ -571,7 +556,7 @@ function onDevisClientChange() {
   const client = state.clients.find(c => c.id === clientId);
   if (client) {
     document.getElementById('devis-client-name').value = client.companyName;
-    document.getElementById('devis-client-contact').value = `${client.wilaya || 'Algérie'} · ${client.phone} · ${client.contactName}`;
+    document.getElementById('devis-client-contact').value = `${client.wilaya || 'Algérie'} - ${client.phone} - ${client.contactName}`;
     renderDevisLive();
   }
 }
@@ -585,7 +570,6 @@ async function saveDevisToDb() {
       return;
     }
 
-    // Find linked project if available or first client's project
     const proj = state.projects.find(p => p.clientId === clientId) || state.projects[0];
     if (!proj) {
       showToast('Créez d\'abord un projet pour ce client avant d\'enregistrer le devis.', 'error');
@@ -610,7 +594,7 @@ async function saveDevisToDb() {
     if (!res.ok) throw new Error('Erreur lors de l\'enregistrement');
     const invoice = await res.json();
     document.getElementById('devis-view-number').textContent = `DEVIS N° ${invoice.invoiceNumber}`;
-    showToast(`Devis ${invoice.invoiceNumber} enregistré avec succès dans Neon DB !`);
+    showToast(`Devis ${invoice.invoiceNumber} enregistré avec succès dans Neon DB.`);
   } catch (err) {
     showToast(err.message, 'error');
   }
@@ -641,7 +625,7 @@ function prepareDevisForProject(projectId) {
 }
 
 // ==========================================
-// ACTIONS (STAGES, RECEIPTS, MODALS)
+// ACTIONS
 // ==========================================
 async function updateProjectStage(projectId, newStage) {
   try {
@@ -698,7 +682,7 @@ async function handleReceiptUpload(e) {
     }
 
     const data = await res.json();
-    showToast(`Reçu vérifié et stocké sur Cloudflare R2 avec succès !`);
+    showToast('Reçu vérifié et stocké sur Cloudflare R2 avec succès.');
     closeModal('upload-receipt-modal');
     await fetchProjects();
     await fetchStats();
@@ -713,12 +697,11 @@ async function handleReceiptUpload(e) {
 function viewReceipt(title, url) {
   document.getElementById('view-receipt-title').textContent = title;
   document.getElementById('view-receipt-img').src = url;
-  document.getElementById('view-receipt-info').textContent = `Hébergé en toute sécurité sur Cloudflare R2 (bucket: vision)`;
+  document.getElementById('view-receipt-info').textContent = 'Hébergé sur Cloudflare R2 (bucket: vision)';
   document.getElementById('view-receipt-open-btn').href = url;
   openModal('view-receipt-modal');
 }
 
-// 6. New Client Creation
 async function handleNewClient(e) {
   e.preventDefault();
   const companyName = document.getElementById('client-company').value.trim();
@@ -736,7 +719,7 @@ async function handleNewClient(e) {
     });
 
     if (!res.ok) throw new Error('Erreur lors de l\'ajout du client');
-    showToast(`Client ${companyName} enregistré avec succès !`);
+    showToast(`Client ${companyName} enregistré avec succès.`);
     closeModal('new-client-modal');
     document.getElementById('new-client-form').reset();
     await fetchClients();
@@ -745,7 +728,6 @@ async function handleNewClient(e) {
   }
 }
 
-// 7. New Project Creation
 function calcProjectSplitPreview() {
   const total = Number(document.getElementById('proj-price').value) || 0;
   const m1 = Math.round(total * 0.50);
@@ -781,7 +763,7 @@ async function handleNewProject(e) {
     });
 
     if (!res.ok) throw new Error('Erreur lors de la création du projet');
-    showToast(`Projet "${title}" créé avec succès !`);
+    showToast(`Projet "${title}" créé avec succès.`);
     closeModal('new-project-modal');
     document.getElementById('new-project-form').reset();
     await fetchProjects();
@@ -805,7 +787,6 @@ function convertLeadToClient(name, phone, activity) {
   document.getElementById('client-industry').value = activity;
 }
 
-// Helper: Populate selects
 function updateClientSelects() {
   const projSelect = document.getElementById('proj-client-id');
   const devisSelect = document.getElementById('devis-client-select');
@@ -822,9 +803,7 @@ function updateClientSelects() {
   }
 }
 
-function updateProjectSelects() {
-  // Can be used if additional modals need project lists
-}
+function updateProjectSelects() {}
 
 // ==========================================
 // SEARCH & FILTER
@@ -857,7 +836,6 @@ function initSearch() {
     }
   });
 
-  // Shortcut Cmd+K / Ctrl+K
   window.addEventListener('keydown', (e) => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
       e.preventDefault();
@@ -865,7 +843,6 @@ function initSearch() {
     }
   });
 
-  // Filter pills on projects
   const pills = document.querySelectorAll('#projects-filter-pills .filter-pill');
   pills.forEach(pill => {
     pill.addEventListener('click', () => {
@@ -908,7 +885,6 @@ function closeModal(id) {
   if (modal) modal.classList.remove('active');
 }
 
-// Utility: escape HTML
 function escapeHtml(str) {
   if (!str) return '';
   return String(str)
