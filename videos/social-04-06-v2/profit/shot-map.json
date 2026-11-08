@@ -1,0 +1,51 @@
+[
+  {
+    "start": 0,
+    "end": 6,
+    "action": "Printed sales ribbon emerges, oversized question contrasts sales with profit.",
+    "voiceover": "مئة ألف دينار من المبيعات. رقم جميل... لكنه لا يعني مئة ألف من الأرباح.",
+    "screen_copy": [
+      "100 000 دج",
+      "مبيعات ≠ أرباح"
+    ]
+  },
+  {
+    "start": 6,
+    "end": 16,
+    "action": "A fixed100-unit ribbon separates60units for goods cost;40remain on the same scale.",
+    "voiceover": "لنأخذ مثالًا مبسطًا: السلع المباعة كلّفت ستين ألف دينار؛ يتبقّى أربعون ألفًا، قبل مصاريف التشغيل.",
+    "screen_copy": [
+      "100 000 دج",
+      "60 000 دج",
+      "40 000 دج",
+      "تكلفة السلع"
+    ]
+  },
+  {
+    "start": 16,
+    "end": 24.5,
+    "action": "Separate15additionalunits for expenses of the sameperiod,25remain.",
+    "voiceover": "نطرح الآن خمسة عشر ألفًا لمصاريف الفترة نفسها. المتبقي: خمسة وعشرون ألف دينار.",
+    "screen_copy": [
+      "15 000 دج",
+      "25 000 دج",
+      "مصاريف الفترة"
+    ]
+  },
+  {
+    "start": 24.5,
+    "end": 36,
+    "action": "Reveal complete ledger, then contrast missingexpense with recordedexpense using consistent scale.",
+    "voiceover": "يجمع النظام المبيعات والتكاليف والمصاريف. لكن، إن نسيت تسجيل جزء منها، فستحصل على صورة ناقصة... حتى لو كانت العملية الحسابية صحيحة.",
+    "screen_copy": [
+      "المبيعات",
+      "تكلفة السلع",
+      "المصاريف",
+      "المتبقّي",
+      "100 000 − 60 000 − 15 000 = 25 000 دج",
+      "بيانات كاملة. صورة أوضح.",
+      "مثال مبسّط، قبل أي تكاليف أو ضرائب أخرى.",
+      "VISION"
+    ]
+  }
+]

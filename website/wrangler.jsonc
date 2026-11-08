@@ -1,0 +1,10 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "vision",
+  "account_id": "73b22fc72b6c98643bbab88ae6dbbfad",
+  "compatibility_date": "2026-10-26",
+  "workers_dev": true,
+  "assets": {
+    "directory": "./deploy"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "preset_id": "editorial-collage",
+  "template_version": 4,
+  "source_prompt_path": "C:\\Users\\Computs\\.codex\\skills\\motion-design\\references\\source-prompts\\editorial-collage.txt",
+  "source_prompt_sha256": "f4d3da928460d8eb3c17e3aaabe8029178bac9e1333e21258d26d6b8e308b413",
+  "source_prompt_read_in_full": true,
+  "adaptation_guide_read_in_full": true,
+  "source_article": "https://higgsfield.ai/@adilinthewildtempo/blogs/claude-fable-5-1-higgsfield-marketing-studio-300-day",
+  "source_preview": "https://d2ol7oe51mr4n9.cloudfront.net/user_3DiY2MbHSIvzM3FG2DOgC6Cf2MM/61a1f7e8-0a71-4f07-87de-8c75b4c69c34.mp4",
+  "source_preview_playback_inspection": "not completed; local-gallery navigation denied by browser URL policy; public preview opened but media inspection timed out",
+  "actual_film_generated": false,
+  "departures": [
+    "Source recorded-voice science story replaced with a fictional financial arithmetic example. No scientific claims or50/50stats inherited.",
+    "Four compositions and three silhouette-match cuts retained; authored36s portrait timing, not a claim about source timing.",
+    "Photographic face replaced by the same paper ledger as a recurring narrative subject. This is a custom editorial adaptation.",
+    "Cobalt/orange/yellow source hues replaced by VISION cyan, warm ivory and ink while retaining matte print and one dominant background at a time.",
+    "User-requested Fusha female narration; no advertising endcard."
+  ]
+}

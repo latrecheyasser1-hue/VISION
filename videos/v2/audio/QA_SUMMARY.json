@@ -1,0 +1,35 @@
+{
+  "intro": {
+    "duration": 34.666666666666664,
+    "sample_rate": 48000,
+    "channels": 2,
+    "peak_dbfs": -1.052,
+    "clipped_samples": 0,
+    "lufs": "-13.99",
+    "true_peak": "-1.10",
+    "music_under_speech_db": -11.632785234740872,
+    "speech_speed_vs_v1": 1.517162183419852
+  },
+  "ecommerce": {
+    "duration": 47.333333333333336,
+    "sample_rate": 48000,
+    "channels": 2,
+    "peak_dbfs": -1.102,
+    "clipped_samples": 0,
+    "lufs": "-14.19",
+    "true_peak": "-1.10",
+    "music_under_speech_db": -11.635901861817409,
+    "speech_speed_vs_v1": 1.5012330947604289
+  },
+  "systems": {
+    "duration": 50.3,
+    "sample_rate": 48000,
+    "channels": 2,
+    "peak_dbfs": -1.103,
+    "clipped_samples": 0,
+    "lufs": "-14.01",
+    "true_peak": "-1.10",
+    "music_under_speech_db": -11.633822513233962,
+    "speech_speed_vs_v1": 1.5027589690471168
+  }
+}

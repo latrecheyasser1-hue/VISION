@@ -1,0 +1,38 @@
+{
+  "intro": {
+    "duration": 29.666666666666668,
+    "voice": "ar-DZ-IsmaelNeural",
+    "lufs": "-14.36",
+    "true_peak_db": "-1.20",
+    "sample_peak_dbfs": -1.186652588216725,
+    "clipped_samples": 0,
+    "music_under_speech_rms_db": -10.0,
+    "hits": 35,
+    "channels": 2,
+    "sample_rate": 48000
+  },
+  "commerce": {
+    "duration": 37.56666666666667,
+    "voice": "ar-DZ-IsmaelNeural",
+    "lufs": "-14.17",
+    "true_peak_db": "-1.20",
+    "sample_peak_dbfs": -1.1904684997957498,
+    "clipped_samples": 0,
+    "music_under_speech_rms_db": -10.0,
+    "hits": 55,
+    "channels": 2,
+    "sample_rate": 48000
+  },
+  "systems": {
+    "duration": 40.86666666666667,
+    "voice": "ar-DZ-IsmaelNeural",
+    "lufs": "-14.58",
+    "true_peak_db": "-1.20",
+    "sample_peak_dbfs": -1.1822795306212277,
+    "clipped_samples": 0,
+    "music_under_speech_rms_db": -9.999999999999998,
+    "hits": 52,
+    "channels": 2,
+    "sample_rate": 48000
+  }
+}

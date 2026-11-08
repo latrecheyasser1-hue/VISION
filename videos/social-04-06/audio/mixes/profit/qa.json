@@ -1,0 +1,251 @@
+{
+  "id": "profit",
+  "duration": 27.7,
+  "sample_rate": 48000,
+  "channels": 2,
+  "voice": "ar-DZ-IsmaelNeural",
+  "speech_provider": "Microsoft Edge online speech",
+  "pitch": "unmodified",
+  "post_tempo": 1.12,
+  "music_source": "../v3/sound/music.wav from approved connected catalog",
+  "music_under_speech_rms_db": -10.0,
+  "real_voice_sidechain": true,
+  "master_peak_dbfs": -1.1732591207881093,
+  "clipped_samples": 0,
+  "loudness": {
+    "input_i": "-16.07",
+    "input_tp": "-0.42",
+    "input_lra": "2.40",
+    "input_thresh": "-26.18",
+    "output_i": "-14.34",
+    "output_tp": "-1.20",
+    "output_lra": "2.30",
+    "output_thresh": "-24.44",
+    "normalization_type": "dynamic",
+    "target_offset": "0.34"
+  },
+  "speech": [
+    {
+      "scene": 1,
+      "source": "audio/microsoft/profit/scene-01.wav",
+      "start": 0.18,
+      "duration": 3.799875,
+      "gain_db": 5.255135768627794
+    },
+    {
+      "scene": 2,
+      "source": "audio/microsoft/profit/scene-02.wav",
+      "start": 4.446667,
+      "duration": 5.188875,
+      "gain_db": 5.3950730476227875
+    },
+    {
+      "scene": 3,
+      "source": "audio/microsoft/profit/scene-03.wav",
+      "start": 10.08,
+      "duration": 4.893875,
+      "gain_db": 5.358162719629707
+    },
+    {
+      "scene": 4,
+      "source": "audio/microsoft/profit/scene-04.wav",
+      "start": 15.446667,
+      "duration": 6.180125,
+      "gain_db": 5.171050816553338
+    },
+    {
+      "scene": 5,
+      "source": "audio/microsoft/profit/scene-05.wav",
+      "start": 22.08,
+      "duration": 4.159166666666667,
+      "gain_db": 5.079043327801902
+    }
+  ],
+  "hits": [
+    {
+      "time": 0.35,
+      "kind": "impact",
+      "level": 0.75,
+      "pan": 0,
+      "clip_start": 0.34199999999999997,
+      "peak_offset": 0.008,
+      "nominal_peak_dbfs": -11.498774732165998
+    },
+    {
+      "time": 2.9013333333333335,
+      "kind": "click",
+      "level": 0.8,
+      "pan": 0,
+      "clip_start": 2.8363333333333336,
+      "peak_offset": 0.065,
+      "nominal_peak_dbfs": -16.93820026016113
+    },
+    {
+      "time": 3.072,
+      "kind": "pop",
+      "level": 0.7,
+      "pan": 0,
+      "clip_start": 3.0220000000000002,
+      "peak_offset": 0.05,
+      "nominal_peak_dbfs": -15.098039199714863
+    },
+    {
+      "time": 6.745333666666667,
+      "kind": "whoosh",
+      "level": 0.7,
+      "pan": -0.35,
+      "clip_start": 6.635333666666667,
+      "peak_offset": 0.11,
+      "nominal_peak_dbfs": -13.098039199714863
+    },
+    {
+      "time": 7.928333666666667,
+      "kind": "impact",
+      "level": 0.6,
+      "pan": 0,
+      "clip_start": 7.920333666666667,
+      "peak_offset": 0.008,
+      "nominal_peak_dbfs": -13.436974992327128
+    },
+    {
+      "time": 4.266667,
+      "kind": "whoosh",
+      "level": 0.65,
+      "pan": 0.4,
+      "clip_start": 4.156667,
+      "peak_offset": 0.11,
+      "nominal_peak_dbfs": -13.741732867142888
+    },
+    {
+      "time": 12.207666666666666,
+      "kind": "whoosh",
+      "level": 0.7,
+      "pan": -0.25,
+      "clip_start": 12.097666666666667,
+      "peak_offset": 0.11,
+      "nominal_peak_dbfs": -13.098039199714863
+    },
+    {
+      "time": 13.442,
+      "kind": "success",
+      "level": 0.65,
+      "pan": 0,
+      "clip_start": 13.435,
+      "peak_offset": 0.007,
+      "nominal_peak_dbfs": -15.741732867142888
+    },
+    {
+      "time": 9.9,
+      "kind": "whoosh",
+      "level": 0.65,
+      "pan": -0.4,
+      "clip_start": 9.790000000000001,
+      "peak_offset": 0.11,
+      "nominal_peak_dbfs": -13.741732867142888
+    },
+    {
+      "time": 16.747000333333332,
+      "kind": "click",
+      "level": 0.55,
+      "pan": 0.3,
+      "clip_start": 16.68200033333333,
+      "peak_offset": 0.065,
+      "nominal_peak_dbfs": -20.19274621011512
+    },
+    {
+      "time": 17.808333666666666,
+      "kind": "click",
+      "level": 0.55,
+      "pan": -0.3,
+      "clip_start": 17.743333666666665,
+      "peak_offset": 0.065,
+      "nominal_peak_dbfs": -20.19274621011512
+    },
+    {
+      "time": 18.869667,
+      "kind": "click",
+      "level": 0.55,
+      "pan": 0.3,
+      "clip_start": 18.804667,
+      "peak_offset": 0.065,
+      "nominal_peak_dbfs": -20.19274621011512
+    },
+    {
+      "time": 19.114000333333333,
+      "kind": "scan",
+      "level": 0.45,
+      "pan": 0,
+      "clip_start": 19.110000333333332,
+      "peak_offset": 0.004,
+      "nominal_peak_dbfs": -19.935749724493128
+    },
+    {
+      "time": 20.042667,
+      "kind": "success",
+      "level": 0.55,
+      "pan": 0,
+      "clip_start": 20.035667,
+      "peak_offset": 0.007,
+      "nominal_peak_dbfs": -17.19274621011512
+    },
+    {
+      "time": 15.266667,
+      "kind": "whoosh",
+      "level": 0.65,
+      "pan": 0.4,
+      "clip_start": 15.156667,
+      "peak_offset": 0.11,
+      "nominal_peak_dbfs": -13.741732867142888
+    },
+    {
+      "time": 23.878,
+      "kind": "click",
+      "level": 0.75,
+      "pan": 0,
+      "clip_start": 23.813,
+      "peak_offset": 0.065,
+      "nominal_peak_dbfs": -17.498774732165998
+    },
+    {
+      "time": 24.522,
+      "kind": "scan",
+      "level": 0.45,
+      "pan": 0,
+      "clip_start": 24.517999999999997,
+      "peak_offset": 0.004,
+      "nominal_peak_dbfs": -19.935749724493128
+    },
+    {
+      "time": 25.212,
+      "kind": "success",
+      "level": 0.6,
+      "pan": 0,
+      "clip_start": 25.205,
+      "peak_offset": 0.007,
+      "nominal_peak_dbfs": -16.43697499232713
+    },
+    {
+      "time": 21.9,
+      "kind": "whoosh",
+      "level": 0.65,
+      "pan": -0.4,
+      "clip_start": 21.79,
+      "peak_offset": 0.11,
+      "nominal_peak_dbfs": -13.741732867142888
+    },
+    {
+      "time": 26.5,
+      "kind": "whoosh",
+      "level": 0.65,
+      "pan": 0.4,
+      "clip_start": 26.39,
+      "peak_offset": 0.11,
+      "nominal_peak_dbfs": -13.741732867142888
+    }
+  ],
+  "stem_peaks_dbfs": {
+    "voice": -0.5374429500366382,
+    "music": -5.899694090715349,
+    "effects": -11.498774057362152
+  }
+}

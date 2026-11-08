@@ -1,0 +1,68 @@
+[
+  {
+    "time": 0.9,
+    "kind": "mechanical",
+    "level": 0.5,
+    "pan": 0
+  },
+  {
+    "time": 8.133333,
+    "kind": "stretch",
+    "level": 1,
+    "pan": 0
+  },
+  {
+    "time": 12.633333,
+    "kind": "mechanical",
+    "level": 1,
+    "pan": 0
+  },
+  {
+    "time": 17.416667,
+    "kind": "print",
+    "level": 1,
+    "pan": 0
+  },
+  {
+    "time": 21.9,
+    "kind": "mechanical",
+    "level": 0.6,
+    "pan": 0
+  },
+  {
+    "time": 25.233333,
+    "kind": "click",
+    "level": 0.5,
+    "pan": 0
+  },
+  {
+    "time": 30.133333,
+    "kind": "mechanical",
+    "level": 1,
+    "pan": 0
+  },
+  {
+    "time": 30.833333,
+    "kind": "stamp",
+    "level": 1,
+    "pan": 0
+  },
+  {
+    "time": 32.233333,
+    "kind": "click",
+    "level": 1,
+    "pan": 0
+  },
+  {
+    "time": 40.466667,
+    "kind": "mechanical",
+    "level": 1,
+    "pan": 0
+  },
+  {
+    "time": 40.766667,
+    "kind": "resolve",
+    "level": 0.7,
+    "pan": 0
+  }
+]

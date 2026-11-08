@@ -1,0 +1,1038 @@
+[
+  {
+    "start": 0,
+    "duration": 43.6,
+    "targets": [
+      "rule-fill"
+    ],
+    "properties": [
+      "scaleX",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 0.1,
+    "duration": 0.7,
+    "targets": [
+      "wordmark"
+    ],
+    "properties": [
+      "y",
+      "opacity",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 0.12,
+    "duration": 1.2,
+    "targets": [
+      "stackcam"
+    ],
+    "properties": [
+      "scale",
+      "rotation",
+      "y",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 0.15,
+    "duration": 0.8,
+    "targets": [
+      "rule"
+    ],
+    "properties": [
+      "scaleX",
+      "transformOrigin",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 0.15,
+    "duration": 0.3,
+    "targets": [
+      "title0"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 0.15,
+    "duration": 0.75,
+    "targets": [
+      "title0"
+    ],
+    "properties": [
+      "x",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 0.335,
+    "duration": 0.08,
+    "targets": [
+      "cap0"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 0.4,
+    "duration": 0.8,
+    "targets": [
+      "undo-button"
+    ],
+    "properties": [
+      "y",
+      "scale",
+      "opacity",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 4.302875,
+    "duration": 0.08,
+    "targets": [
+      "cap1"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 4.422874,
+    "duration": 0.08,
+    "targets": [
+      "cap0"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 6.356416,
+    "duration": 0.08,
+    "targets": [
+      "cap2"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 6.476416,
+    "duration": 0.08,
+    "targets": [
+      "cap1"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 7.101416,
+    "duration": 0.08,
+    "targets": [
+      "cap2"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 7.633333,
+    "duration": 0.15,
+    "targets": [
+      "title0"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 7.633333,
+    "duration": 0.7,
+    "targets": [
+      "undo-button"
+    ],
+    "properties": [
+      "y",
+      "scale",
+      "opacity"
+    ]
+  },
+  {
+    "start": 7.633333,
+    "duration": 1.3,
+    "targets": [
+      "stackcam"
+    ],
+    "properties": [
+      "scale",
+      "y",
+      "rotation"
+    ]
+  },
+  {
+    "start": 7.783333,
+    "duration": 0.3,
+    "targets": [
+      "title1"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 7.783333,
+    "duration": 0.75,
+    "targets": [
+      "title1"
+    ],
+    "properties": [
+      "x",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 7.833333,
+    "duration": 1.8,
+    "targets": [
+      "invoice"
+    ],
+    "properties": [
+      "y"
+    ]
+  },
+  {
+    "start": 7.833333,
+    "duration": 1.8,
+    "targets": [
+      "sales"
+    ],
+    "properties": [
+      "y"
+    ]
+  },
+  {
+    "start": 7.833333,
+    "duration": 1.8,
+    "targets": [
+      "audit"
+    ],
+    "properties": [
+      "y"
+    ]
+  },
+  {
+    "start": 7.968333,
+    "duration": 0.08,
+    "targets": [
+      "cap3"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 9.133333,
+    "duration": 0.3,
+    "targets": [
+      "callout"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 9.894333,
+    "duration": 0.08,
+    "targets": [
+      "cap4"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 10.014332,
+    "duration": 0.08,
+    "targets": [
+      "cap3"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 11.124041,
+    "duration": 0.08,
+    "targets": [
+      "cap4"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 11.633333,
+    "duration": 0.15,
+    "targets": [
+      "title1"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 11.633333,
+    "duration": 1.05,
+    "targets": [
+      "stackcam"
+    ],
+    "properties": [
+      "scale",
+      "y"
+    ]
+  },
+  {
+    "start": 11.633333,
+    "duration": 0.3,
+    "targets": [
+      "callout"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 11.783333,
+    "duration": 0.3,
+    "targets": [
+      "title2"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 11.783333,
+    "duration": 0.75,
+    "targets": [
+      "title2"
+    ],
+    "properties": [
+      "x",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 11.968333,
+    "duration": 0.08,
+    "targets": [
+      "cap5"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 12.533333,
+    "duration": 0.65,
+    "targets": [
+      "unit"
+    ],
+    "properties": [
+      "x",
+      "y",
+      "rotation",
+      "opacity"
+    ]
+  },
+  {
+    "start": 15.246374,
+    "duration": 0.08,
+    "targets": [
+      "cap6"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 15.366374,
+    "duration": 0.08,
+    "targets": [
+      "cap5"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 16.055165,
+    "duration": 0.08,
+    "targets": [
+      "cap6"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 16.566667,
+    "duration": 0.15,
+    "targets": [
+      "title2"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 16.566667,
+    "duration": 0.85,
+    "targets": [
+      "stackcam"
+    ],
+    "properties": [
+      "y",
+      "scale"
+    ]
+  },
+  {
+    "start": 16.716667,
+    "duration": 0.3,
+    "targets": [
+      "title3"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 16.716667,
+    "duration": 0.75,
+    "targets": [
+      "title3"
+    ],
+    "properties": [
+      "x",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 16.901667,
+    "duration": 0.08,
+    "targets": [
+      "cap7"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 17.216667,
+    "duration": 0.65,
+    "targets": [
+      "",
+      "",
+      "",
+      ""
+    ],
+    "properties": [
+      "scaleX",
+      "transformOrigin",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 19.541958,
+    "duration": 0.08,
+    "targets": [
+      "cap8"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 19.661958,
+    "duration": 0.08,
+    "targets": [
+      "cap7"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 20.388999,
+    "duration": 0.08,
+    "targets": [
+      "cap8"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 20.9,
+    "duration": 0.15,
+    "targets": [
+      "title3"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 20.9,
+    "duration": 0.85,
+    "targets": [
+      "stackcam"
+    ],
+    "properties": [
+      "y",
+      "scale"
+    ]
+  },
+  {
+    "start": 21.05,
+    "duration": 0.3,
+    "targets": [
+      "title4"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 21.05,
+    "duration": 0.75,
+    "targets": [
+      "title4"
+    ],
+    "properties": [
+      "x",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 21.235,
+    "duration": 0.08,
+    "targets": [
+      "cap9"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 21.6,
+    "duration": 0.84,
+    "targets": [
+      "",
+      "",
+      ""
+    ],
+    "properties": [
+      "scaleY",
+      "transformOrigin",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 22.905916,
+    "duration": 0.08,
+    "targets": [
+      "cap10"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 23.025916,
+    "duration": 0.08,
+    "targets": [
+      "cap9"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 23.829499,
+    "duration": 0.08,
+    "targets": [
+      "cap10"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 24.333333,
+    "duration": 0.15,
+    "targets": [
+      "title4"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 24.333333,
+    "duration": 0.9,
+    "targets": [
+      "stackcam"
+    ],
+    "properties": [
+      "y",
+      "scale"
+    ]
+  },
+  {
+    "start": 24.483333,
+    "duration": 0.3,
+    "targets": [
+      "title5"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 24.483333,
+    "duration": 0.75,
+    "targets": [
+      "title5"
+    ],
+    "properties": [
+      "x",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 24.668333,
+    "duration": 0.08,
+    "targets": [
+      "cap11"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 25.033333,
+    "duration": 0.55,
+    "targets": [
+      "history-row"
+    ],
+    "properties": [
+      "x",
+      "opacity",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 26.849458,
+    "duration": 0.08,
+    "targets": [
+      "cap12"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 26.969458,
+    "duration": 0.08,
+    "targets": [
+      "cap11"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 28.130166,
+    "duration": 0.08,
+    "targets": [
+      "cap12"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 28.633333,
+    "duration": 0.15,
+    "targets": [
+      "title5"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 28.633333,
+    "duration": 1.1,
+    "targets": [
+      "stackcam"
+    ],
+    "properties": [
+      "y",
+      "scale"
+    ]
+  },
+  {
+    "start": 28.783333,
+    "duration": 0.3,
+    "targets": [
+      "title6"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 28.783333,
+    "duration": 0.75,
+    "targets": [
+      "title6"
+    ],
+    "properties": [
+      "x",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 28.968333,
+    "duration": 0.08,
+    "targets": [
+      "cap13"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 29.733333,
+    "duration": 0.7,
+    "targets": [
+      "unit"
+    ],
+    "properties": [
+      "x",
+      "y",
+      "rotation",
+      "opacity"
+    ]
+  },
+  {
+    "start": 30.033333,
+    "duration": 0.3,
+    "targets": [
+      "layer-old"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 30.133333,
+    "duration": 0.3,
+    "targets": [
+      "layer-new"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 30.833333,
+    "duration": 0.3,
+    "targets": [
+      "canceled"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 30.833333,
+    "duration": 0.35,
+    "targets": [
+      "canceled"
+    ],
+    "properties": [
+      "scale",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 31.433333,
+    "duration": 0.3,
+    "targets": [
+      "layer-old"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 31.433333,
+    "duration": 0.65,
+    "targets": [
+      "",
+      "",
+      ""
+    ],
+    "properties": [
+      "scaleY",
+      "transformOrigin"
+    ]
+  },
+  {
+    "start": 31.533333,
+    "duration": 0.3,
+    "targets": [
+      "layer-new"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 32.233333,
+    "duration": 0.3,
+    "targets": [
+      "history-row new-history"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 32.743833,
+    "duration": 0.08,
+    "targets": [
+      "cap14"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 32.863832,
+    "duration": 0.08,
+    "targets": [
+      "cap13"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 33.033333,
+    "duration": 1.1,
+    "targets": [
+      "stackcam"
+    ],
+    "properties": [
+      "y",
+      "scale"
+    ]
+  },
+  {
+    "start": 35.678541,
+    "duration": 0.08,
+    "targets": [
+      "cap15"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 35.798541,
+    "duration": 0.08,
+    "targets": [
+      "cap14"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 38.834249,
+    "duration": 0.08,
+    "targets": [
+      "cap15"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 39.366667,
+    "duration": 0.15,
+    "targets": [
+      "title6"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 39.366667,
+    "duration": 1,
+    "targets": [
+      "stackcam"
+    ],
+    "properties": [
+      "y",
+      "scale"
+    ]
+  },
+  {
+    "start": 39.366667,
+    "duration": 1.1,
+    "targets": [
+      "audit"
+    ],
+    "properties": [
+      "y"
+    ]
+  },
+  {
+    "start": 39.486667,
+    "duration": 0.95,
+    "targets": [
+      "sales"
+    ],
+    "properties": [
+      "y"
+    ]
+  },
+  {
+    "start": 39.516667,
+    "duration": 0.3,
+    "targets": [
+      "title7"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 39.516667,
+    "duration": 0.75,
+    "targets": [
+      "title7"
+    ],
+    "properties": [
+      "x",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 39.606667,
+    "duration": 0.8,
+    "targets": [
+      "invoice"
+    ],
+    "properties": [
+      "y"
+    ]
+  },
+  {
+    "start": 39.701667,
+    "duration": 0.08,
+    "targets": [
+      "cap16"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 40.416667,
+    "duration": 0.3,
+    "targets": [
+      "lockup"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 40.416667,
+    "duration": 0.8,
+    "targets": [
+      "lockup"
+    ],
+    "properties": [
+      "y",
+      "scale",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 40.766667,
+    "duration": 0.3,
+    "targets": [
+      "outcome"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 41.87525,
+    "duration": 0.08,
+    "targets": [
+      "cap16"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 43.6,
+    "duration": 0,
+    "targets": [
+      "invoice"
+    ],
+    "properties": [
+      "y",
+      "repeat"
+    ]
+  },
+  {
+    "start": 43.6,
+    "duration": 0,
+    "targets": [
+      "sales"
+    ],
+    "properties": [
+      "y",
+      "repeat"
+    ]
+  },
+  {
+    "start": 43.6,
+    "duration": 0,
+    "targets": [
+      "audit"
+    ],
+    "properties": [
+      "y",
+      "repeat"
+    ]
+  }
+]

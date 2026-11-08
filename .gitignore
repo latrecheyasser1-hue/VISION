@@ -1,0 +1,24 @@
+# Dependencies & Build
+node_modules/
+dist/
+
+# Neon & Environment Secrets
+.neon/
+.env
+.env*.local
+
+# Python Runtimes & Caches
+**/runtime/
+**/__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Logs
+debug.log
+*.log
+
+# System & IDE
+.system_generated/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,7 @@
+{
+  "name": "vision-public-website",
+  "version": "0.1.0",
+  "private": true,
+  "description": "VISION public website — mobile-first interactive preview",
+  "scripts": {"dev": "node server.mjs", "check": "node --check public/app.js && node --check public/explore.js && node --check server.mjs"}
+}

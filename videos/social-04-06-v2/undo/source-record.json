@@ -1,0 +1,19 @@
+{
+  "preset_id": "exploded-product",
+  "template_version": 4,
+  "source_prompt_path": "C:\\Users\\Computs\\.codex\\skills\\motion-design\\references\\source-prompts\\exploded-product.txt",
+  "source_prompt_sha256": "c6cf3a9b64bc289fd05a91ee50112bbc51a32c8ddab6259097d632a62651e7c7",
+  "source_prompt_read_in_full": true,
+  "adaptation_guide_read_in_full": true,
+  "source_article": "https://higgsfield.ai/@adilinthewildtempo/blogs/claude-fable-5-1-higgsfield-marketing-studio-300-day",
+  "source_preview": "https://d2ol7oe51mr4n9.cloudfront.net/user_3DiY2MbHSIvzM3FG2DOgC6Cf2MM/9eb4a7a5-d79c-459a-8a8d-593e912aa7a3.mp4",
+  "source_preview_playback_inspection": "not completed; local-gallery navigation denied by browser URL policy; public preview opened but media inspection timed out",
+  "actual_film_generated": false,
+  "departures": [
+    "Real watch replaced by explicitly fictional transaction assembly; no engineering or watch specifications transferred.",
+    "Pure black void replaced with high-key pearl-white studio and ink/cyan objects per VISION light preference.",
+    "One continuous route with four macro stops retained but retimed to34s and given stateful reversal rather than cosmetic reassembly.",
+    "User-requested MSA narration added, source operating watch sounds removed.",
+    "Audit trail survives reversal: reassembly must not imply deletion of history."
+  ]
+}

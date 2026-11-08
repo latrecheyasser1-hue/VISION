@@ -1,0 +1,23 @@
+{
+  "film": "request",
+  "voice": "ar-SA-HamedNeural",
+  "rate": "+6%",
+  "music": "original locally synthesized score",
+  "bpm": 112,
+  "speechDucking": true,
+  "effectCount": 12,
+  "peakDbFS": -1.1908235549926758,
+  "clippedSamples": 0,
+  "normalization": {
+    "input_i": "-17.19",
+    "input_tp": "-0.44",
+    "input_lra": "3.50",
+    "input_thresh": "-27.38",
+    "output_i": "-14.33",
+    "output_tp": "-1.20",
+    "output_lra": "2.70",
+    "output_thresh": "-24.43",
+    "normalization_type": "dynamic",
+    "target_offset": "0.33"
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "errors": [],
+  "reports": [
+    {
+      "scene": 1,
+      "phase": 0.28,
+      "time": 1.3346666666666667,
+      "outOfFrameText": []
+    },
+    {
+      "scene": 1,
+      "phase": 0.82,
+      "time": 3.9086666666666665,
+      "outOfFrameText": []
+    },
+    {
+      "scene": 2,
+      "phase": 0.28,
+      "time": 6.568000333333334,
+      "outOfFrameText": []
+    },
+    {
+      "scene": 2,
+      "phase": 0.82,
+      "time": 10.042000333333334,
+      "outOfFrameText": []
+    },
+    {
+      "scene": 3,
+      "phase": 0.28,
+      "time": 13.02,
+      "outOfFrameText": []
+    },
+    {
+      "scene": 3,
+      "phase": 0.82,
+      "time": 16.53,
+      "outOfFrameText": []
+    },
+    {
+      "scene": 4,
+      "phase": 0.28,
+      "time": 19.081333333333333,
+      "outOfFrameText": []
+    },
+    {
+      "scene": 4,
+      "phase": 0.82,
+      "time": 21.745333333333335,
+      "outOfFrameText": []
+    },
+    {
+      "scene": 5,
+      "phase": 0.28,
+      "time": 24.126666333333333,
+      "outOfFrameText": []
+    },
+    {
+      "scene": 5,
+      "phase": 0.82,
+      "time": 27.006666333333335,
+      "outOfFrameText": []
+    },
+    {
+      "scene": 6,
+      "phase": 0.28,
+      "time": 28.302667,
+      "outOfFrameText": []
+    },
+    {
+      "scene": 6,
+      "phase": 0.82,
+      "time": 28.950667,
+      "outOfFrameText": []
+    }
+  ],
+  "captionQA": []
+}

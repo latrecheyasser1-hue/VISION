@@ -1,0 +1,9 @@
+{
+  "name": "vision-public-website",
+  "version": "0.2.0",
+  "private": true,
+  "scripts": {
+    "dev": "node server.mjs",
+    "check": "node --check app.js && node --check explore.js && node --check server.mjs"
+  }
+}

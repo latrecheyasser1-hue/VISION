@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "errors": [],
+  "warnings": [],
+  "contrastFailures": 0,
+  "_meta": {
+    "version": "0.6.70",
+    "latestVersion": "0.8.184",
+    "updateAvailable": true
+  }
+}

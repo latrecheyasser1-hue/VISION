@@ -1,0 +1,217 @@
+{
+  "sample_rate": 48000,
+  "channels": 2,
+  "narration_offset": 0.75,
+  "videos": {
+    "intro": {
+      "duration": 61.451,
+      "scenes": [
+        {
+          "scene": 1,
+          "duration": 12.213,
+          "peak_dbfs": -1.72,
+          "rms_dbfs": -19.01,
+          "clipped_samples": 0,
+          "tail_seconds": 1.45,
+          "longest_silence_seconds": 0.64
+        },
+        {
+          "scene": 2,
+          "duration": 11.838,
+          "peak_dbfs": -1.72,
+          "rms_dbfs": -18.72,
+          "clipped_samples": 0,
+          "tail_seconds": 1.45,
+          "longest_silence_seconds": 0.58
+        },
+        {
+          "scene": 3,
+          "duration": 4.748,
+          "peak_dbfs": -1.72,
+          "rms_dbfs": -18.37,
+          "clipped_samples": 0,
+          "tail_seconds": 2.502,
+          "longest_silence_seconds": 0.381
+        },
+        {
+          "scene": 4,
+          "duration": 11.607,
+          "peak_dbfs": -1.72,
+          "rms_dbfs": -19.2,
+          "clipped_samples": 0,
+          "tail_seconds": 1.643,
+          "longest_silence_seconds": 0.58
+        },
+        {
+          "scene": 5,
+          "duration": 7.817,
+          "peak_dbfs": -1.72,
+          "rms_dbfs": -18.84,
+          "clipped_samples": 0,
+          "tail_seconds": 2.433,
+          "longest_silence_seconds": 0.54
+        }
+      ],
+      "mix_peak_dbfs": -1.5,
+      "mix_clipped_samples": 0,
+      "loudnorm": {
+        "input_i": "-19.16",
+        "input_tp": "-4.57",
+        "input_lra": "8.50",
+        "input_thresh": "-30.78",
+        "output_i": "-16.94",
+        "output_tp": "-1.50",
+        "output_lra": "5.50",
+        "output_thresh": "-28.37",
+        "normalization_type": "dynamic",
+        "target_offset": "-0.06"
+      }
+    },
+    "ecommerce": {
+      "duration": 79.125,
+      "scenes": [
+        {
+          "scene": 1,
+          "duration": 10.104,
+          "peak_dbfs": -1.72,
+          "rms_dbfs": -17.83,
+          "clipped_samples": 0,
+          "tail_seconds": 1.45,
+          "longest_silence_seconds": 0.54
+        },
+        {
+          "scene": 2,
+          "duration": 12.434,
+          "peak_dbfs": -1.72,
+          "rms_dbfs": -18.81,
+          "clipped_samples": 0,
+          "tail_seconds": 1.45,
+          "longest_silence_seconds": 0.46
+        },
+        {
+          "scene": 3,
+          "duration": 9.428,
+          "peak_dbfs": -1.72,
+          "rms_dbfs": -18.36,
+          "clipped_samples": 0,
+          "tail_seconds": 1.45,
+          "longest_silence_seconds": 0.5
+        },
+        {
+          "scene": 4,
+          "duration": 13.486,
+          "peak_dbfs": -1.72,
+          "rms_dbfs": -18.61,
+          "clipped_samples": 0,
+          "tail_seconds": 1.45,
+          "longest_silence_seconds": 0.68
+        },
+        {
+          "scene": 5,
+          "duration": 12.009,
+          "peak_dbfs": -1.72,
+          "rms_dbfs": -18.46,
+          "clipped_samples": 0,
+          "tail_seconds": 1.45,
+          "longest_silence_seconds": 0.62
+        },
+        {
+          "scene": 6,
+          "duration": 8.464,
+          "peak_dbfs": -1.72,
+          "rms_dbfs": -18.18,
+          "clipped_samples": 0,
+          "tail_seconds": 1.45,
+          "longest_silence_seconds": 0.32
+        }
+      ],
+      "mix_peak_dbfs": -2.99,
+      "mix_clipped_samples": 0,
+      "loudnorm": {
+        "input_i": "-18.77",
+        "input_tp": "-4.75",
+        "input_lra": "5.80",
+        "input_thresh": "-29.90",
+        "output_i": "-17.07",
+        "output_tp": "-2.95",
+        "output_lra": "5.30",
+        "output_thresh": "-28.12",
+        "normalization_type": "dynamic",
+        "target_offset": "0.07"
+      }
+    },
+    "systems": {
+      "duration": 83.709,
+      "scenes": [
+        {
+          "scene": 1,
+          "duration": 11.916,
+          "peak_dbfs": -1.72,
+          "rms_dbfs": -18.02,
+          "clipped_samples": 0,
+          "tail_seconds": 1.45,
+          "longest_silence_seconds": 0.36
+        },
+        {
+          "scene": 2,
+          "duration": 13.023,
+          "peak_dbfs": -1.72,
+          "rms_dbfs": -18.9,
+          "clipped_samples": 0,
+          "tail_seconds": 1.45,
+          "longest_silence_seconds": 0.6
+        },
+        {
+          "scene": 3,
+          "duration": 10.13,
+          "peak_dbfs": -1.72,
+          "rms_dbfs": -18.31,
+          "clipped_samples": 0,
+          "tail_seconds": 1.45,
+          "longest_silence_seconds": 0.48
+        },
+        {
+          "scene": 4,
+          "duration": 12.593,
+          "peak_dbfs": -1.72,
+          "rms_dbfs": -17.66,
+          "clipped_samples": 0,
+          "tail_seconds": 1.45,
+          "longest_silence_seconds": 0.56
+        },
+        {
+          "scene": 5,
+          "duration": 12.814,
+          "peak_dbfs": -1.72,
+          "rms_dbfs": -18.68,
+          "clipped_samples": 0,
+          "tail_seconds": 1.45,
+          "longest_silence_seconds": 0.58
+        },
+        {
+          "scene": 6,
+          "duration": 10.033,
+          "peak_dbfs": -1.72,
+          "rms_dbfs": -18.79,
+          "clipped_samples": 0,
+          "tail_seconds": 1.45,
+          "longest_silence_seconds": 0.38
+        }
+      ],
+      "mix_peak_dbfs": -2.55,
+      "mix_clipped_samples": 0,
+      "loudnorm": {
+        "input_i": "-18.75",
+        "input_tp": "-4.70",
+        "input_lra": "8.30",
+        "input_thresh": "-29.86",
+        "output_i": "-17.14",
+        "output_tp": "-2.51",
+        "output_lra": "5.90",
+        "output_thresh": "-28.19",
+        "normalization_type": "dynamic",
+        "target_offset": "0.14"
+      }
+    }
+  }
+}

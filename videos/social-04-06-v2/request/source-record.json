@@ -1,0 +1,19 @@
+{
+  "preset_id": "glass-ui-launch",
+  "template_version": 4,
+  "source_prompt_path": "C:\\Users\\Computs\\.codex\\skills\\motion-design\\references\\source-prompts\\glass-ui-launch.txt",
+  "source_prompt_sha256": "674ac5c53f5b63e7cd449936c55f4095fecec023554ca9a20a9b6564626932ce",
+  "source_prompt_read_in_full": true,
+  "adaptation_guide_read_in_full": true,
+  "source_article": "https://higgsfield.ai/@adilinthewildtempo/blogs/claude-fable-5-1-higgsfield-marketing-studio-300-day",
+  "source_preview": "https://d2ol7oe51mr4n9.cloudfront.net/user_3DiY2MbHSIvzM3FG2DOgC6Cf2MM/fee13558-1de4-46cb-80c6-443935cb8257.mp4",
+  "source_preview_playback_inspection": "not completed; local-gallery navigation denied by browser URL policy; public preview opened but media inspection timed out",
+  "actual_film_generated": false,
+  "departures": [
+    "15 seconds landscape becomes32 seconds portrait to serve Arabic speech and visible causality, not proportional stretching.",
+    "Phone-sales story replaced by one fictional order request. No copied Tepsira labels or metrics.",
+    "Dark studio passage becomes smoked-glass material surrounded by a bright ice-white world, honoring the light VISION direction.",
+    "Arabic narration added explicitly by user; sales CTA removed.",
+    "Three nonquantitative stages replace source metric bars."
+  ]
+}

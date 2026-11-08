@@ -1,0 +1,87 @@
+[
+  {
+    "time": 1.3,
+    "kind": "click",
+    "gain": 1
+  },
+  {
+    "time": 4.233333333333333,
+    "kind": "whoosh",
+    "gain": 0.75
+  },
+  {
+    "time": 5.3333330000000005,
+    "kind": "whoosh",
+    "gain": 0.55
+  },
+  {
+    "time": 6.083333,
+    "kind": "click",
+    "gain": 0.6
+  },
+  {
+    "time": 7.443333000000001,
+    "kind": "click",
+    "gain": 0.7
+  },
+  {
+    "time": 11.433333,
+    "kind": "whoosh",
+    "gain": 0.6
+  },
+  {
+    "time": 13.733333,
+    "kind": "click",
+    "gain": 0.8
+  },
+  {
+    "time": 14.416666333333334,
+    "kind": "whoosh",
+    "gain": 0.8
+  },
+  {
+    "time": 16.196667,
+    "kind": "click",
+    "gain": 0.75
+  },
+  {
+    "time": 17.576667,
+    "kind": "click",
+    "gain": 0.75
+  },
+  {
+    "time": 19.146667,
+    "kind": "click",
+    "gain": 0.75
+  },
+  {
+    "time": 22.86,
+    "kind": "impact",
+    "gain": 0.6
+  },
+  {
+    "time": 25.30333333333333,
+    "kind": "whoosh",
+    "gain": 0.75
+  },
+  {
+    "time": 25.983333000000002,
+    "kind": "impact",
+    "gain": 0.85
+  },
+  {
+    "time": 30.016666333333333,
+    "kind": "whoosh",
+    "gain": 0.65
+  },
+  {
+    "time": 31.566667,
+    "kind": "click",
+    "gain": 0.5
+  },
+  {
+    "time": 34.25000033333333,
+    "kind": "whoosh",
+    "gain": 0.4
+  }
+]

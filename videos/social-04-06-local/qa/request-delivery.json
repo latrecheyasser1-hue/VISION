@@ -1,0 +1,19 @@
+{
+  "file": "C:\\antigravity-projects\\VISION\\videos\\social-04-06-local\\deliverables\\04-VISION-Request-Journey.mp4",
+  "duration": 38.266667,
+  "bytes": 3662506,
+  "dimensions": [
+    1080,
+    1920
+  ],
+  "fps": 30,
+  "audio": "AAC stereo 48 kHz",
+  "fullDecode": "passed",
+  "captions": "burned in plus SRT",
+  "voice": "ar-SA-HamedNeural",
+  "rate": "+6%",
+  "postTempo": 1,
+  "renderer": "local CSS/SVG/GSAP; no Blender, WebGL or Higgsfield",
+  "htmlSha256": "2d818f9537302c247567ba47047303f70dedd01587f1ce8b58abfd1825bd108f",
+  "videoSha256": "1784b271d5b2e6c2624969dd64eab1d5132d473c91410971e2dd6fbaffe239e4"
+}

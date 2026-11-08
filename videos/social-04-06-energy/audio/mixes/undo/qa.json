@@ -1,0 +1,23 @@
+{
+  "film": "undo",
+  "voice": "ar-EG-ShakirNeural",
+  "rate": "+30%",
+  "music": "original locally synthesized score",
+  "bpm": 148,
+  "speechDucking": true,
+  "effectCount": 15,
+  "peakDbFS": -1.1998908519744873,
+  "clippedSamples": 0,
+  "normalization": {
+    "input_i": "-15.51",
+    "input_tp": "-0.87",
+    "input_lra": "3.70",
+    "input_thresh": "-25.66",
+    "output_i": "-14.29",
+    "output_tp": "-1.20",
+    "output_lra": "1.80",
+    "output_thresh": "-24.36",
+    "normalization_type": "dynamic",
+    "target_offset": "0.29"
+  }
+}

@@ -1,0 +1,323 @@
+{
+  "id": "request",
+  "duration": 25.866666666666667,
+  "sample_rate": 48000,
+  "channels": 2,
+  "voice": "ar-DZ-IsmaelNeural",
+  "speech_provider": "Microsoft Edge online speech",
+  "pitch": "unmodified",
+  "post_tempo": 1.12,
+  "music_source": "../v3/sound/music.wav from approved connected catalog",
+  "music_under_speech_rms_db": -9.999999999999998,
+  "real_voice_sidechain": true,
+  "master_peak_dbfs": -1.1991763355946652,
+  "clipped_samples": 0,
+  "loudness": {
+    "input_i": "-16.33",
+    "input_tp": "0.17",
+    "input_lra": "2.60",
+    "input_thresh": "-26.45",
+    "output_i": "-14.60",
+    "output_tp": "-1.20",
+    "output_lra": "2.00",
+    "output_thresh": "-24.73",
+    "normalization_type": "dynamic",
+    "target_offset": "0.60"
+  },
+  "speech": [
+    {
+      "scene": 1,
+      "source": "audio/microsoft/request/scene-01.wav",
+      "start": 0.18,
+      "duration": 3.3100833333333335,
+      "gain_db": 4.924723740897525
+    },
+    {
+      "scene": 2,
+      "source": "audio/microsoft/request/scene-02.wav",
+      "start": 3.946667,
+      "duration": 4.057895833333333,
+      "gain_db": 4.726383261788193
+    },
+    {
+      "scene": 3,
+      "source": "audio/microsoft/request/scene-03.wav",
+      "start": 8.446667,
+      "duration": 4.8080625,
+      "gain_db": 5.022006471036267
+    },
+    {
+      "scene": 4,
+      "source": "audio/microsoft/request/scene-04.wav",
+      "start": 13.713333,
+      "duration": 4.5190625,
+      "gain_db": 5.906783565945828
+    },
+    {
+      "scene": 5,
+      "source": "audio/microsoft/request/scene-05.wav",
+      "start": 18.68,
+      "duration": 5.7017291666666665,
+      "gain_db": 5.081974333715062
+    }
+  ],
+  "hits": [
+    {
+      "time": 1.6196666666666666,
+      "kind": "click",
+      "level": 1,
+      "pan": 0,
+      "clip_start": 1.5546666666666666,
+      "peak_offset": 0.065,
+      "nominal_peak_dbfs": -15.0
+    },
+    {
+      "time": 0.25,
+      "kind": "whoosh",
+      "level": 0.7,
+      "pan": -0.15,
+      "clip_start": 0.14,
+      "peak_offset": 0.11,
+      "nominal_peak_dbfs": -13.098039199714863
+    },
+    {
+      "time": 4.621667,
+      "kind": "pop",
+      "level": 0.65,
+      "pan": 0.3,
+      "clip_start": 4.571667000000001,
+      "peak_offset": 0.05,
+      "nominal_peak_dbfs": -15.741732867142888
+    },
+    {
+      "time": 5.386667,
+      "kind": "whoosh",
+      "level": 0.8,
+      "pan": -0.2,
+      "clip_start": 5.276667,
+      "peak_offset": 0.11,
+      "nominal_peak_dbfs": -11.938200260161128
+    },
+    {
+      "time": 5.836667,
+      "kind": "click",
+      "level": 0.65,
+      "pan": -0.35,
+      "clip_start": 5.771667,
+      "peak_offset": 0.065,
+      "nominal_peak_dbfs": -18.74173286714289
+    },
+    {
+      "time": 6.241667,
+      "kind": "click",
+      "level": 0.65,
+      "pan": 0.35,
+      "clip_start": 6.176666999999999,
+      "peak_offset": 0.065,
+      "nominal_peak_dbfs": -18.74173286714289
+    },
+    {
+      "time": 3.766667,
+      "kind": "whoosh",
+      "level": 0.65,
+      "pan": 0.4,
+      "clip_start": 3.656667,
+      "peak_offset": 0.11,
+      "nominal_peak_dbfs": -13.741732867142888
+    },
+    {
+      "time": 8.616667,
+      "kind": "impact",
+      "level": 0.65,
+      "pan": 0,
+      "clip_start": 8.608667,
+      "peak_offset": 0.008,
+      "nominal_peak_dbfs": -12.741732867142888
+    },
+    {
+      "time": 9.425333666666667,
+      "kind": "scan",
+      "level": 0.45,
+      "pan": -0.15,
+      "clip_start": 9.421333666666667,
+      "peak_offset": 0.004,
+      "nominal_peak_dbfs": -19.935749724493128
+    },
+    {
+      "time": 9.755333666666667,
+      "kind": "click",
+      "level": 0.75,
+      "pan": -0.15,
+      "clip_start": 9.690333666666668,
+      "peak_offset": 0.065,
+      "nominal_peak_dbfs": -17.498774732165998
+    },
+    {
+      "time": 10.505000333333333,
+      "kind": "scan",
+      "level": 0.45,
+      "pan": 0.25,
+      "clip_start": 10.501000333333334,
+      "peak_offset": 0.004,
+      "nominal_peak_dbfs": -19.935749724493128
+    },
+    {
+      "time": 10.835000333333333,
+      "kind": "click",
+      "level": 0.75,
+      "pan": 0.25,
+      "clip_start": 10.770000333333334,
+      "peak_offset": 0.065,
+      "nominal_peak_dbfs": -17.498774732165998
+    },
+    {
+      "time": 11.584667,
+      "kind": "scan",
+      "level": 0.45,
+      "pan": -0.15,
+      "clip_start": 11.580667,
+      "peak_offset": 0.004,
+      "nominal_peak_dbfs": -19.935749724493128
+    },
+    {
+      "time": 11.914667,
+      "kind": "click",
+      "level": 0.75,
+      "pan": -0.15,
+      "clip_start": 11.849667,
+      "peak_offset": 0.065,
+      "nominal_peak_dbfs": -17.498774732165998
+    },
+    {
+      "time": 12.638000333333334,
+      "kind": "success",
+      "level": 0.6,
+      "pan": 0,
+      "clip_start": 12.631000333333334,
+      "peak_offset": 0.007,
+      "nominal_peak_dbfs": -16.43697499232713
+    },
+    {
+      "time": 8.266667,
+      "kind": "whoosh",
+      "level": 0.65,
+      "pan": -0.4,
+      "clip_start": 8.156667,
+      "peak_offset": 0.11,
+      "nominal_peak_dbfs": -13.741732867142888
+    },
+    {
+      "time": 14.923999666666667,
+      "kind": "whoosh",
+      "level": 0.7,
+      "pan": 0.4,
+      "clip_start": 14.813999666666668,
+      "peak_offset": 0.11,
+      "nominal_peak_dbfs": -13.098039199714863
+    },
+    {
+      "time": 15.370999666666668,
+      "kind": "click",
+      "level": 0.8,
+      "pan": 0,
+      "clip_start": 15.305999666666668,
+      "peak_offset": 0.065,
+      "nominal_peak_dbfs": -16.93820026016113
+    },
+    {
+      "time": 16.711999666666667,
+      "kind": "success",
+      "level": 1,
+      "pan": 0.2,
+      "clip_start": 16.704999666666666,
+      "peak_offset": 0.007,
+      "nominal_peak_dbfs": -12.0
+    },
+    {
+      "time": 13.533333,
+      "kind": "whoosh",
+      "level": 0.65,
+      "pan": 0.4,
+      "clip_start": 13.423333000000001,
+      "peak_offset": 0.11,
+      "nominal_peak_dbfs": -13.741732867142888
+    },
+    {
+      "time": 18.72,
+      "kind": "whoosh",
+      "level": 0.8,
+      "pan": 0,
+      "clip_start": 18.61,
+      "peak_offset": 0.11,
+      "nominal_peak_dbfs": -11.938200260161128
+    },
+    {
+      "time": 19.856666666666666,
+      "kind": "pop",
+      "level": 0.55,
+      "pan": -0.2,
+      "clip_start": 19.806666666666665,
+      "peak_offset": 0.05,
+      "nominal_peak_dbfs": -17.19274621011512
+    },
+    {
+      "time": 21.028333333333332,
+      "kind": "pop",
+      "level": 0.55,
+      "pan": 0.2,
+      "clip_start": 20.97833333333333,
+      "peak_offset": 0.05,
+      "nominal_peak_dbfs": -17.19274621011512
+    },
+    {
+      "time": 22.2,
+      "kind": "pop",
+      "level": 0.55,
+      "pan": -0.2,
+      "clip_start": 22.15,
+      "peak_offset": 0.05,
+      "nominal_peak_dbfs": -17.19274621011512
+    },
+    {
+      "time": 22.816666666666666,
+      "kind": "scan",
+      "level": 0.5,
+      "pan": 0.4,
+      "clip_start": 22.812666666666665,
+      "peak_offset": 0.004,
+      "nominal_peak_dbfs": -19.020599913279625
+    },
+    {
+      "time": 18.5,
+      "kind": "whoosh",
+      "level": 0.65,
+      "pan": -0.4,
+      "clip_start": 18.39,
+      "peak_offset": 0.11,
+      "nominal_peak_dbfs": -13.741732867142888
+    },
+    {
+      "time": 24.766667,
+      "kind": "impact",
+      "level": 0.6,
+      "pan": 0,
+      "clip_start": 24.758667000000003,
+      "peak_offset": 0.008,
+      "nominal_peak_dbfs": -13.436974992327128
+    },
+    {
+      "time": 24.666667,
+      "kind": "whoosh",
+      "level": 0.65,
+      "pan": 0.4,
+      "clip_start": 24.556667,
+      "peak_offset": 0.11,
+      "nominal_peak_dbfs": -13.741732867142888
+    }
+  ],
+  "stem_peaks_dbfs": {
+    "voice": -0.5374429500366382,
+    "music": -5.174102769546925,
+    "effects": -11.146386834685984
+  }
+}

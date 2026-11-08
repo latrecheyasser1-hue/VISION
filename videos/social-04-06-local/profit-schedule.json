@@ -1,0 +1,365 @@
+{
+  "id": "profit",
+  "voice": "ar-SA-ZariyahNeural",
+  "rate": "+0%",
+  "postTempo": 1,
+  "speechProvider": "Microsoft Edge speech (online, narration text only)",
+  "duration": 44.7,
+  "scenes": [
+    {
+      "start": 0,
+      "duration": 9.166666666666666,
+      "text": "مئة ألف دينار من المبيعات. رقم جميل... لكنه لا يعني مئة ألف من الأرباح.",
+      "voicePath": "audio/profit/01.wav",
+      "voiceDuration": 8.205,
+      "voiceOffset": 0.3,
+      "words": [
+        {
+          "text": "مئة",
+          "start": 0.035,
+          "duration": 0.375
+        },
+        {
+          "text": "ألف",
+          "start": 0.4225,
+          "duration": 0.3375
+        },
+        {
+          "text": "دينار",
+          "start": 0.7725,
+          "duration": 0.5
+        },
+        {
+          "text": "من",
+          "start": 1.2850000000000001,
+          "duration": 0.1875
+        },
+        {
+          "text": "المبيعات",
+          "start": 1.485,
+          "duration": 0.9
+        },
+        {
+          "text": "رقم",
+          "start": 3.2600000000000002,
+          "duration": 0.4375
+        },
+        {
+          "text": "جميل",
+          "start": 3.71,
+          "duration": 0.65
+        },
+        {
+          "text": "لكنه",
+          "start": 5.234999999999999,
+          "duration": 0.6125
+        },
+        {
+          "text": "لا",
+          "start": 5.859999999999999,
+          "duration": 0.15
+        },
+        {
+          "text": "يعني",
+          "start": 6.0225,
+          "duration": 0.3875
+        },
+        {
+          "text": "مئة",
+          "start": 6.422499999999999,
+          "duration": 0.3375
+        },
+        {
+          "text": "ألف",
+          "start": 6.7725,
+          "duration": 0.3875
+        },
+        {
+          "text": "من",
+          "start": 7.172499999999999,
+          "duration": 0.175
+        },
+        {
+          "text": "الأرباح",
+          "start": 7.359999999999999,
+          "duration": 0.725
+        }
+      ]
+    },
+    {
+      "start": 9.166667,
+      "duration": 10.066666666666666,
+      "text": "لنأخذ مثالًا مبسطًا: السلع المباعة كلّفت ستين ألف دينار؛ يتبقّى أربعون ألفًا، قبل مصاريف التشغيل.",
+      "voicePath": "audio/profit/02.wav",
+      "voiceDuration": 9.0925,
+      "voiceOffset": 0.3,
+      "words": [
+        {
+          "text": "لنأخذ",
+          "start": 0.035,
+          "duration": 0.65
+        },
+        {
+          "text": "مثالًا",
+          "start": 0.6975,
+          "duration": 0.475
+        },
+        {
+          "text": "مبسطًا",
+          "start": 1.185,
+          "duration": 0.7375
+        },
+        {
+          "text": "السلع",
+          "start": 2.185,
+          "duration": 0.475
+        },
+        {
+          "text": "المباعة",
+          "start": 2.6725,
+          "duration": 0.6125
+        },
+        {
+          "text": "كلّفت",
+          "start": 3.2975,
+          "duration": 0.4875
+        },
+        {
+          "text": "ستين",
+          "start": 3.7975,
+          "duration": 0.45
+        },
+        {
+          "text": "ألف",
+          "start": 4.26,
+          "duration": 0.3125
+        },
+        {
+          "text": "دينار",
+          "start": 4.585,
+          "duration": 0.625
+        },
+        {
+          "text": "يتبقّى",
+          "start": 5.422499999999999,
+          "duration": 0.5375
+        },
+        {
+          "text": "أربعون",
+          "start": 5.972499999999999,
+          "duration": 0.55
+        },
+        {
+          "text": "ألفًا",
+          "start": 6.534999999999999,
+          "duration": 0.6
+        },
+        {
+          "text": "قبل",
+          "start": 7.3225,
+          "duration": 0.325
+        },
+        {
+          "text": "مصاريف",
+          "start": 7.659999999999999,
+          "duration": 0.5125
+        },
+        {
+          "text": "التشغيل",
+          "start": 8.185,
+          "duration": 0.7875
+        }
+      ]
+    },
+    {
+      "start": 19.233333,
+      "duration": 9.433333333333334,
+      "text": "نطرح الآن خمسة عشر ألفًا لمصاريف الفترة نفسها. المتبقي: خمسة وعشرون ألف دينار.",
+      "voicePath": "audio/profit/03.wav",
+      "voiceDuration": 8.4675,
+      "voiceOffset": 0.3,
+      "words": [
+        {
+          "text": "نطرح",
+          "start": 0.035,
+          "duration": 0.5
+        },
+        {
+          "text": "الآن",
+          "start": 0.5475000000000001,
+          "duration": 0.4
+        },
+        {
+          "text": "خمسة",
+          "start": 0.96,
+          "duration": 0.475
+        },
+        {
+          "text": "عشر",
+          "start": 1.4475,
+          "duration": 0.375
+        },
+        {
+          "text": "ألفًا",
+          "start": 1.835,
+          "duration": 0.375
+        },
+        {
+          "text": "لمصاريف",
+          "start": 2.2225,
+          "duration": 0.6125
+        },
+        {
+          "text": "الفترة",
+          "start": 2.8475,
+          "duration": 0.575
+        },
+        {
+          "text": "نفسها",
+          "start": 3.435,
+          "duration": 0.6625
+        },
+        {
+          "text": "المتبقي",
+          "start": 4.972499999999999,
+          "duration": 0.975
+        },
+        {
+          "text": "خمسة",
+          "start": 6.1475,
+          "duration": 0.575
+        },
+        {
+          "text": "وعشرون",
+          "start": 6.734999999999999,
+          "duration": 0.6125
+        },
+        {
+          "text": "ألف",
+          "start": 7.359999999999999,
+          "duration": 0.3375
+        },
+        {
+          "text": "دينار",
+          "start": 7.71,
+          "duration": 0.6375
+        }
+      ]
+    },
+    {
+      "start": 28.666667,
+      "duration": 16.033333333333335,
+      "text": "يجمع النظام المبيعات والتكاليف والمصاريف. لكن، إن نسيت تسجيل جزء منها، فستحصل على صورة ناقصة... حتى لو كانت العملية الحسابية صحيحة.",
+      "voicePath": "audio/profit/04.wav",
+      "voiceDuration": 13.8675,
+      "voiceOffset": 0.3,
+      "words": [
+        {
+          "text": "يجمع",
+          "start": 0.035,
+          "duration": 0.475
+        },
+        {
+          "text": "النظام",
+          "start": 0.5225,
+          "duration": 0.4375
+        },
+        {
+          "text": "المبيعات",
+          "start": 0.9725000000000001,
+          "duration": 0.6875
+        },
+        {
+          "text": "والتكاليف",
+          "start": 1.6725,
+          "duration": 0.75
+        },
+        {
+          "text": "والمصاريف",
+          "start": 2.435,
+          "duration": 0.9625
+        },
+        {
+          "text": "لكن",
+          "start": 4.2725,
+          "duration": 0.65
+        },
+        {
+          "text": "إن",
+          "start": 5.1225,
+          "duration": 0.1875
+        },
+        {
+          "text": "نسيت",
+          "start": 5.3225,
+          "duration": 0.5
+        },
+        {
+          "text": "تسجيل",
+          "start": 5.835,
+          "duration": 0.55
+        },
+        {
+          "text": "جزء",
+          "start": 6.3975,
+          "duration": 0.375
+        },
+        {
+          "text": "منها",
+          "start": 6.784999999999999,
+          "duration": 0.5
+        },
+        {
+          "text": "فستحصل",
+          "start": 7.4975,
+          "duration": 0.7625
+        },
+        {
+          "text": "على",
+          "start": 8.2725,
+          "duration": 0.25
+        },
+        {
+          "text": "صورة",
+          "start": 8.535,
+          "duration": 0.4625
+        },
+        {
+          "text": "ناقصة",
+          "start": 9.01,
+          "duration": 0.7375
+        },
+        {
+          "text": "حتى",
+          "start": 10.6225,
+          "duration": 0.3625
+        },
+        {
+          "text": "لو",
+          "start": 10.9975,
+          "duration": 0.1625
+        },
+        {
+          "text": "كانت",
+          "start": 11.172500000000001,
+          "duration": 0.3625
+        },
+        {
+          "text": "العملية",
+          "start": 11.547500000000001,
+          "duration": 0.625
+        },
+        {
+          "text": "الحسابية",
+          "start": 12.185,
+          "duration": 0.7875
+        },
+        {
+          "text": "صحيحة",
+          "start": 12.985000000000001,
+          "duration": 0.7625
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "film": "profit",
+  "voice": "ar-SA-ZariyahNeural",
+  "rate": "+28%",
+  "music": "original locally synthesized score",
+  "bpm": 132,
+  "speechDucking": true,
+  "effectCount": 15,
+  "peakDbFS": -1.1972092390060425,
+  "clippedSamples": 0,
+  "normalization": {
+    "input_i": "-15.48",
+    "input_tp": "-1.57",
+    "input_lra": "1.20",
+    "input_thresh": "-25.55",
+    "output_i": "-14.13",
+    "output_tp": "-1.20",
+    "output_lra": "1.00",
+    "output_thresh": "-24.16",
+    "normalization_type": "dynamic",
+    "target_offset": "0.13"
+  }
+}

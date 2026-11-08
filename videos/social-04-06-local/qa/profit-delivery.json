@@ -1,0 +1,19 @@
+{
+  "file": "C:\\antigravity-projects\\VISION\\videos\\social-04-06-local\\deliverables\\05-VISION-Sales-and-Profit.mp4",
+  "duration": 44.7,
+  "bytes": 3084270,
+  "dimensions": [
+    1080,
+    1920
+  ],
+  "fps": 30,
+  "audio": "AAC stereo 48 kHz",
+  "fullDecode": "passed",
+  "captions": "burned in plus SRT",
+  "voice": "ar-SA-ZariyahNeural",
+  "rate": "+0%",
+  "postTempo": 1,
+  "renderer": "local CSS/SVG/GSAP; no Blender, WebGL or Higgsfield",
+  "htmlSha256": "d4e5a26a4a6ee8ebc0632b9e15bf0dbb736d659fbf53d67802dac3196e0bbd5a",
+  "videoSha256": "66ac23c52cb0ea81778d1a338a60d82301db390cce2fb4fff536a65d341ea4a2"
+}

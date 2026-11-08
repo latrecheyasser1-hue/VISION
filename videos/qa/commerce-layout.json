@@ -1,0 +1,163 @@
+{
+  "schemaVersion": 1,
+  "duration": 79.125,
+  "samples": [
+    10,
+    24,
+    36,
+    52,
+    66,
+    78
+  ],
+  "tolerance": 2,
+  "strict": false,
+  "collapseStatic": true,
+  "ok": false,
+  "errorCount": 4,
+  "warningCount": 0,
+  "infoCount": 0,
+  "issueCount": 4,
+  "totalIssueCount": 4,
+  "truncated": false,
+  "issues": [
+    {
+      "code": "text_box_overflow",
+      "severity": "error",
+      "time": 36,
+      "selector": "div.co-summary > div:nth-of-type(1) > strong:nth-of-type(1)",
+      "containerSelector": "div.co-summary",
+      "text": "منتج + توصيل",
+      "message": "Text extends outside its nearest visual/container box.",
+      "rect": {
+        "left": 853.47,
+        "top": 648.44,
+        "right": 996.7,
+        "bottom": 692.44,
+        "width": 143.23,
+        "height": 44
+      },
+      "containerRect": {
+        "left": 174,
+        "top": 607.25,
+        "right": 996.7,
+        "bottom": 688.23,
+        "width": 822.7,
+        "height": 80.98
+      },
+      "overflow": {
+        "bottom": 4.21
+      },
+      "fixHint": "Text is 143px x 44px inside 823px x 81px and overflows by up to 4px; increase the container height to at least ~85px, or allow wrapping with max-width/fitTextFontSize.",
+      "firstSeen": 36,
+      "lastSeen": 36,
+      "occurrences": 1
+    },
+    {
+      "code": "text_box_overflow",
+      "severity": "error",
+      "time": 52,
+      "selector": "div.co-checkpoint.co-check-1 > small:nth-of-type(1)",
+      "containerSelector": "div.co-checkpoint.co-check-1",
+      "text": "تمّ الاستقبال",
+      "message": "Text extends outside its nearest visual/container box.",
+      "rect": {
+        "left": 1537.11,
+        "top": 632.05,
+        "right": 1627.88,
+        "bottom": 666.05,
+        "width": 90.77,
+        "height": 34
+      },
+      "containerRect": {
+        "left": 1553.5,
+        "top": 565.05,
+        "right": 1611.5,
+        "bottom": 623.05,
+        "width": 58,
+        "height": 58
+      },
+      "overflow": {
+        "left": 16.39,
+        "right": 16.38,
+        "bottom": 43
+      },
+      "fixHint": "Text is 91px x 34px inside 58px x 58px and overflows by up to 43px; resize the container to at least ~91px x 101px or shrink font-size from 20px to ~13px, or allow wrapping with max-width/fitTextFontSize.",
+      "firstSeen": 52,
+      "lastSeen": 52,
+      "occurrences": 1
+    },
+    {
+      "code": "text_box_overflow",
+      "severity": "error",
+      "time": 52,
+      "selector": "div.co-checkpoint.co-check-2 > small:nth-of-type(1)",
+      "containerSelector": "div.co-checkpoint.co-check-2",
+      "text": "تمّ التأكيد",
+      "message": "Text extends outside its nearest visual/container box.",
+      "rect": {
+        "left": 1133.03,
+        "top": 632.05,
+        "right": 1201.95,
+        "bottom": 666.05,
+        "width": 68.92,
+        "height": 34
+      },
+      "containerRect": {
+        "left": 1138.5,
+        "top": 565.05,
+        "right": 1196.5,
+        "bottom": 623.05,
+        "width": 58,
+        "height": 58
+      },
+      "overflow": {
+        "left": 5.47,
+        "right": 5.45,
+        "bottom": 43
+      },
+      "fixHint": "Text is 69px x 34px inside 58px x 58px and overflows by up to 43px; resize the container to at least ~69px x 101px or shrink font-size from 20px to ~17px, or allow wrapping with max-width/fitTextFontSize.",
+      "firstSeen": 52,
+      "lastSeen": 52,
+      "occurrences": 1
+    },
+    {
+      "code": "text_box_overflow",
+      "severity": "error",
+      "time": 52,
+      "selector": "div.co-checkpoint.co-check-3 > small:nth-of-type(1)",
+      "containerSelector": "div.co-checkpoint.co-check-3",
+      "text": "تمّ التحضير",
+      "message": "Text extends outside its nearest visual/container box.",
+      "rect": {
+        "left": 711.91,
+        "top": 632.05,
+        "right": 793.09,
+        "bottom": 666.05,
+        "width": 81.19,
+        "height": 34
+      },
+      "containerRect": {
+        "left": 723.5,
+        "top": 565.05,
+        "right": 781.5,
+        "bottom": 623.05,
+        "width": 58,
+        "height": 58
+      },
+      "overflow": {
+        "left": 11.59,
+        "right": 11.59,
+        "bottom": 43
+      },
+      "fixHint": "Text is 81px x 34px inside 58px x 58px and overflows by up to 43px; resize the container to at least ~81px x 101px or shrink font-size from 20px to ~14px, or allow wrapping with max-width/fitTextFontSize.",
+      "firstSeen": 52,
+      "lastSeen": 52,
+      "occurrences": 1
+    }
+  ],
+  "_meta": {
+    "version": "0.6.70",
+    "latestVersion": "0.8.184",
+    "updateAvailable": true
+  }
+}

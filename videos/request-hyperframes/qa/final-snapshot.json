@@ -1,0 +1,38 @@
+{
+  "ok": true,
+  "outputDir": "C:\\antigravity-projects\\VISION\\videos\\request-hyperframes\\.hyperframes\\artifacts\\snapshots\\a4d04f6c-d2d1-45f6-a409-64a4a4894f6d",
+  "frames": [
+    {
+      "path": "C:\\antigravity-projects\\VISION\\videos\\request-hyperframes\\.hyperframes\\artifacts\\snapshots\\a4d04f6c-d2d1-45f6-a409-64a4a4894f6d\\frame-00-at-4.4s.png",
+      "time": 4.4
+    },
+    {
+      "path": "C:\\antigravity-projects\\VISION\\videos\\request-hyperframes\\.hyperframes\\artifacts\\snapshots\\a4d04f6c-d2d1-45f6-a409-64a4a4894f6d\\frame-01-at-14.53s.png",
+      "time": 14.53
+    },
+    {
+      "path": "C:\\antigravity-projects\\VISION\\videos\\request-hyperframes\\.hyperframes\\artifacts\\snapshots\\a4d04f6c-d2d1-45f6-a409-64a4a4894f6d\\frame-02-at-24s.png",
+      "time": 24
+    },
+    {
+      "path": "C:\\antigravity-projects\\VISION\\videos\\request-hyperframes\\.hyperframes\\artifacts\\snapshots\\a4d04f6c-d2d1-45f6-a409-64a4a4894f6d\\frame-03-at-25.4s.png",
+      "time": 25.4
+    },
+    {
+      "path": "C:\\antigravity-projects\\VISION\\videos\\request-hyperframes\\.hyperframes\\artifacts\\snapshots\\a4d04f6c-d2d1-45f6-a409-64a4a4894f6d\\frame-04-at-25.75s.png",
+      "time": 25.75
+    },
+    {
+      "path": "C:\\antigravity-projects\\VISION\\videos\\request-hyperframes\\.hyperframes\\artifacts\\snapshots\\a4d04f6c-d2d1-45f6-a409-64a4a4894f6d\\frame-05-at-33.4s.png",
+      "time": 33.4
+    }
+  ],
+  "contactSheets": [
+    "C:\\antigravity-projects\\VISION\\videos\\request-hyperframes\\.hyperframes\\artifacts\\snapshots\\a4d04f6c-d2d1-45f6-a409-64a4a4894f6d\\contact-sheet.jpg"
+  ],
+  "_meta": {
+    "version": "0.8.216",
+    "latestVersion": "0.8.184",
+    "updateAvailable": false
+  }
+}

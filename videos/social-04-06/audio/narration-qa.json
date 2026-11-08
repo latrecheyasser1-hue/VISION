@@ -1,0 +1,29 @@
+[
+  {
+    "id": "request",
+    "scene_count": 6,
+    "duration": 25.866667,
+    "scene_sum": 25.866666666666667,
+    "word_overrun": 0,
+    "speech_tail_min": 0.262104166666667,
+    "missing_files": []
+  },
+  {
+    "id": "profit",
+    "scene_count": 6,
+    "duration": 27.7,
+    "scene_sum": 27.7,
+    "word_overrun": 0,
+    "speech_tail_min": 0.26083333333333325,
+    "missing_files": []
+  },
+  {
+    "id": "undo",
+    "scene_count": 6,
+    "duration": 29.166667,
+    "scene_sum": 29.166666666666668,
+    "word_overrun": 0,
+    "speech_tail_min": 0.2643958333333343,
+    "missing_files": []
+  }
+]

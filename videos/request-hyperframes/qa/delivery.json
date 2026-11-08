@@ -1,0 +1,21 @@
+{
+  "file": "C:\\antigravity-projects\\VISION\\videos\\request-hyperframes\\deliverables\\04-VISION-Request-HyperFrames.mp4",
+  "bytes": 2983979,
+  "duration": 36.466667,
+  "dimensions": [
+    1080,
+    1920
+  ],
+  "fps": 30,
+  "audioCodec": "aac",
+  "audioSampleRate": "48000",
+  "fullDecode": "passed",
+  "sha256": "65a4b125c6228a321018dca072ef7d9d35659ab278fb8294a1c675d3b09005b8",
+  "renderer": "official HyperFrames0.8.216;1worker;low-memory-mode",
+  "voice": "en-US-AndrewMultilingualNeural",
+  "rate": "+25%",
+  "english": "Literal English text; no Arabic phonetic substitution",
+  "creativeApproval": "pending",
+  "listening": "Measured, not heard",
+  "captions": "burned in plus optionalSRT"
+}

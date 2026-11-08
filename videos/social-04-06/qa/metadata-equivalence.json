@@ -1,0 +1,6 @@
+{
+  "sampled_frames": 18,
+  "changed_frames": [],
+  "passed": true,
+  "purpose": "Nonvisual metadata and vendor embedding cleanup preserves rendered compositions"
+}

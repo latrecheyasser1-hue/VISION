@@ -1,0 +1,66 @@
+{
+  "status": "rendered-and-decoded",
+  "creativeApproval": "pending",
+  "route": "local CSS/SVG/GSAP/FFmpeg; Microsoft narration only",
+  "archive": "C:\\antigravity-projects\\VISION\\videos\\social-04-06-energy\\VISION-ENERGY-04-06.zip",
+  "archiveBytes": 5900227,
+  "films": [
+    {
+      "file": "C:\\antigravity-projects\\VISION\\videos\\social-04-06-energy\\deliverables\\04-VISION-Request-ENERGY.mp4",
+      "duration": 25.833333,
+      "bytes": 2069541,
+      "dimensions": [
+        1080,
+        1920
+      ],
+      "fps": 30,
+      "audio": "AAC stereo 48 kHz",
+      "fullDecode": "passed",
+      "captions": "burned in plus SRT",
+      "voice": "ar-SA-HamedNeural",
+      "rate": "+32%",
+      "postTempo": 1,
+      "renderer": "local CSS/SVG/GSAP; no Blender, WebGL or Higgsfield",
+      "htmlSha256": "1a1dc12a3747abc11d2cedf9c1ea2892e1cb08dce8d8832e315d7bf786f8cdcd",
+      "videoSha256": "1768bdf46f69371bb0c9f62943b56f6be7aa6171d9cff65803c6577f84a8167d"
+    },
+    {
+      "file": "C:\\antigravity-projects\\VISION\\videos\\social-04-06-energy\\deliverables\\05-VISION-Profit-ENERGY.mp4",
+      "duration": 26.566667,
+      "bytes": 1808740,
+      "dimensions": [
+        1080,
+        1920
+      ],
+      "fps": 30,
+      "audio": "AAC stereo 48 kHz",
+      "fullDecode": "passed",
+      "captions": "burned in plus SRT",
+      "voice": "ar-SA-ZariyahNeural",
+      "rate": "+28%",
+      "postTempo": 1,
+      "renderer": "local CSS/SVG/GSAP; no Blender, WebGL or Higgsfield",
+      "htmlSha256": "c5060b0191cf52a46cafaa6b470f737f8b19dafe0eceac6165640962f7dcbcce",
+      "videoSha256": "d24b2508b1405d81bed7dda3f4968483c8681bef3b2d5c245798aa3c53c52e92"
+    },
+    {
+      "file": "C:\\antigravity-projects\\VISION\\videos\\social-04-06-energy\\deliverables\\06-VISION-Undo-ENERGY.mp4",
+      "duration": 24.366667,
+      "bytes": 1725418,
+      "dimensions": [
+        1080,
+        1920
+      ],
+      "fps": 30,
+      "audio": "AAC stereo 48 kHz",
+      "fullDecode": "passed",
+      "captions": "burned in plus SRT",
+      "voice": "ar-EG-ShakirNeural",
+      "rate": "+30%",
+      "postTempo": 1,
+      "renderer": "local CSS/SVG/GSAP; no Blender, WebGL or Higgsfield",
+      "htmlSha256": "f27242b24beaabcc87abc6f42bc6e06ea0c8d97f2f932ae2f3743b42d5d6e308",
+      "videoSha256": "3392618e81d686cd88603eb4a56e41833497fcb578ce6ffda774e8f7288f0f5e"
+    }
+  ]
+}

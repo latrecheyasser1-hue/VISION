@@ -1,0 +1,355 @@
+{
+  "id": "request",
+  "voice": "ar-SA-HamedNeural",
+  "rate": "+6%",
+  "postTempo": 1,
+  "speechProvider": "Microsoft Edge speech (online, narration text only)",
+  "duration": 38.266667,
+  "scenes": [
+    {
+      "start": 0,
+      "duration": 5.766666666666667,
+      "text": "ضغطة واحدة على «اطلب»... وخلفها رحلة لا تراها.",
+      "voicePath": "audio/request/01.wav",
+      "voiceDuration": 5.046042,
+      "voiceOffset": 0.3,
+      "words": [
+        {
+          "text": "ضغطة",
+          "start": 0.035,
+          "duration": 0.589625
+        },
+        {
+          "text": "واحدة",
+          "start": 0.636417,
+          "duration": 0.589625
+        },
+        {
+          "text": "على",
+          "start": 1.237834,
+          "duration": 0.235833
+        },
+        {
+          "text": "اطلب",
+          "start": 1.650584,
+          "duration": 0.4835
+        },
+        {
+          "text": "وخلفها",
+          "start": 2.956709,
+          "duration": 0.69575
+        },
+        {
+          "text": "رحلة",
+          "start": 3.66425,
+          "duration": 0.448125
+        },
+        {
+          "text": "لا",
+          "start": 4.124167,
+          "duration": 0.153291
+        },
+        {
+          "text": "تراها",
+          "start": 4.28925,
+          "duration": 0.636791
+        }
+      ]
+    },
+    {
+      "start": 5.766667,
+      "duration": 6.8,
+      "text": "تجمع الواجهة المنتج والكمية التي اخترتها، ثم ترسل هذه البيانات إلى الخادم.",
+      "voicePath": "audio/request/02.wav",
+      "voiceDuration": 6.086583,
+      "voiceOffset": 0.3,
+      "words": [
+        {
+          "text": "تجمع",
+          "start": 0.035,
+          "duration": 0.389166
+        },
+        {
+          "text": "الواجهة",
+          "start": 0.435959,
+          "duration": 0.589625
+        },
+        {
+          "text": "المنتج",
+          "start": 1.0373750000000002,
+          "duration": 0.459916
+        },
+        {
+          "text": "والكمية",
+          "start": 1.509042,
+          "duration": 0.660375
+        },
+        {
+          "text": "التي",
+          "start": 2.18125,
+          "duration": 0.271208
+        },
+        {
+          "text": "اخترتها",
+          "start": 2.4642500000000003,
+          "duration": 0.731125
+        },
+        {
+          "text": "ثم",
+          "start": 3.360459,
+          "duration": 0.318416
+        },
+        {
+          "text": "ترسل",
+          "start": 3.690667,
+          "duration": 0.424541
+        },
+        {
+          "text": "هذه",
+          "start": 4.127,
+          "duration": 0.330208
+        },
+        {
+          "text": "البيانات",
+          "start": 4.468959,
+          "duration": 0.636791
+        },
+        {
+          "text": "إلى",
+          "start": 5.117541999999999,
+          "duration": 0.1415
+        },
+        {
+          "text": "الخادم",
+          "start": 5.270834,
+          "duration": 0.69575
+        }
+      ]
+    },
+    {
+      "start": 12.566667,
+      "duration": 4.333333333333333,
+      "text": "هنا، يبدأ التحقق من المعلومات والأسعار...",
+      "voicePath": "audio/request/03.wav",
+      "voiceDuration": 3.621958,
+      "voiceOffset": 0.3,
+      "words": [
+        {
+          "text": "هنا",
+          "start": 0.035,
+          "duration": 0.495291
+        },
+        {
+          "text": "يبدأ",
+          "start": 0.742542,
+          "duration": 0.400958
+        },
+        {
+          "text": "التحقق",
+          "start": 1.155292,
+          "duration": 0.625
+        },
+        {
+          "text": "من",
+          "start": 1.792084,
+          "duration": 0.106125
+        },
+        {
+          "text": "المعلومات",
+          "start": 1.9100000000000001,
+          "duration": 0.742916
+        },
+        {
+          "text": "والأسعار",
+          "start": 2.664709,
+          "duration": 0.83725
+        }
+      ]
+    },
+    {
+      "start": 16.9,
+      "duration": 5.1,
+      "text": "ثم يُفحص المخزون، للتأكد من توفر الكمية المطلوبة.",
+      "voicePath": "audio/request/04.wav",
+      "voiceDuration": 4.3885,
+      "voiceOffset": 0.3,
+      "words": [
+        {
+          "text": "ثم",
+          "start": 0.035,
+          "duration": 0.318416
+        },
+        {
+          "text": "يُفحص",
+          "start": 0.365209,
+          "duration": 0.41275
+        },
+        {
+          "text": "المخزون",
+          "start": 0.789709,
+          "duration": 0.754708
+        },
+        {
+          "text": "للتأكد",
+          "start": 1.733125,
+          "duration": 0.672166
+        },
+        {
+          "text": "من",
+          "start": 2.417084,
+          "duration": 0.129708
+        },
+        {
+          "text": "توفر",
+          "start": 2.558584,
+          "duration": 0.4835
+        },
+        {
+          "text": "الكمية",
+          "start": 3.053875,
+          "duration": 0.566041
+        },
+        {
+          "text": "المطلوبة",
+          "start": 3.631709,
+          "duration": 0.636791
+        }
+      ]
+    },
+    {
+      "start": 22.0,
+      "duration": 4.5,
+      "text": "بعد قبول العملية، ينتقل الطلب إلى التخزين.",
+      "voicePath": "audio/request/05.wav",
+      "voiceDuration": 3.787083,
+      "voiceOffset": 0.3,
+      "words": [
+        {
+          "text": "بعد",
+          "start": 0.035,
+          "duration": 0.342
+        },
+        {
+          "text": "قبول",
+          "start": 0.388792,
+          "duration": 0.459916
+        },
+        {
+          "text": "العملية",
+          "start": 0.8604590000000001,
+          "duration": 0.69575
+        },
+        {
+          "text": "ينتقل",
+          "start": 1.780292,
+          "duration": 0.530666
+        },
+        {
+          "text": "الطلب",
+          "start": 2.32275,
+          "duration": 0.400958
+        },
+        {
+          "text": "إلى",
+          "start": 2.735459,
+          "duration": 0.1415
+        },
+        {
+          "text": "التخزين",
+          "start": 2.888792,
+          "duration": 0.778291
+        }
+      ]
+    },
+    {
+      "start": 26.5,
+      "duration": 6.3,
+      "text": "تُحفظ بياناته في قاعدة البيانات، ويعود تأكيد واضح إلى شاشتك.",
+      "voicePath": "audio/request/06.wav",
+      "voiceDuration": 5.56775,
+      "voiceOffset": 0.3,
+      "words": [
+        {
+          "text": "تُحفظ",
+          "start": 0.035,
+          "duration": 0.4835
+        },
+        {
+          "text": "بياناته",
+          "start": 0.530292,
+          "duration": 0.683958
+        },
+        {
+          "text": "في",
+          "start": 1.226042,
+          "duration": 0.153291
+        },
+        {
+          "text": "قاعدة",
+          "start": 1.3911250000000002,
+          "duration": 0.4835
+        },
+        {
+          "text": "البيانات",
+          "start": 1.886417,
+          "duration": 0.790083
+        },
+        {
+          "text": "ويعود",
+          "start": 2.865209,
+          "duration": 0.55425
+        },
+        {
+          "text": "تأكيد",
+          "start": 3.43125,
+          "duration": 0.507083
+        },
+        {
+          "text": "واضح",
+          "start": 3.950084,
+          "duration": 0.4835
+        },
+        {
+          "text": "إلى",
+          "start": 4.445374999999999,
+          "duration": 0.247625
+        },
+        {
+          "text": "شاشتك",
+          "start": 4.704834,
+          "duration": 0.742916
+        }
+      ]
+    },
+    {
+      "start": 32.8,
+      "duration": 5.466666666666667,
+      "text": "نقرة واحدة. نظام متكامل.",
+      "voicePath": "audio/request/07.wav",
+      "voiceDuration": 3.536583,
+      "voiceOffset": 0.3,
+      "words": [
+        {
+          "text": "نقرة",
+          "start": 0.035,
+          "duration": 0.577833
+        },
+        {
+          "text": "واحدة",
+          "start": 0.624625,
+          "duration": 0.625
+        },
+        {
+          "text": "نظام",
+          "start": 2.07225,
+          "duration": 0.589625
+        },
+        {
+          "text": "متكامل",
+          "start": 2.673667,
+          "duration": 0.742916
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "id": "commerce",
+  "title": "التجارة الإلكترونية",
+  "duration": 79.125,
+  "scenes": [
+    {
+      "start": 0,
+      "duration": 12.304
+    },
+    {
+      "start": 12.304,
+      "duration": 14.634
+    },
+    {
+      "start": 26.938,
+      "duration": 11.628
+    },
+    {
+      "start": 38.566,
+      "duration": 15.686
+    },
+    {
+      "start": 54.252,
+      "duration": 14.209
+    },
+    {
+      "start": 68.461,
+      "duration": 10.664
+    }
+  ]
+}

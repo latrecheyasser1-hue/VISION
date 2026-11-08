@@ -1,0 +1,84 @@
+[
+  {
+    "start": 0,
+    "end": 4,
+    "action": "Complete transaction assembly and a single undo control.",
+    "voiceover": "زر صغير اسمه «تراجع». لكن إلغاء العملية يتطلب أكثر من حذفها.",
+    "screen_copy": [
+      "تراجع"
+    ]
+  },
+  {
+    "start": 4,
+    "end": 7,
+    "action": "The transaction separates into four rigid semantic layers on one axis.",
+    "voiceover": "لنُفكّك ما يحدث عند تسجيل عملية بيع.",
+    "screen_copy": [
+      "تصوّر توضيحي"
+    ]
+  },
+  {
+    "start": 7,
+    "end": 11.5,
+    "action": "Macro stock layer: one physicalitem exits8→7.",
+    "voiceover": "تخرج قطعة من المخزون، فتتغير الكمية.",
+    "screen_copy": [
+      "المخزون",
+      "8 → 7"
+    ]
+  },
+  {
+    "start": 11.5,
+    "end": 15.5,
+    "action": "Macro invoice layer: create and preserve invoice0042.",
+    "voiceover": "وتُحفظ فاتورة جديدة تحمل تفاصيل العملية.",
+    "screen_copy": [
+      "الفاتورة",
+      "0042"
+    ]
+  },
+  {
+    "start": 15.5,
+    "end": 20,
+    "action": "Macro sales layer: record sale+2500dinars.",
+    "voiceover": "ثم تُضاف قيمة البيع إلى التقارير.",
+    "screen_copy": [
+      "أثر البيع",
+      "+2 500 دج"
+    ]
+  },
+  {
+    "start": 20,
+    "end": 24,
+    "action": "Macro history layer: recordtheaction with actorandtime.",
+    "voiceover": "وتبقى في السجل معلومات المستخدم ووقت التنفيذ.",
+    "screen_copy": [
+      "سجلّ التغييرات",
+      "10:42",
+      "أمين"
+    ]
+  },
+  {
+    "start": 24,
+    "end": 31,
+    "action": "Reverse effects: stock7→8, saleeffect0; invoice0042stayscancelled and historygainsnewentry.",
+    "voiceover": "عند الإلغاء، تعود القطعة، ويُصحَّح أثر البيع. تبقى الفاتورة بحالة «ملغاة»، ويُسجَّل التغيير.",
+    "screen_copy": [
+      "7 → 8",
+      "0 دج",
+      "0042",
+      "ملغاة",
+      "10:44"
+    ]
+  },
+  {
+    "start": 31,
+    "end": 34,
+    "action": "Lock assembled correctedstate withhistoryvisible andVISIONidentity.",
+    "voiceover": "هكذا نحسب أثر كل ضغطة.",
+    "screen_copy": [
+      "VISION",
+      "أثر كل ضغطة محسوب."
+    ]
+  }
+]

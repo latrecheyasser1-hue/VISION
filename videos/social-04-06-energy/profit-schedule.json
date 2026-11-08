@@ -1,0 +1,305 @@
+{
+  "id": "profit",
+  "voice": "ar-SA-ZariyahNeural",
+  "rate": "+28%",
+  "postTempo": 1,
+  "speechProvider": "Microsoft Edge speech (online, narration text only)",
+  "duration": 26.55,
+  "scenes": [
+    {
+      "start": 0,
+      "duration": 4.3,
+      "text": "الداشبورد يعرض مئة ألف دينار. لكن أي رقم هذا؟",
+      "voicePath": "audio/profit/01.wav",
+      "voiceDuration": 4.069833,
+      "voiceOffset": 0.12,
+      "words": [
+        {
+          "text": "الداشبورد",
+          "start": 0.035,
+          "duration": 0.556625
+        },
+        {
+          "text": "يعرض",
+          "start": 0.601375,
+          "duration": 0.380875
+        },
+        {
+          "text": "مئة",
+          "start": 0.9920000000000001,
+          "duration": 0.283208
+        },
+        {
+          "text": "ألف",
+          "start": 1.2850000000000001,
+          "duration": 0.244125
+        },
+        {
+          "text": "دينار",
+          "start": 1.538875,
+          "duration": 0.4785
+        },
+        {
+          "text": "لكن",
+          "start": 2.690042,
+          "duration": 0.3125
+        },
+        {
+          "text": "أي",
+          "start": 3.012333,
+          "duration": 0.195333
+        },
+        {
+          "text": "رقم",
+          "start": 3.217417,
+          "duration": 0.3125
+        },
+        {
+          "text": "هذا",
+          "start": 3.539667,
+          "duration": 0.410166
+        }
+      ]
+    },
+    {
+      "start": 4.3,
+      "duration": 3.7666666666666666,
+      "text": "هذا ريفينيو: إجمالي المبيعات، وليس البروفيت.",
+      "voicePath": "audio/profit/02.wav",
+      "voiceDuration": 3.524125,
+      "voiceOffset": 0.12,
+      "words": [
+        {
+          "text": "هذا",
+          "start": 0.035,
+          "duration": 0.30275
+        },
+        {
+          "text": "ريفينيو",
+          "start": 0.34750000000000003,
+          "duration": 0.585958
+        },
+        {
+          "text": "إجمالي",
+          "start": 1.0506250000000001,
+          "duration": 0.459
+        },
+        {
+          "text": "المبيعات",
+          "start": 1.5193750000000001,
+          "duration": 0.722666
+        },
+        {
+          "text": "وليس",
+          "start": 2.37875,
+          "duration": 0.361333
+        },
+        {
+          "text": "البروفيت",
+          "start": 2.749833,
+          "duration": 0.654291
+        }
+      ]
+    },
+    {
+      "start": 8.066667,
+      "duration": 5.333333333333333,
+      "text": "اطرح تكلفة السلع: ستين ألفا. ثم المصاريف: خمسة عشر ألفا.",
+      "voicePath": "audio/profit/03.wav",
+      "voiceDuration": 5.104958,
+      "voiceOffset": 0.12,
+      "words": [
+        {
+          "text": "اطرح",
+          "start": 0.035,
+          "duration": 0.341791
+        },
+        {
+          "text": "تكلفة",
+          "start": 0.386542,
+          "duration": 0.400375
+        },
+        {
+          "text": "السلع",
+          "start": 0.796708,
+          "duration": 0.390625
+        },
+        {
+          "text": "ستين",
+          "start": 1.2850000000000001,
+          "duration": 0.380875
+        },
+        {
+          "text": "ألفا",
+          "start": 1.6756250000000001,
+          "duration": 0.459
+        },
+        {
+          "text": "ثم",
+          "start": 2.8072500000000002,
+          "duration": 0.234375
+        },
+        {
+          "text": "المصاريف",
+          "start": 3.051375,
+          "duration": 0.654291
+        },
+        {
+          "text": "خمسة",
+          "start": 3.8228750000000002,
+          "duration": 0.400375
+        },
+        {
+          "text": "عشر",
+          "start": 4.233041999999999,
+          "duration": 0.292958
+        },
+        {
+          "text": "ألفا",
+          "start": 4.535749999999999,
+          "duration": 0.449208
+        }
+      ]
+    },
+    {
+      "start": 13.4,
+      "duration": 3.8,
+      "text": "المتبقي خمسة وعشرون ألفا، في هذا المثال المبسط.",
+      "voicePath": "audio/profit/04.wav",
+      "voiceDuration": 3.563208,
+      "voiceOffset": 0.12,
+      "words": [
+        {
+          "text": "المتبقي",
+          "start": 0.035,
+          "duration": 0.63475
+        },
+        {
+          "text": "خمسة",
+          "start": 0.6795,
+          "duration": 0.419916
+        },
+        {
+          "text": "وعشرون",
+          "start": 1.1092080000000002,
+          "duration": 0.429708
+        },
+        {
+          "text": "ألفا",
+          "start": 1.548667,
+          "duration": 0.449208
+        },
+        {
+          "text": "في",
+          "start": 2.144375,
+          "duration": 0.15625
+        },
+        {
+          "text": "هذا",
+          "start": 2.310375,
+          "duration": 0.166
+        },
+        {
+          "text": "المثال",
+          "start": 2.486167,
+          "duration": 0.351583
+        },
+        {
+          "text": "المبسط",
+          "start": 2.8475,
+          "duration": 0.595708
+        }
+      ]
+    },
+    {
+      "start": 17.2,
+      "duration": 5.433333333333334,
+      "text": "المشكلة؟ كويري صحيحة، وبيانات ناقصة، تعطي تقريرا مضللا!",
+      "voicePath": "audio/profit/05.wav",
+      "voiceDuration": 5.183125,
+      "voiceOffset": 0.12,
+      "words": [
+        {
+          "text": "المشكلة",
+          "start": 0.035,
+          "duration": 0.654291
+        },
+        {
+          "text": "كويري",
+          "start": 1.361917,
+          "duration": 0.341791
+        },
+        {
+          "text": "صحيحة",
+          "start": 1.7134999999999998,
+          "duration": 0.585958
+        },
+        {
+          "text": "وبيانات",
+          "start": 2.436167,
+          "duration": 0.576166
+        },
+        {
+          "text": "ناقصة",
+          "start": 3.0220830000000003,
+          "duration": 0.488291
+        },
+        {
+          "text": "تعطي",
+          "start": 3.6568750000000003,
+          "duration": 0.3125
+        },
+        {
+          "text": "تقريرا",
+          "start": 3.9791250000000002,
+          "duration": 0.449208
+        },
+        {
+          "text": "مضللا",
+          "start": 4.438124999999999,
+          "duration": 0.625
+        }
+      ]
+    },
+    {
+      "start": 22.633333,
+      "duration": 3.916666666666667,
+      "text": "قبل تصميم الداشبورد، اضبط بياناتك وحساباتك.",
+      "voicePath": "audio/profit/06.wav",
+      "voiceDuration": 3.240917,
+      "voiceOffset": 0.12,
+      "words": [
+        {
+          "text": "قبل",
+          "start": 0.035,
+          "duration": 0.253916
+        },
+        {
+          "text": "تصميم",
+          "start": 0.298667,
+          "duration": 0.361333
+        },
+        {
+          "text": "الداشبورد",
+          "start": 0.66975,
+          "duration": 0.605458
+        },
+        {
+          "text": "اضبط",
+          "start": 1.4217080000000002,
+          "duration": 0.332041
+        },
+        {
+          "text": "بياناتك",
+          "start": 1.7635,
+          "duration": 0.546875
+        },
+        {
+          "text": "وحساباتك",
+          "start": 2.320125,
+          "duration": 0.800791
+        }
+      ]
+    }
+  ]
+}

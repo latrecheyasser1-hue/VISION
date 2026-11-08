@@ -1,0 +1,208 @@
+{
+  "ok": true,
+  "strict": false,
+  "browserSkipped": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "filesScanned": 10
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 1,
+    "findings": [
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 30.375,
+        "selector": "#complete-world",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": -6.88,
+          "top": 0,
+          "right": 1073.12,
+          "bottom": 1920,
+          "width": 1080,
+          "height": 1920
+        },
+        "containerSelector": "#complete > div:nth-of-type(1)",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1080,
+          "bottom": 1920,
+          "width": 1080,
+          "height": 1920
+        },
+        "overflow": {
+          "left": 6.88
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/complete.html",
+        "bbox": {
+          "x": -6.88,
+          "y": 0,
+          "width": 1080,
+          "height": 1920
+        },
+        "firstSeen": 30.375,
+        "lastSeen": 30.375,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          30.375
+        ]
+      }
+    ],
+    "duration": 36.45,
+    "samples": [
+      2.025,
+      6.075,
+      10.125,
+      14.175,
+      18.225,
+      22.275,
+      26.325,
+      30.375,
+      34.425
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 1,
+    "truncated": false
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "samples": [
+      2.025,
+      10.125,
+      18.225,
+      26.325,
+      34.425
+    ],
+    "checked": 40,
+    "passed": 40
+  },
+  "craft": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 1,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 4 text elements stay under it for 0.5 s or more, the smallest \"تفاصيل الطلب\" at 16 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "تفاصيل الطلب",
+        "selector": "#complete-phone > text:nth-of-type(2)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/complete.html",
+        "bbox": {
+          "x": 506.67,
+          "y": 688.58,
+          "width": 109.7,
+          "height": 33.53
+        },
+        "time": 31.332,
+        "times": [
+          31.332,
+          31.457,
+          31.457,
+          31.457
+        ],
+        "fontPx": 15.61,
+        "floorPx": 28,
+        "seconds": 5.118,
+        "elements": [
+          {
+            "selector": "#complete-phone > text:nth-of-type(2)",
+            "text": "تفاصيل الطلب",
+            "fontPx": 15.61,
+            "time": 31.332,
+            "seconds": 5.118
+          },
+          {
+            "selector": "#complete-phone > text:nth-of-type(1)",
+            "text": "VISION",
+            "fontPx": 20.49,
+            "time": 31.457,
+            "seconds": 4.993
+          },
+          {
+            "selector": "#complete-phone > text:nth-of-type(3)",
+            "text": "الكمية: 2",
+            "fontPx": 21.46,
+            "time": 31.457,
+            "seconds": 4.993
+          },
+          {
+            "selector": "#complete-phone-button > text:nth-of-type(1)",
+            "text": "تم إنشاء الطلب",
+            "fontPx": 21.95,
+            "time": 31.457,
+            "seconds": 4.993
+          }
+        ]
+      }
+    ],
+    "enabled": true,
+    "step": 0.125,
+    "samples": 292
+  },
+  "audio": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": false,
+    "files": [],
+    "times": [],
+    "findingFiles": []
+  },
+  "saved": {
+    "id": "39e265a3-ee2e-44bb-935d-b2b6ed50965e",
+    "revision": null,
+    "report": "C:\\antigravity-projects\\VISION\\videos\\request-hyperframes\\.hyperframes\\artifacts\\checks\\39e265a3-ee2e-44bb-935d-b2b6ed50965e.json",
+    "attribution": "inputs-changed"
+  },
+  "_meta": {
+    "version": "0.8.216",
+    "latestVersion": "0.8.184",
+    "updateAvailable": false
+  }
+}

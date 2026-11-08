@@ -1,0 +1,753 @@
+[
+  {
+    "start": 0,
+    "duration": 0,
+    "targets": [
+      "shot0"
+    ],
+    "properties": [
+      "opacity",
+      "repeat"
+    ]
+  },
+  {
+    "start": 0,
+    "duration": 24.383333,
+    "targets": [
+      "progress"
+    ],
+    "properties": [
+      "scaleX",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 0.1,
+    "duration": 0.3,
+    "targets": [
+      "brand"
+    ],
+    "properties": [
+      "y",
+      "opacity",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 0.1,
+    "duration": 0.25,
+    "targets": [
+      "kicker u0-k"
+    ],
+    "properties": [
+      "x",
+      "opacity",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 0.1,
+    "duration": 0.4,
+    "targets": [
+      "block safe en u0-undo"
+    ],
+    "properties": [
+      "y",
+      "rotation",
+      "scale",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 0.155,
+    "duration": 0.045,
+    "targets": [
+      "cap0"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 0.35,
+    "duration": 0.3,
+    "targets": [
+      "block u0-not"
+    ],
+    "properties": [
+      "scale",
+      "rotation",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 0.5,
+    "duration": 0.4,
+    "targets": [
+      "block safe en outline u0-delete"
+    ],
+    "properties": [
+      "x",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 0.8,
+    "duration": 0.2,
+    "targets": [
+      "block u0-strike"
+    ],
+    "properties": [
+      "scaleX",
+      "transformOrigin",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 0.9,
+    "duration": 0.3,
+    "targets": [
+      "block safe ar sub u0-sub"
+    ],
+    "properties": [
+      "y",
+      "opacity",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 1.8925,
+    "duration": 0.045,
+    "targets": [
+      "cap1"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 1.9325,
+    "duration": 0.045,
+    "targets": [
+      "cap0"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 2.873292,
+    "duration": 0.045,
+    "targets": [
+      "cap2"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 2.913291,
+    "duration": 0.045,
+    "targets": [
+      "cap1"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 3.384458,
+    "duration": 0.045,
+    "targets": [
+      "cap2"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 3.566667,
+    "duration": 0,
+    "targets": [
+      "shot1"
+    ],
+    "properties": [
+      "opacity",
+      "repeat"
+    ]
+  },
+  {
+    "start": 3.566667,
+    "duration": 0.26,
+    "targets": [
+      "shot1"
+    ],
+    "properties": [
+      "clipPath",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 3.666667,
+    "duration": 0.38,
+    "targets": [
+      "kicker u1-k",
+      "en u1-title"
+    ],
+    "properties": [
+      "x",
+      "opacity",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 3.721667,
+    "duration": 0.045,
+    "targets": [
+      "cap3"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 3.816667,
+    "duration": 0.45,
+    "targets": [
+      "block safe u1-brackets"
+    ],
+    "properties": [
+      "scaleY",
+      "opacity",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 4.154375,
+    "duration": 0.35,
+    "targets": [
+      "u1-stock slot"
+    ],
+    "properties": [
+      "x",
+      "rotation",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 5.135125,
+    "duration": 0.35,
+    "targets": [
+      "u1-invoice slot"
+    ],
+    "properties": [
+      "x",
+      "rotation",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 6.098208,
+    "duration": 0.045,
+    "targets": [
+      "cap3"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 6.212084,
+    "duration": 0.35,
+    "targets": [
+      "u1-sale slot"
+    ],
+    "properties": [
+      "x",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 6.462084,
+    "duration": 0.045,
+    "targets": [
+      "cap4"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 8.2333337,
+    "duration": 0.35,
+    "targets": [
+      "block safe code u1-state"
+    ],
+    "properties": [
+      "clipPath",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 8.366667,
+    "duration": 0.14,
+    "targets": [
+      "block safe u1-brackets"
+    ],
+    "properties": [
+      "scale",
+      "yoyo",
+      "repeat"
+    ]
+  },
+  {
+    "start": 9.055334,
+    "duration": 0.045,
+    "targets": [
+      "cap5"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 9.095333,
+    "duration": 0.045,
+    "targets": [
+      "cap4"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 10.056875,
+    "duration": 0.045,
+    "targets": [
+      "cap5"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 10.233333,
+    "duration": 0,
+    "targets": [
+      "shot2"
+    ],
+    "properties": [
+      "opacity",
+      "repeat"
+    ]
+  },
+  {
+    "start": 10.233333,
+    "duration": 0.26,
+    "targets": [
+      "shot2"
+    ],
+    "properties": [
+      "clipPath",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 10.333333,
+    "duration": 0.37,
+    "targets": [
+      "kicker u2-k",
+      "en u2-title"
+    ],
+    "properties": [
+      "y",
+      "opacity",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 10.388333,
+    "duration": 0.045,
+    "targets": [
+      "cap6"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 10.533333,
+    "duration": 0.35,
+    "targets": [
+      "block safe code u2-before"
+    ],
+    "properties": [
+      "x",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 10.683333,
+    "duration": 0.45,
+    "targets": [
+      "block u2-reverse"
+    ],
+    "properties": [
+      "rotation",
+      "scale",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 10.983333,
+    "duration": 0.4,
+    "targets": [
+      "block safe num u2-n"
+    ],
+    "properties": [
+      "x",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 11.233333,
+    "duration": 0.3,
+    "targets": [
+      "block safe ar sub u2-sub"
+    ],
+    "properties": [
+      "y",
+      "opacity",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 12.272958,
+    "duration": 0.045,
+    "targets": [
+      "cap7"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 12.2916663,
+    "duration": 0.2,
+    "targets": [
+      "block u2-reverse"
+    ],
+    "properties": [
+      "x",
+      "yoyo",
+      "repeat"
+    ]
+  },
+  {
+    "start": 12.312957,
+    "duration": 0.045,
+    "targets": [
+      "cap6"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 13.236041,
+    "duration": 0.045,
+    "targets": [
+      "cap7"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 13.4,
+    "duration": 0,
+    "targets": [
+      "shot3"
+    ],
+    "properties": [
+      "opacity",
+      "repeat"
+    ]
+  },
+  {
+    "start": 13.4,
+    "duration": 0.26,
+    "targets": [
+      "shot3"
+    ],
+    "properties": [
+      "clipPath",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 13.5,
+    "duration": 0.37,
+    "targets": [
+      "kicker u3-k",
+      "en u3-title"
+    ],
+    "properties": [
+      "x",
+      "opacity",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 13.555,
+    "duration": 0.045,
+    "targets": [
+      "cap8"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 13.75,
+    "duration": 0.4,
+    "targets": [
+      "block safe code u3-term"
+    ],
+    "properties": [
+      "clipPath",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 13.95,
+    "duration": 0.4,
+    "targets": [
+      "block safe u3-stock ink"
+    ],
+    "properties": [
+      "x",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 14.25,
+    "duration": 0.4,
+    "targets": [
+      "block safe u3-invoice frame white"
+    ],
+    "properties": [
+      "y",
+      "rotation",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 14.85,
+    "duration": 0.25,
+    "targets": [
+      "u3-cancel ar"
+    ],
+    "properties": [
+      "scale",
+      "opacity",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 15.05,
+    "duration": 0.3,
+    "targets": [
+      "block safe ar sub u3-sub"
+    ],
+    "properties": [
+      "y",
+      "opacity",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 15.844416,
+    "duration": 0.045,
+    "targets": [
+      "cap9"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 15.884416,
+    "duration": 0.045,
+    "targets": [
+      "cap8"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 18.536708,
+    "duration": 0.045,
+    "targets": [
+      "cap10"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 18.576707,
+    "duration": 0.045,
+    "targets": [
+      "cap9"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 18.970958,
+    "duration": 0.045,
+    "targets": [
+      "cap10"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 19.133333,
+    "duration": 0,
+    "targets": [
+      "shot4"
+    ],
+    "properties": [
+      "opacity",
+      "repeat"
+    ]
+  },
+  {
+    "start": 19.133333,
+    "duration": 0.26,
+    "targets": [
+      "shot4"
+    ],
+    "properties": [
+      "clipPath",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 19.233333,
+    "duration": 0.37,
+    "targets": [
+      "kicker u4-k",
+      "en u4-title"
+    ],
+    "properties": [
+      "x",
+      "opacity",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 19.288333,
+    "duration": 0.045,
+    "targets": [
+      "cap11"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 19.433333,
+    "duration": 0.4,
+    "targets": [
+      "block safe u4-table"
+    ],
+    "properties": [
+      "scale",
+      "rotation",
+      "y",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 19.783333,
+    "duration": 0.3,
+    "targets": [
+      "u4-old code"
+    ],
+    "properties": [
+      "clipPath",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 20.083333,
+    "duration": 0.4,
+    "targets": [
+      "u4-new code cyan"
+    ],
+    "properties": [
+      "x",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 20.333333,
+    "duration": 0.3,
+    "targets": [
+      "block safe ar sub u4-sub"
+    ],
+    "properties": [
+      "y",
+      "opacity",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 20.583333,
+    "duration": 0.3,
+    "targets": [
+      "block u4-eye big-eye"
+    ],
+    "properties": [
+      "scale",
+      "opacity",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 21.626416,
+    "duration": 0.045,
+    "targets": [
+      "cap11"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 21.990249,
+    "duration": 0.045,
+    "targets": [
+      "cap12"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 23.770624,
+    "duration": 0.045,
+    "targets": [
+      "cap12"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  }
+]

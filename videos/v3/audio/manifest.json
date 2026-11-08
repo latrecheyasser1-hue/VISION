@@ -1,0 +1,366 @@
+{
+  "model": "vadimbelsky/arabic-emirati-female-piper",
+  "model_url": "https://huggingface.co/vadimbelsky/arabic-emirati-female-piper",
+  "declared_license": "MIT",
+  "speaker": "Arabic Emirati female (entirely different speaker/model)",
+  "native_length_scale": 0.85,
+  "pitch_modified": false,
+  "external_inference": false,
+  "model_sha256": "1578a9b27d01a0626227225b148179628b770607dd61bdbbc41865bd399106b1",
+  "videos": {
+    "intro": [
+      {
+        "scene": 1,
+        "duration": 7.445488,
+        "words": 13,
+        "wpm": 104.8,
+        "path": "intro/scene-01.wav",
+        "text": "لكل نشاط طريقة عمله. ومع تعدد الطلبات والمعلومات، تظهر احتياجات جديدة للتنظيم والمتابعة.",
+        "phrases": [
+          {
+            "phrase": 1,
+            "start": 0,
+            "duration": 1.645351,
+            "text": "لكل نشاط طريقة عمله.",
+            "spoken": "لِكُلِّ نَشاطٍ طَريقَةُ عَمَلِهِ.",
+            "path": "intro/scene-01-phrase-01.wav"
+          },
+          {
+            "phrase": 2,
+            "start": 1.755351,
+            "duration": 2.224989,
+            "text": "ومع تعدد الطلبات والمعلومات،",
+            "spoken": "وَمَعَ تَعَدُّدِ الطَّلَباتِ وَالمَعْلوماتِ،",
+            "path": "intro/scene-01-phrase-02.wav"
+          },
+          {
+            "phrase": 3,
+            "start": 4.05534,
+            "duration": 3.390113,
+            "text": "تظهر احتياجات جديدة للتنظيم والمتابعة.",
+            "spoken": "تَظْهَرُ احْتِياجاتٌ جَديدَةٌ لِلتَّنْظيمِ وَالمُتابَعَةِ.",
+            "path": "intro/scene-01-phrase-03.wav"
+          }
+        ]
+      },
+      {
+        "scene": 2,
+        "duration": 6.138866,
+        "words": 15,
+        "wpm": 146.6,
+        "path": "intro/scene-02.wav",
+        "text": "في فيجن، نبدأ بفهم نشاطك: كيف تعمل، وأين تتكرر الصعوبات، وما الذي تحتاج إلى تحسينه.",
+        "phrases": [
+          {
+            "phrase": 1,
+            "start": 0,
+            "duration": 0.516417,
+            "text": "في فيجن،",
+            "spoken": "في VISION،",
+            "path": "intro/scene-02-phrase-01.wav"
+          },
+          {
+            "phrase": 2,
+            "start": 0.591417,
+            "duration": 1.209615,
+            "text": "نبدأ بفهم نشاطك:",
+            "spoken": "نَبْدَأُ بِفَهْمِ نَشاطِكَ:",
+            "path": "intro/scene-02-phrase-02.wav"
+          },
+          {
+            "phrase": 3,
+            "start": 1.876032,
+            "duration": 0.627528,
+            "text": "كيف تعمل،",
+            "spoken": "كَيْفَ تَعْمَلُ،",
+            "path": "intro/scene-02-phrase-03.wav"
+          },
+          {
+            "phrase": 4,
+            "start": 2.57856,
+            "duration": 1.639274,
+            "text": "وأين تتكرر الصعوبات،",
+            "spoken": "وَأَيْنَ تَتَكَرَّرُ الصُّعوباتُ،",
+            "path": "intro/scene-02-phrase-04.wav"
+          },
+          {
+            "phrase": 5,
+            "start": 4.292834,
+            "duration": 1.845986,
+            "text": "وما الذي تحتاج إلى تحسينه.",
+            "spoken": "وَما الَّذي تَحْتاجُ إِلى تَحْسينِهِ.",
+            "path": "intro/scene-02-phrase-05.wav"
+          }
+        ]
+      },
+      {
+        "scene": 3,
+        "duration": 2.648027,
+        "words": 6,
+        "wpm": 136.0,
+        "path": "intro/scene-03.wav",
+        "text": "ثم نبرمج لك نظاماً يناسب متطلباتك.",
+        "phrases": [
+          {
+            "phrase": 1,
+            "start": 0,
+            "duration": 2.648027,
+            "text": "ثم نبرمج لك نظاماً يناسب متطلباتك.",
+            "spoken": "ثُمَّ نُبَرْمِجُ لَكَ نِظامًا يُناسِبُ مُتَطَلَّباتِكَ.",
+            "path": "intro/scene-03-phrase-01.wav"
+          }
+        ]
+      },
+      {
+        "scene": 4,
+        "duration": 6.544036,
+        "words": 14,
+        "wpm": 128.4,
+        "path": "intro/scene-04.wav",
+        "text": "نحوّل الفكرة إلى تصور واضح، نراجعه معك، ثم نطوّر الحل ونختبره قبل التسليم والتكوين.",
+        "phrases": [
+          {
+            "phrase": 1,
+            "start": 0,
+            "duration": 2.321995,
+            "text": "نحوّل الفكرة إلى تصور واضح،",
+            "spoken": "نُحَوِّلُ الفِكْرَةَ إِلى تَصَوُّرٍ واضِحٍ،",
+            "path": "intro/scene-04-phrase-01.wav"
+          },
+          {
+            "phrase": 2,
+            "start": 2.396995,
+            "duration": 0.856054,
+            "text": "نراجعه معك،",
+            "spoken": "نُراجِعُهُ مَعَكَ،",
+            "path": "intro/scene-04-phrase-02.wav"
+          },
+          {
+            "phrase": 3,
+            "start": 3.32805,
+            "duration": 3.215964,
+            "text": "ثم نطوّر الحل ونختبره قبل التسليم والتكوين.",
+            "spoken": "ثُمَّ نُطَوِّرُ الحَلَّ وَنَخْتَبِرُهُ قَبْلَ التَّسْليمِ وَالتَّكْوينِ.",
+            "path": "intro/scene-04-phrase-03.wav"
+          }
+        ]
+      },
+      {
+        "scene": 5,
+        "duration": 4.526712,
+        "words": 10,
+        "wpm": 132.5,
+        "path": "intro/scene-05.wav",
+        "text": "فيجن. نفهم نشاطك، ونطوّر الحل المناسب له. حدّثنا عن مشروعك.",
+        "phrases": [
+          {
+            "phrase": 1,
+            "start": 0,
+            "duration": 0.22059,
+            "text": "فيجن.",
+            "spoken": "VISION.",
+            "path": "intro/scene-05-phrase-01.wav"
+          },
+          {
+            "phrase": 2,
+            "start": 0.33059,
+            "duration": 0.934422,
+            "text": "نفهم نشاطك،",
+            "spoken": "نَفْهَمُ نَشاطَكَ،",
+            "path": "intro/scene-05-phrase-02.wav"
+          },
+          {
+            "phrase": 3,
+            "start": 1.340011,
+            "duration": 1.706667,
+            "text": "ونطوّر الحل المناسب له.",
+            "spoken": "وَنُطَوِّرُ الحَلَّ المُناسِبَ لَهُ.",
+            "path": "intro/scene-05-phrase-03.wav"
+          },
+          {
+            "phrase": 4,
+            "start": 3.156678,
+            "duration": 1.369977,
+            "text": "حدّثنا عن مشروعك.",
+            "spoken": "حَدِّثْنا عَنْ مَشْروعِكَ.",
+            "path": "intro/scene-05-phrase-04.wav"
+          }
+        ]
+      }
+    ],
+    "ecommerce": [
+      {
+        "scene": 1,
+        "duration": 5.664218,
+        "words": 13,
+        "wpm": 137.7,
+        "path": "ecommerce/scene-01.wav",
+        "text": "البيع عبر الإنترنت يبدأ بعرض واضح، ومعلومات تساعد الزبون على اختيار ما يناسبه.",
+        "phrases": [
+          {
+            "phrase": 1,
+            "start": 0,
+            "duration": 2.489342,
+            "text": "البيع عبر الإنترنت يبدأ بعرض واضح،",
+            "spoken": "البَيْعُ عَبْرَ الإِنْتَرْنِت يَبْدَأُ بِعَرْضٍ واضِحٍ،",
+            "path": "ecommerce/scene-01-phrase-01.wav"
+          },
+          {
+            "phrase": 2,
+            "start": 2.564342,
+            "duration": 3.099864,
+            "text": "ومعلومات تساعد الزبون على اختيار ما يناسبه.",
+            "spoken": "وَمَعْلوماتٍ تُساعِدُ الزَّبونَ عَلى اخْتِيارِ ما يُناسِبُهُ.",
+            "path": "ecommerce/scene-01-phrase-02.wav"
+          }
+        ]
+      },
+      {
+        "scene": 2,
+        "duration": 7.559138,
+        "words": 14,
+        "wpm": 111.1,
+        "path": "ecommerce/scene-02.wav",
+        "text": "نصمّم تجربة شراء مناسبة لمنتجاتك، من تصفح التفاصيل إلى اختيار الخيارات المتوفرة وإرسال الطلب.",
+        "phrases": [
+          {
+            "phrase": 1,
+            "start": 0,
+            "duration": 2.700816,
+            "text": "نصمّم تجربة شراء مناسبة لمنتجاتك،",
+            "spoken": "نُصَمِّمُ تَجْرِبَةَ شِراءٍ مُناسِبَةً لِمُنْتَجاتِكَ،",
+            "path": "ecommerce/scene-02-phrase-01.wav"
+          },
+          {
+            "phrase": 2,
+            "start": 2.775816,
+            "duration": 4.783311,
+            "text": "من تصفح التفاصيل إلى اختيار الخيارات المتوفرة وإرسال الطلب.",
+            "spoken": "مِنْ تَصَفُّحِ التَّفاصيلِ إِلى اخْتِيارِ الخِياراتِ المُتَوَفِّرَةِ وَإِرْسالِ الطَّلَبِ.",
+            "path": "ecommerce/scene-02-phrase-02.wav"
+          }
+        ]
+      },
+      {
+        "scene": 3,
+        "duration": 5.563719,
+        "words": 11,
+        "wpm": 118.6,
+        "path": "ecommerce/scene-03.wav",
+        "text": "ويمكن أن تشمل التجربة خيارات التوصيل وحساب تكلفته، حسب إعدادات مشروعك.",
+        "phrases": [
+          {
+            "phrase": 1,
+            "start": 0,
+            "duration": 4.041088,
+            "text": "ويمكن أن تشمل التجربة خيارات التوصيل وحساب تكلفته،",
+            "spoken": "وَيُمْكِنُ أَنْ تَشْمَلَ التَّجْرِبَةُ خِياراتِ التَّوْصيلِ وَحِسابَ تَكْلِفَتِهِ،",
+            "path": "ecommerce/scene-03-phrase-01.wav"
+          },
+          {
+            "phrase": 2,
+            "start": 4.116088,
+            "duration": 1.447619,
+            "text": "حسب إعدادات مشروعك.",
+            "spoken": "حَسَبَ إِعْداداتِ مَشْروعِكَ.",
+            "path": "ecommerce/scene-03-phrase-02.wav"
+          }
+        ]
+      },
+      {
+        "scene": 4,
+        "duration": 7.993605,
+        "words": 14,
+        "wpm": 105.1,
+        "path": "ecommerce/scene-04.wav",
+        "text": "من جهتك، تتابع الطلبات وحالاتها داخل لوحة إدارة واضحة، وتجد المعلومات اللازمة للتحضير والمتابعة.",
+        "phrases": [
+          {
+            "phrase": 1,
+            "start": 0,
+            "duration": 0.534059,
+            "text": "من جهتك،",
+            "spoken": "مِنْ جِهَتِكَ،",
+            "path": "ecommerce/scene-04-phrase-01.wav"
+          },
+          {
+            "phrase": 2,
+            "start": 0.609059,
+            "duration": 3.890159,
+            "text": "تتابع الطلبات وحالاتها داخل لوحة إدارة واضحة،",
+            "spoken": "تُتابِعُ الطَّلَباتِ وَحالاتِها داخِلَ لَوْحَةِ إِدارَةٍ واضِحَةٍ،",
+            "path": "ecommerce/scene-04-phrase-02.wav"
+          },
+          {
+            "phrase": 3,
+            "start": 4.574218,
+            "duration": 3.419365,
+            "text": "وتجد المعلومات اللازمة للتحضير والمتابعة.",
+            "spoken": "وَتَجِدُ المَعْلوماتِ اللّازِمَةَ لِلتَّحْضيرِ وَالمُتابَعَةِ.",
+            "path": "ecommerce/scene-04-phrase-03.wav"
+          }
+        ]
+      },
+      {
+        "scene": 5,
+        "duration": 6.662086,
+        "words": 14,
+        "wpm": 126.1,
+        "path": "ecommerce/scene-05.wav",
+        "text": "وعندما يحتاج نشاطك، نربط المتجر بالمخزون ونقطة البيع أو خدمات التوصيل، لتعمل المعلومات معاً.",
+        "phrases": [
+          {
+            "phrase": 1,
+            "start": 0,
+            "duration": 1.509297,
+            "text": "وعندما يحتاج نشاطك،",
+            "spoken": "وَعِنْدَما يَحْتاجُ نَشاطُكَ،",
+            "path": "ecommerce/scene-05-phrase-01.wav"
+          },
+          {
+            "phrase": 2,
+            "start": 1.584297,
+            "duration": 3.702449,
+            "text": "نربط المتجر بالمخزون ونقطة البيع أو خدمات التوصيل،",
+            "spoken": "نَرْبِطُ المَتْجَرَ بِالمَخْزونِ وَنُقْطَةِ البَيْعِ أَوْ خَدَماتِ التَّوْصيلِ،",
+            "path": "ecommerce/scene-05-phrase-02.wav"
+          },
+          {
+            "phrase": 3,
+            "start": 5.361746,
+            "duration": 1.300317,
+            "text": "لتعمل المعلومات معاً.",
+            "spoken": "لِتَعْمَلَ المَعْلوماتُ مَعًا.",
+            "path": "ecommerce/scene-05-phrase-03.wav"
+          }
+        ]
+      },
+      {
+        "scene": 6,
+        "duration": 5.212834,
+        "words": 11,
+        "wpm": 126.6,
+        "path": "ecommerce/scene-06.wav",
+        "text": "متجر مبني على طريقة عملك. اكتشف حلول التجارة الإلكترونية من فيجن.",
+        "phrases": [
+          {
+            "phrase": 1,
+            "start": 0,
+            "duration": 2.217506,
+            "text": "متجر مبني على طريقة عملك.",
+            "spoken": "مَتْجَرٌ مَبْنِيٌّ عَلى طَريقَةِ عَمَلِكَ.",
+            "path": "ecommerce/scene-06-phrase-01.wav"
+          },
+          {
+            "phrase": 2,
+            "start": 2.327506,
+            "duration": 2.885306,
+            "text": "اكتشف حلول التجارة الإلكترونية من فيجن.",
+            "spoken": "اِكْتَشِفْ حُلولَ التِّجارَةِ الإِلِكْتُرونِيَّةِ مِنْ VISION.",
+            "path": "ecommerce/scene-06-phrase-02.wav"
+          }
+        ]
+      }
+    ]
+  }
+}

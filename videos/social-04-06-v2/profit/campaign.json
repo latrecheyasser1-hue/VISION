@@ -1,0 +1,69 @@
+{
+  "mode": "production",
+  "status": "creative_prompt_ready_connection_required",
+  "revision": 2,
+  "brand": "VISION",
+  "subject": "المبيعات ليست الأرباح",
+  "preset_id": "editorial-collage",
+  "requested_format": {
+    "duration_s": 36,
+    "aspect_ratio": "9:16",
+    "delivery_dimensions": [
+      1080,
+      1920
+    ],
+    "delivery_fps": 30
+  },
+  "native_model_settings": null,
+  "live_model_schema_verified": false,
+  "requested_model_preference": "strongest suitable accessible Seedance via Higgsfield; must verify actual capability",
+  "generation_strategy": "one_full_film_request",
+  "requested_audio": {
+    "narration_language": "Modern Standard Arabic",
+    "voice_direction": "Female, warm grounded lower-mid register, articulate Modern Standard Arabic; conversational analytical delivery, patient number reading and meaningful pauses, no advertising voice.",
+    "music_direction": "76 BPM felt piano, restrained plucked bass and brushed wooden percussion; deliberate gaps at deductions, no glass-electronic bed.",
+    "synchronized_effects": true
+  },
+  "source_record": "source-record.json",
+  "prompt": "prompt.md",
+  "shot_map": "shot-map.json",
+  "exact_copy": "exact-copy.json",
+  "assets": [
+    {
+      "path": "C:\\antigravity-projects\\VISION\\assets\\brand\\VISION-Brand-Kit\\VISION-logo.png",
+      "role": "identity-only brand reference",
+      "acquired_locally": true,
+      "uploaded": false,
+      "remote_media_id": null
+    }
+  ],
+  "requires_before_submission": [
+    "Higgsfield connection",
+    "live duration/aspect/audio/reference/schema checks",
+    "read-only cost/access estimate if supported",
+    "bind logo through supported upload role",
+    "inspect selected source preview playback"
+  ],
+  "duration_policy": "Creative target only; native support not yet known. No automatic shortening, provider switching, or segmentation if unsupported.",
+  "job_id": null,
+  "submitted": false,
+  "cost_estimate": null,
+  "actual_charge": null,
+  "result": null,
+  "explicit_constraints": [
+    "Arabic Fusha only",
+    "distinct voice, music and delivery per topic",
+    "motion substantially stronger than prior version",
+    "no forced uniform fast pacing",
+    "no CTA",
+    "no private client data",
+    "retain old artifacts"
+  ],
+  "departures": [
+    "Source recorded-voice science story replaced with a fictional financial arithmetic example. No scientific claims or50/50stats inherited.",
+    "Four compositions and three silhouette-match cuts retained; authored36s portrait timing, not a claim about source timing.",
+    "Photographic face replaced by the same paper ledger as a recurring narrative subject. This is a custom editorial adaptation.",
+    "Cobalt/orange/yellow source hues replaced by VISION cyan, warm ivory and ink while retaining matte print and one dominant background at a time.",
+    "User-requested Fusha female narration; no advertising endcard."
+  ]
+}

@@ -1,0 +1,74 @@
+[
+  {
+    "start": 0,
+    "end": 4.5,
+    "action": "A selected order control becomes one recognizable cyan signal.",
+    "voiceover": "ضغطة واحدة على «اطلب»... وخلفها رحلة لا تراها.",
+    "screen_copy": [
+      "اطلب",
+      "ماذا يحدث بعد النقرة؟"
+    ]
+  },
+  {
+    "start": 4.5,
+    "end": 10,
+    "action": "The interface encodes a product and quantity into that same packet.",
+    "voiceover": "تجمع الواجهة المنتج والكمية التي اخترتها، ثم ترسل هذه البيانات إلى الخادم.",
+    "screen_copy": [
+      "الواجهة",
+      "المنتج A",
+      "الكمية 2"
+    ]
+  },
+  {
+    "start": 10,
+    "end": 12,
+    "action": "Macro verification gate physically checks the signal, no headline.",
+    "voiceover": "هنا، يبدأ التحقق من المعلومات والأسعار...",
+    "screen_copy": [
+      "تحقّق"
+    ]
+  },
+  {
+    "start": 12,
+    "end": 17.5,
+    "action": "A different viewpoint reveals stock verification and a single accepted request.",
+    "voiceover": "ثم يُفحص المخزون، للتأكد من توفر الكمية المطلوبة.",
+    "screen_copy": [
+      "الخادم",
+      "المعلومات",
+      "السعر",
+      "المخزون"
+    ]
+  },
+  {
+    "start": 17.5,
+    "end": 20.5,
+    "action": "Trace macro: the accepted packet reaches a persistent record slot.",
+    "voiceover": "بعد قبول العملية، ينتقل الطلب إلى التخزين.",
+    "screen_copy": [
+      "حفظ الطلب"
+    ]
+  },
+  {
+    "start": 20.5,
+    "end": 28.5,
+    "action": "Record locks in, acknowledgement travels back, three stages become one legible route.",
+    "voiceover": "تُحفظ بياناته في قاعدة البيانات، ويعود تأكيد واضح إلى شاشتك.",
+    "screen_copy": [
+      "قاعدة البيانات",
+      "تم تأكيد الطلب",
+      "واجهة ← خادم ← قاعدة بيانات"
+    ]
+  },
+  {
+    "start": 28.5,
+    "end": 32,
+    "action": "The route resolves into a frozen VISION identity, no CTA.",
+    "voiceover": "نقرة واحدة. نظام متكامل.",
+    "screen_copy": [
+      "VISION",
+      "وراء كل نقرة، نظام."
+    ]
+  }
+]

@@ -1,0 +1,31 @@
+{
+  "method": "WCAG relative luminance for intended flat active-scene color pairs; sampled visible scene review",
+  "pairs": [
+    {
+      "foreground": "#080E17",
+      "background": "#EAF7FC",
+      "ratio": 17.7
+    },
+    {
+      "foreground": "#080E17",
+      "background": "#00BCEB",
+      "ratio": 8.65
+    },
+    {
+      "foreground": "#FFFFFF",
+      "background": "#080E17",
+      "ratio": 19.35
+    },
+    {
+      "foreground": "#00BCEB",
+      "background": "#080E17",
+      "ratio": 8.65
+    },
+    {
+      "foreground": "#00738D",
+      "background": "#EAF7FC",
+      "ratio": 5.01
+    }
+  ],
+  "limitation": "Framework contrast sampler included covered/hidden scenes. No claim that automated contrast scan passed; runtime was separately run with contrast disabled. Decorative outlined echo type excluded."
+}

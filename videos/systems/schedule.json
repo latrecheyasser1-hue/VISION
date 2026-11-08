@@ -1,0 +1,31 @@
+{
+  "id": "systems",
+  "title": "أنظمة الإدارة والبرامج المكتبية",
+  "duration": 83.709,
+  "scenes": [
+    {
+      "start": 0,
+      "duration": 14.116
+    },
+    {
+      "start": 14.116,
+      "duration": 15.223
+    },
+    {
+      "start": 29.339,
+      "duration": 12.33
+    },
+    {
+      "start": 41.669,
+      "duration": 14.793
+    },
+    {
+      "start": 56.462,
+      "duration": 15.014
+    },
+    {
+      "start": 71.476,
+      "duration": 12.233
+    }
+  ]
+}

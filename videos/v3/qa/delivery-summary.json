@@ -1,0 +1,29 @@
+[
+  {
+    "film": "intro",
+    "seconds": 29.666667,
+    "voice": "ar-DZ-IsmaelNeural",
+    "native_rate": "+22%",
+    "tempo": 1.12,
+    "sound_effects": 35,
+    "music_relative_db": -10.0
+  },
+  {
+    "film": "commerce",
+    "seconds": 37.566667,
+    "voice": "ar-DZ-IsmaelNeural",
+    "native_rate": "+22%",
+    "tempo": 1.12,
+    "sound_effects": 55,
+    "music_relative_db": -10.0
+  },
+  {
+    "film": "systems",
+    "seconds": 40.866667,
+    "voice": "ar-DZ-IsmaelNeural",
+    "native_rate": "+22%",
+    "tempo": 1.12,
+    "sound_effects": 52,
+    "music_relative_db": -9.999999999999998
+  }
+]

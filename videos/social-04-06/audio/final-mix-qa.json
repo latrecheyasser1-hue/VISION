@@ -1,0 +1,50 @@
+[
+  {
+    "id": "request",
+    "expected_samples": 1241600,
+    "master_samples": 1241600,
+    "sample_rate": 48000,
+    "channels": 2,
+    "duration": 25.866666666666667,
+    "encoded_samples": 1241600,
+    "aac_padding_seconds": 0.0,
+    "wav_clipped_samples": 0,
+    "aac_clipped_samples": 0,
+    "aac_peak_dbfs": -1.0904184603734925,
+    "integrated_lufs": -14.6,
+    "animation_hit_count": 28,
+    "mixed_hit_count": 28
+  },
+  {
+    "id": "profit",
+    "expected_samples": 1329600,
+    "master_samples": 1329600,
+    "sample_rate": 48000,
+    "channels": 2,
+    "duration": 27.7,
+    "encoded_samples": 1329600,
+    "aac_padding_seconds": 0.0,
+    "wav_clipped_samples": 0,
+    "aac_clipped_samples": 0,
+    "aac_peak_dbfs": -1.037527780640711,
+    "integrated_lufs": -14.34,
+    "animation_hit_count": 20,
+    "mixed_hit_count": 20
+  },
+  {
+    "id": "undo",
+    "expected_samples": 1400000,
+    "master_samples": 1400000,
+    "sample_rate": 48000,
+    "channels": 2,
+    "duration": 29.166666666666668,
+    "encoded_samples": 1400000,
+    "aac_padding_seconds": 0.0,
+    "wav_clipped_samples": 0,
+    "aac_clipped_samples": 0,
+    "aac_peak_dbfs": -0.9779254736641887,
+    "integrated_lufs": -14.46,
+    "animation_hit_count": 23,
+    "mixed_hit_count": 23
+  }
+]

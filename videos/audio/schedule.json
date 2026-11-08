@@ -1,0 +1,76 @@
+{
+  "intro": [
+    {
+      "start": 0,
+      "duration": 14.413
+    },
+    {
+      "start": 14.413,
+      "duration": 14.038
+    },
+    {
+      "start": 28.451,
+      "duration": 8
+    },
+    {
+      "start": 36.451,
+      "duration": 14
+    },
+    {
+      "start": 50.451,
+      "duration": 11
+    }
+  ],
+  "ecommerce": [
+    {
+      "start": 0,
+      "duration": 12.304
+    },
+    {
+      "start": 12.304,
+      "duration": 14.634
+    },
+    {
+      "start": 26.938,
+      "duration": 11.628
+    },
+    {
+      "start": 38.566,
+      "duration": 15.686
+    },
+    {
+      "start": 54.252,
+      "duration": 14.209
+    },
+    {
+      "start": 68.461,
+      "duration": 10.664
+    }
+  ],
+  "systems": [
+    {
+      "start": 0,
+      "duration": 14.116
+    },
+    {
+      "start": 14.116,
+      "duration": 15.223
+    },
+    {
+      "start": 29.339,
+      "duration": 12.33
+    },
+    {
+      "start": 41.669,
+      "duration": 14.793
+    },
+    {
+      "start": 56.462,
+      "duration": 15.014
+    },
+    {
+      "start": 71.476,
+      "duration": 12.233
+    }
+  ]
+}

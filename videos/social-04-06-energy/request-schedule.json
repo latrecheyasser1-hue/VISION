@@ -1,0 +1,320 @@
+{
+  "id": "request",
+  "voice": "ar-SA-HamedNeural",
+  "rate": "+32%",
+  "postTempo": 1,
+  "speechProvider": "Microsoft Edge speech (online, narration text only)",
+  "duration": 25.816667,
+  "scenes": [
+    {
+      "start": 0,
+      "duration": 3.5,
+      "text": "ضغطة واحدة! ماذا يحدث داخل التطبيق؟",
+      "voicePath": "audio/request/01.wav",
+      "voiceDuration": 3.286833,
+      "voiceOffset": 0.12,
+      "words": [
+        {
+          "text": "ضغطة",
+          "start": 0.035,
+          "duration": 0.454541
+        },
+        {
+          "text": "واحدة",
+          "start": 0.499,
+          "duration": 0.454541
+        },
+        {
+          "text": "ماذا",
+          "start": 1.594833,
+          "duration": 0.3125
+        },
+        {
+          "text": "يحدث",
+          "start": 1.916833,
+          "duration": 0.350375
+        },
+        {
+          "text": "داخل",
+          "start": 2.276666,
+          "duration": 0.265166
+        },
+        {
+          "text": "التطبيق",
+          "start": 2.5512910000000004,
+          "duration": 0.615541
+        }
+      ]
+    },
+    {
+      "start": 3.5,
+      "duration": 4.333333333333333,
+      "text": "الفرونت إند يجمع البيانات، ثم يرسل ريكويست عبر الإيه بي آي.",
+      "voicePath": "audio/request/02.wav",
+      "voiceDuration": 4.122833,
+      "voiceOffset": 0.12,
+      "words": [
+        {
+          "text": "الفرونت",
+          "start": 0.035,
+          "duration": 0.4735
+        },
+        {
+          "text": "إند",
+          "start": 0.517958,
+          "duration": 0.284083
+        },
+        {
+          "text": "يجمع",
+          "start": 0.8115,
+          "duration": 0.3125
+        },
+        {
+          "text": "البيانات",
+          "start": 1.1335,
+          "duration": 0.653416
+        },
+        {
+          "text": "ثم",
+          "start": 1.976291,
+          "duration": 0.255666
+        },
+        {
+          "text": "يرسل",
+          "start": 2.241458,
+          "duration": 0.293541
+        },
+        {
+          "text": "ريكويست",
+          "start": 2.544458,
+          "duration": 0.482958
+        },
+        {
+          "text": "عبر",
+          "start": 3.036916,
+          "duration": 0.217791
+        },
+        {
+          "text": "الإيه",
+          "start": 3.2641660000000003,
+          "duration": 0.227291
+        },
+        {
+          "text": "بي",
+          "start": 3.500916,
+          "duration": 0.161
+        },
+        {
+          "text": "آي",
+          "start": 3.6713750000000003,
+          "duration": 0.331458
+        }
+      ]
+    },
+    {
+      "start": 7.833333,
+      "duration": 6.066666666666666,
+      "text": "في الباك إند، تبدأ الفاليديشن: بيانات صحيحة، سعر صحيح، ومخزون متوفر.",
+      "voicePath": "audio/request/03.wav",
+      "voiceDuration": 5.865208,
+      "voiceOffset": 0.12,
+      "words": [
+        {
+          "text": "في",
+          "start": 0.035,
+          "duration": 0.07575
+        },
+        {
+          "text": "الباك",
+          "start": 0.12025000000000001,
+          "duration": 0.38825
+        },
+        {
+          "text": "إند",
+          "start": 0.517958,
+          "duration": 0.435625
+        },
+        {
+          "text": "تبدأ",
+          "start": 1.1335,
+          "duration": 0.265166
+        },
+        {
+          "text": "الفاليديشن",
+          "start": 1.408125,
+          "duration": 0.767041
+        },
+        {
+          "text": "بيانات",
+          "start": 2.3266660000000003,
+          "duration": 0.539791
+        },
+        {
+          "text": "صحيحة",
+          "start": 2.875916,
+          "duration": 0.54925
+        },
+        {
+          "text": "سعر",
+          "start": 3.5766660000000003,
+          "duration": 0.359833
+        },
+        {
+          "text": "صحيح",
+          "start": 3.946,
+          "duration": 0.482958
+        },
+        {
+          "text": "ومخزون",
+          "start": 4.571,
+          "duration": 0.558708
+        },
+        {
+          "text": "متوفر",
+          "start": 5.1391659999999995,
+          "duration": 0.606041
+        }
+      ]
+    },
+    {
+      "start": 13.9,
+      "duration": 2.6,
+      "text": "بعدها، يحفظ الطلب في الداتابيس.",
+      "voicePath": "audio/request/04.wav",
+      "voiceDuration": 2.399292,
+      "voiceOffset": 0.12,
+      "words": [
+        {
+          "text": "بعدها",
+          "start": 0.035,
+          "duration": 0.558708
+        },
+        {
+          "text": "يحفظ",
+          "start": 0.764166,
+          "duration": 0.38825
+        },
+        {
+          "text": "الطلب",
+          "start": 1.161916,
+          "duration": 0.321958
+        },
+        {
+          "text": "في",
+          "start": 1.493333,
+          "duration": 0.066291
+        },
+        {
+          "text": "الداتابيس",
+          "start": 1.569083,
+          "duration": 0.710208
+        }
+      ]
+    },
+    {
+      "start": 16.5,
+      "duration": 3.433333333333333,
+      "text": "ويرجع ريسبونس إلى الواجهة: تم إنشاء الطلب.",
+      "voicePath": "audio/request/05.wav",
+      "voiceDuration": 3.232667,
+      "voiceOffset": 0.12,
+      "words": [
+        {
+          "text": "ويرجع",
+          "start": 0.035,
+          "duration": 0.482958
+        },
+        {
+          "text": "ريسبونس",
+          "start": 0.527416,
+          "duration": 0.464
+        },
+        {
+          "text": "إلى",
+          "start": 1.000916,
+          "duration": 0.1515
+        },
+        {
+          "text": "الواجهة",
+          "start": 1.161916,
+          "duration": 0.539791
+        },
+        {
+          "text": "تم",
+          "start": 1.966833,
+          "duration": 0.189375
+        },
+        {
+          "text": "إنشاء",
+          "start": 2.1656660000000003,
+          "duration": 0.340916
+        },
+        {
+          "text": "الطلب",
+          "start": 2.516083,
+          "duration": 0.596583
+        }
+      ]
+    },
+    {
+      "start": 19.933333,
+      "duration": 5.883333333333334,
+      "text": "فرونت إند، باك إند، داتابيس. هذا ما يربط أجزاء التطبيق.",
+      "voicePath": "audio/request/06.wav",
+      "voiceDuration": 5.209208,
+      "voiceOffset": 0.12,
+      "words": [
+        {
+          "text": "فرونت",
+          "start": 0.035,
+          "duration": 0.378791
+        },
+        {
+          "text": "إند",
+          "start": 0.42325,
+          "duration": 0.435625
+        },
+        {
+          "text": "باك",
+          "start": 0.991458,
+          "duration": 0.359833
+        },
+        {
+          "text": "إند",
+          "start": 1.36075,
+          "duration": 0.407208
+        },
+        {
+          "text": "داتابيس",
+          "start": 1.9194579999999999,
+          "duration": 0.786
+        },
+        {
+          "text": "هذا",
+          "start": 3.356208,
+          "duration": 0.3125
+        },
+        {
+          "text": "ما",
+          "start": 3.678166,
+          "duration": 0.113625
+        },
+        {
+          "text": "يربط",
+          "start": 3.8012910000000004,
+          "duration": 0.331458
+        },
+        {
+          "text": "أجزاء",
+          "start": 4.142208,
+          "duration": 0.293541
+        },
+        {
+          "text": "التطبيق",
+          "start": 4.44525,
+          "duration": 0.643958
+        }
+      ]
+    }
+  ]
+}

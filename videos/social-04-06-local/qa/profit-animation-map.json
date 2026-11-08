@@ -1,0 +1,808 @@
+[
+  {
+    "start": 0,
+    "duration": 44.7,
+    "targets": [
+      "rule-fill"
+    ],
+    "properties": [
+      "scaleX",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 0.1,
+    "duration": 0.7,
+    "targets": [
+      "wordmark"
+    ],
+    "properties": [
+      "y",
+      "opacity",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 0.1,
+    "duration": 0.3,
+    "targets": [
+      "title0"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 0.1,
+    "duration": 0.65,
+    "targets": [
+      "title0"
+    ],
+    "properties": [
+      "y",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 0.1,
+    "duration": 1.05,
+    "targets": [
+      "paper-world"
+    ],
+    "properties": [
+      "y",
+      "rotation",
+      "scale",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 0.15,
+    "duration": 0.8,
+    "targets": [
+      "rule"
+    ],
+    "properties": [
+      "scaleX",
+      "transformOrigin",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 0.335,
+    "duration": 0.08,
+    "targets": [
+      "cap0"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 0.5,
+    "duration": 0.65,
+    "targets": [
+      "sales-figure"
+    ],
+    "properties": [
+      "scale",
+      "x",
+      "opacity",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 0.9,
+    "duration": 0.85,
+    "targets": [
+      "ribbon"
+    ],
+    "properties": [
+      "scaleX",
+      "transformOrigin",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 1.3,
+    "duration": 0.5,
+    "targets": [
+      "initial-caption"
+    ],
+    "properties": [
+      "rotation",
+      "scale",
+      "opacity",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 2.805,
+    "duration": 0.08,
+    "targets": [
+      "cap0"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 3.56,
+    "duration": 0.08,
+    "targets": [
+      "cap1"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 5.0416667,
+    "duration": 1.1,
+    "targets": [
+      "fold"
+    ],
+    "properties": [
+      "scale"
+    ]
+  },
+  {
+    "start": 6.7225,
+    "duration": 0.08,
+    "targets": [
+      "cap2"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 6.83,
+    "duration": 0.08,
+    "targets": [
+      "cap1"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 8.505,
+    "duration": 0.08,
+    "targets": [
+      "cap2"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 9.166667,
+    "duration": 0.15,
+    "targets": [
+      "title0"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 9.166667,
+    "duration": 0.9,
+    "targets": [
+      "paper-world"
+    ],
+    "properties": [
+      "rotation",
+      "scale",
+      "y"
+    ]
+  },
+  {
+    "start": 9.166667,
+    "duration": 0.2,
+    "targets": [
+      "initial-caption"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 9.166667,
+    "duration": 0.5,
+    "targets": [
+      "cost-wash"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 9.266667,
+    "duration": 0.3,
+    "targets": [
+      "title1"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 9.266667,
+    "duration": 0.65,
+    "targets": [
+      "title1"
+    ],
+    "properties": [
+      "y",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 9.501667,
+    "duration": 0.08,
+    "targets": [
+      "cap3"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 9.866667,
+    "duration": 0.2,
+    "targets": [
+      "cut cut60"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 10.166667,
+    "duration": 0.9,
+    "targets": [
+      "segment cost-piece"
+    ],
+    "properties": [
+      "y",
+      "rotation",
+      "backgroundColor"
+    ]
+  },
+  {
+    "start": 10.866667,
+    "duration": 0.3,
+    "targets": [
+      "cost-label"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 10.966667,
+    "duration": 0.3,
+    "targets": [
+      "balance40"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 11.166667,
+    "duration": 0.7,
+    "targets": [
+      "fold"
+    ],
+    "properties": [
+      "scale"
+    ]
+  },
+  {
+    "start": 12.764167,
+    "duration": 0.08,
+    "targets": [
+      "cap4"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 12.871667,
+    "duration": 0.08,
+    "targets": [
+      "cap3"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 15.439167,
+    "duration": 0.08,
+    "targets": [
+      "cap5"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 15.546667,
+    "duration": 0.08,
+    "targets": [
+      "cap4"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 18.559167,
+    "duration": 0.08,
+    "targets": [
+      "cap5"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 19.233333,
+    "duration": 0.15,
+    "targets": [
+      "title1"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 19.233333,
+    "duration": 1.1,
+    "targets": [
+      "paper-world"
+    ],
+    "properties": [
+      "rotation",
+      "scale",
+      "x",
+      "y"
+    ]
+  },
+  {
+    "start": 19.333333,
+    "duration": 0.3,
+    "targets": [
+      "title2"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 19.333333,
+    "duration": 0.65,
+    "targets": [
+      "title2"
+    ],
+    "properties": [
+      "y",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 19.568333,
+    "duration": 0.08,
+    "targets": [
+      "cap6"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 19.933333,
+    "duration": 0.3,
+    "targets": [
+      "cut cut75"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 20.233333,
+    "duration": 0.8,
+    "targets": [
+      "segment expense-piece"
+    ],
+    "properties": [
+      "y",
+      "backgroundColor",
+      "rotation"
+    ]
+  },
+  {
+    "start": 20.233333,
+    "duration": 0.2,
+    "targets": [
+      "balance40"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 20.733333,
+    "duration": 0.3,
+    "targets": [
+      "expense-label"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 20.733333,
+    "duration": 0.6,
+    "targets": [
+      "ribbon-label"
+    ],
+    "properties": [
+      "y"
+    ]
+  },
+  {
+    "start": 20.833333,
+    "duration": 0.3,
+    "targets": [
+      "balance25"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 20.833333,
+    "duration": 0.6,
+    "targets": [
+      "segment remain-piece"
+    ],
+    "properties": [
+      "y"
+    ]
+  },
+  {
+    "start": 21.755833,
+    "duration": 0.08,
+    "targets": [
+      "cap7"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 21.863333,
+    "duration": 0.08,
+    "targets": [
+      "cap6"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 26.268333,
+    "duration": 0.08,
+    "targets": [
+      "cap8"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 26.375833,
+    "duration": 0.08,
+    "targets": [
+      "cap7"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 28.000833,
+    "duration": 0.08,
+    "targets": [
+      "cap8"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 28.666667,
+    "duration": 0.15,
+    "targets": [
+      "title2"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 28.666667,
+    "duration": 0.8,
+    "targets": [
+      "paper-world"
+    ],
+    "properties": [
+      "rotation",
+      "scale",
+      "y",
+      "x"
+    ]
+  },
+  {
+    "start": 28.666667,
+    "duration": 0.42,
+    "targets": [
+      "fold"
+    ],
+    "properties": [
+      "scale"
+    ]
+  },
+  {
+    "start": 28.766667,
+    "duration": 0.3,
+    "targets": [
+      "title3"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 28.766667,
+    "duration": 0.65,
+    "targets": [
+      "title3"
+    ],
+    "properties": [
+      "y",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 29.001667,
+    "duration": 0.08,
+    "targets": [
+      "cap9"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 29.066667,
+    "duration": 0.05,
+    "targets": [
+      "ribbon",
+      "cost-label",
+      "expense-label",
+      "ribbon-label"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 29.066667,
+    "duration": 0.5,
+    "targets": [
+      "sales-figure"
+    ],
+    "properties": [
+      "scale",
+      "y"
+    ]
+  },
+  {
+    "start": 29.086667,
+    "duration": 0.55,
+    "targets": [
+      "fold"
+    ],
+    "properties": [
+      "scale"
+    ]
+  },
+  {
+    "start": 29.116667,
+    "duration": 0.1,
+    "targets": [
+      "entry e1",
+      "entry e2",
+      "entry e3",
+      "total-line"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 29.116667,
+    "duration": 0.82,
+    "targets": [
+      "entry e1",
+      "entry e2",
+      "entry e3"
+    ],
+    "properties": [
+      "x",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 32.484167,
+    "duration": 0.08,
+    "targets": [
+      "cap9"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 33.239167,
+    "duration": 0.08,
+    "targets": [
+      "cap10"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 34.7593337,
+    "duration": 0.25,
+    "targets": [
+      "missing"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 35.751667,
+    "duration": 0.08,
+    "targets": [
+      "cap11"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 35.859167,
+    "duration": 0.08,
+    "targets": [
+      "cap10"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 36.362667,
+    "duration": 0.2,
+    "targets": [
+      "missing"
+    ],
+    "properties": [
+      "x",
+      "yoyo",
+      "repeat"
+    ]
+  },
+  {
+    "start": 38.834167,
+    "duration": 0.08,
+    "targets": [
+      "cap11"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 39.589167,
+    "duration": 0.08,
+    "targets": [
+      "cap12"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 40.210667,
+    "duration": 0.3,
+    "targets": [
+      "missing"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 40.210667,
+    "duration": 1,
+    "targets": [
+      "cost-wash"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 40.691667,
+    "duration": 0.3,
+    "targets": [
+      "complete-seal"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 40.691667,
+    "duration": 0.45,
+    "targets": [
+      "complete-seal"
+    ],
+    "properties": [
+      "scale",
+      "rotation",
+      "runBackwards"
+    ]
+  },
+  {
+    "start": 41.951667,
+    "duration": 0.08,
+    "targets": [
+      "cap13"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 42.059167,
+    "duration": 0.08,
+    "targets": [
+      "cap12"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  },
+  {
+    "start": 42.834167,
+    "duration": 0.08,
+    "targets": [
+      "cap13"
+    ],
+    "properties": [
+      "opacity"
+    ]
+  }
+]

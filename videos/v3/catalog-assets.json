@@ -1,0 +1,22 @@
+[
+  {
+    "name": "music.wav",
+    "url": "https://heygen-product.s3-accelerate.amazonaws.com/astral_generated_music/1d11740a9c6e4d67816930416cb6b467.wav?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIA3FLD4S3AS7WYJKBK%2F20261021%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Date=20261021T180842Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=5b9e2351b9c0f2ee69b74216153ca212ae6f2bc5bf134cbb996c1164c453605d",
+    "source": "HeyGen catalog music 1d11740a9c6e4d67816930416cb6b467"
+  },
+  {
+    "name": "whoosh.mp3",
+    "url": "https://heygen-product.s3-accelerate.amazonaws.com/gen_os/sfx/5ae247cc40f79d97.mp3?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIA3FLD4S3AS7WYJKBK%2F20261021%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Date=20261021T180900Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=aaec59fe3d7ba87c7afd382c4bcc8135b6b19cdd0482868475b864cc3adb3098",
+    "source": "HeyGen SFX Fast Whoosh 5ae247cc40f79d97"
+  },
+  {
+    "name": "pop.mp3",
+    "url": "https://heygen-product.s3-accelerate.amazonaws.com/gen_os/sfx/4558aa1365870399.mp3?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIA3FLD4S3AS7WYJKBK%2F20261021%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Date=20261021T180901Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=e5bcfe37dcd539a358e81c8f657b113a84cc22da60451f95620d2f592c4533ef",
+    "source": "HeyGen SFX UI Pop 4558aa1365870399"
+  },
+  {
+    "name": "click.mp3",
+    "url": "https://heygen-product.s3-accelerate.amazonaws.com/gen_os/sfx/09a80f87b76086e4.mp3?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIA3FLD4S3AS7WYJKBK%2F20261021%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Date=20261021T180901Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=610d168e9518646ae3411150926560ce31e15f6a6e637cb217d061e0dfc24b51",
+    "source": "HeyGen SFX Plastic Click 09a80f87b76086e4"
+  }
+]

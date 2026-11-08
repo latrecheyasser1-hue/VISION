@@ -1,0 +1,35 @@
+{
+  "errors": [],
+  "reports": [
+    {
+      "scene": 1,
+      "time": 5.685333333333333,
+      "outOfFrameText": []
+    },
+    {
+      "scene": 2,
+      "time": 13.028666333333334,
+      "outOfFrameText": []
+    },
+    {
+      "scene": 3,
+      "time": 19.177333666666666,
+      "outOfFrameText": []
+    },
+    {
+      "scene": 4,
+      "time": 26.055332999999997,
+      "outOfFrameText": []
+    },
+    {
+      "scene": 5,
+      "time": 33.12799966666667,
+      "outOfFrameText": []
+    },
+    {
+      "scene": 6,
+      "time": 39.702666666666666,
+      "outOfFrameText": []
+    }
+  ]
+}

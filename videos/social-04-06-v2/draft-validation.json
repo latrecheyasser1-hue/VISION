@@ -1,0 +1,32 @@
+[
+  {
+    "film": "request",
+    "draft_checks": "passed",
+    "source_hash_verified": true,
+    "narration_and_screen_copy_in_prompt": true,
+    "contiguous_timeline": true,
+    "identity_asset_exists": true,
+    "submitted": false,
+    "video_review": "not inspected; no new output"
+  },
+  {
+    "film": "profit",
+    "draft_checks": "passed",
+    "source_hash_verified": true,
+    "narration_and_screen_copy_in_prompt": true,
+    "contiguous_timeline": true,
+    "identity_asset_exists": true,
+    "submitted": false,
+    "video_review": "not inspected; no new output"
+  },
+  {
+    "film": "undo",
+    "draft_checks": "passed",
+    "source_hash_verified": true,
+    "narration_and_screen_copy_in_prompt": true,
+    "contiguous_timeline": true,
+    "identity_asset_exists": true,
+    "submitted": false,
+    "video_review": "not inspected; no new output"
+  }
+]

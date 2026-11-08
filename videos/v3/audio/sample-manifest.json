@@ -1,0 +1,48 @@
+{
+  "model": "vadimbelsky/arabic-emirati-female-piper",
+  "model_url": "https://huggingface.co/vadimbelsky/arabic-emirati-female-piper",
+  "declared_license": "MIT",
+  "speaker": "Arabic Emirati female (entirely different speaker/model)",
+  "native_length_scale": 0.85,
+  "pitch_modified": false,
+  "external_inference": false,
+  "model_sha256": "1578a9b27d01a0626227225b148179628b770607dd61bdbbc41865bd399106b1",
+  "videos": {
+    "intro": [
+      {
+        "scene": 1,
+        "duration": 7.443311,
+        "words": 13,
+        "wpm": 104.8,
+        "path": "intro/sample-scene-01.wav",
+        "text": "لكل نشاط طريقة عمله. ومع تعدد الطلبات والمعلومات، تظهر احتياجات جديدة للتنظيم والمتابعة.",
+        "phrases": [
+          {
+            "phrase": 1,
+            "start": 0,
+            "duration": 1.67737,
+            "text": "لكل نشاط طريقة عمله.",
+            "spoken": "لِكُلِّ نَشاطٍ طَريقَةُ عَمَلِهِ.",
+            "path": "intro/scene-01-phrase-01.wav"
+          },
+          {
+            "phrase": 2,
+            "start": 1.78737,
+            "duration": 2.364943,
+            "text": "ومع تعدد الطلبات والمعلومات،",
+            "spoken": "وَمَعَ تَعَدُّدِ الطَّلَباتِ وَالمَعْلوماتِ،",
+            "path": "intro/scene-01-phrase-02.wav"
+          },
+          {
+            "phrase": 3,
+            "start": 4.227313,
+            "duration": 3.215964,
+            "text": "تظهر احتياجات جديدة للتنظيم والمتابعة.",
+            "spoken": "تَظْهَرُ احْتِياجاتٌ جَديدَةٌ لِلتَّنْظيمِ وَالمُتابَعَةِ.",
+            "path": "intro/scene-01-phrase-03.wav"
+          }
+        ]
+      }
+    ]
+  }
+}

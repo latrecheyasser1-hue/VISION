@@ -1,0 +1,19 @@
+{
+  "file": "C:\\antigravity-projects\\VISION\\videos\\social-04-06-energy\\deliverables\\05-VISION-Profit-ENERGY.mp4",
+  "duration": 26.566667,
+  "bytes": 1808740,
+  "dimensions": [
+    1080,
+    1920
+  ],
+  "fps": 30,
+  "audio": "AAC stereo 48 kHz",
+  "fullDecode": "passed",
+  "captions": "burned in plus SRT",
+  "voice": "ar-SA-ZariyahNeural",
+  "rate": "+28%",
+  "postTempo": 1,
+  "renderer": "local CSS/SVG/GSAP; no Blender, WebGL or Higgsfield",
+  "htmlSha256": "c5060b0191cf52a46cafaa6b470f737f8b19dafe0eceac6165640962f7dcbcce",
+  "videoSha256": "d24b2508b1405d81bed7dda3f4968483c8681bef3b2d5c245798aa3c53c52e92"
+}

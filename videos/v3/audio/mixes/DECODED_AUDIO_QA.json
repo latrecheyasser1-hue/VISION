@@ -1,0 +1,14 @@
+{
+  "intro": {
+    "decoded_integrated_lufs": -14.3,
+    "decoded_true_peak_dbfs": -1.2
+  },
+  "commerce": {
+    "decoded_integrated_lufs": -14.1,
+    "decoded_true_peak_dbfs": -1.2
+  },
+  "systems": {
+    "decoded_integrated_lufs": -14.6,
+    "decoded_true_peak_dbfs": -1.2
+  }
+}

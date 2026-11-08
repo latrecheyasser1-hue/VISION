@@ -1,0 +1,439 @@
+{
+  "duration": 36.45,
+  "voice": "en-US-AndrewMultilingualNeural",
+  "rate": "+25%",
+  "scenes": [
+    {
+      "id": "click",
+      "start": 0,
+      "duration": 4.433333333333334,
+      "voiceOffset": 0.08,
+      "voiceDuration": 4.27,
+      "voicePath": "assets/voice/00.wav",
+      "words": [
+        {
+          "text": "ضغطة",
+          "start": 0.04,
+          "duration": 0.46
+        },
+        {
+          "text": "واحدة",
+          "start": 0.5,
+          "duration": 0.49
+        },
+        {
+          "text": "على",
+          "start": 0.99,
+          "duration": 0.19
+        },
+        {
+          "text": "تأكيد",
+          "start": 1.18,
+          "duration": 0.41
+        },
+        {
+          "text": "الطلب",
+          "start": 1.5899999999999999,
+          "duration": 0.53
+        },
+        {
+          "text": "ماذا",
+          "start": 2.44,
+          "duration": 0.29
+        },
+        {
+          "text": "يحدث",
+          "start": 2.73,
+          "duration": 0.45
+        },
+        {
+          "text": "خلف",
+          "start": 3.18,
+          "duration": 0.35
+        },
+        {
+          "text": "الشاشة",
+          "start": 3.53,
+          "duration": 0.64
+        }
+      ],
+      "text": "ضغطة واحدة على تأكيد الطلب. ماذا يحدث خلف الشاشة؟"
+    },
+    {
+      "id": "payload",
+      "start": 4.433333,
+      "duration": 6.3,
+      "voiceOffset": 0.08,
+      "voiceDuration": 6.14,
+      "voicePath": "assets/voice/01.wav",
+      "words": [
+        {
+          "text": "تجمع",
+          "start": 0.04,
+          "duration": 0.25
+        },
+        {
+          "text": "الواجهة",
+          "start": 0.29000000000000004,
+          "duration": 0.47
+        },
+        {
+          "text": "البيانات",
+          "start": 0.76,
+          "duration": 0.61
+        },
+        {
+          "text": "رقم",
+          "start": 1.63,
+          "duration": 0.37
+        },
+        {
+          "text": "المنتج",
+          "start": 2.0100000000000002,
+          "duration": 0.57
+        },
+        {
+          "text": "والكمية",
+          "start": 2.83,
+          "duration": 0.58
+        },
+        {
+          "text": "المطلوبة",
+          "start": 3.41,
+          "duration": 0.69
+        },
+        {
+          "text": "هذه",
+          "start": 4.430000000000001,
+          "duration": 0.24
+        },
+        {
+          "text": "البيانات",
+          "start": 4.67,
+          "duration": 0.47
+        },
+        {
+          "text": "تسمى",
+          "start": 5.15,
+          "duration": 0.38
+        },
+        {
+          "text": "Payload",
+          "start": 5.53,
+          "duration": 0.51
+        }
+      ],
+      "text": "تجمع الواجهة البيانات: رقم المنتج، والكمية المطلوبة. هذه البيانات تسمى Payload."
+    },
+    {
+      "id": "request",
+      "start": 10.733333,
+      "duration": 3.8333333333333335,
+      "voiceOffset": 0.08,
+      "voiceDuration": 3.67,
+      "voicePath": "assets/voice/02.wav",
+      "words": [
+        {
+          "text": "يرسل",
+          "start": 0.04,
+          "duration": 0.32
+        },
+        {
+          "text": "Frontend",
+          "start": 0.36,
+          "duration": 0.43
+        },
+        {
+          "text": "طلب",
+          "start": 0.7899999999999999,
+          "duration": 0.24
+        },
+        {
+          "text": "HTTP",
+          "start": 1.08,
+          "duration": 0.77
+        },
+        {
+          "text": "Request",
+          "start": 1.97,
+          "duration": 0.41
+        },
+        {
+          "text": "عبر",
+          "start": 2.3800000000000003,
+          "duration": 0.19
+        },
+        {
+          "text": "API",
+          "start": 2.77,
+          "duration": 0.27
+        },
+        {
+          "text": "إلى",
+          "start": 3.04,
+          "duration": 0.08
+        },
+        {
+          "text": "Backend",
+          "start": 3.1300000000000003,
+          "duration": 0.44
+        }
+      ],
+      "text": "يرسل Frontend طلب HTTP Request عبر API إلى Backend."
+    },
+    {
+      "id": "validation",
+      "start": 14.566667,
+      "duration": 5.833333333333333,
+      "voiceOffset": 0.08,
+      "voiceDuration": 5.69,
+      "voicePath": "assets/voice/03.wav",
+      "words": [
+        {
+          "text": "هنا",
+          "start": 0.039999999999999994,
+          "duration": 0.2
+        },
+        {
+          "text": "تبدأ",
+          "start": 0.24,
+          "duration": 0.33
+        },
+        {
+          "text": "Validation",
+          "start": 0.5700000000000001,
+          "duration": 0.61
+        },
+        {
+          "text": "بيانات",
+          "start": 1.39,
+          "duration": 0.52
+        },
+        {
+          "text": "صحيحة",
+          "start": 1.91,
+          "duration": 0.6
+        },
+        {
+          "text": "سعر",
+          "start": 2.77,
+          "duration": 0.35
+        },
+        {
+          "text": "محسوب",
+          "start": 3.12,
+          "duration": 0.42
+        },
+        {
+          "text": "في",
+          "start": 3.5500000000000003,
+          "duration": 0.06
+        },
+        {
+          "text": "الخادم",
+          "start": 3.6100000000000003,
+          "duration": 0.51
+        },
+        {
+          "text": "ومخزون",
+          "start": 4.34,
+          "duration": 0.55
+        },
+        {
+          "text": "متوفر",
+          "start": 4.89,
+          "duration": 0.7
+        }
+      ],
+      "text": "هنا تبدأ Validation: بيانات صحيحة، سعر محسوب في الخادم، ومخزون متوفر."
+    },
+    {
+      "id": "database",
+      "start": 20.4,
+      "duration": 5.033333333333333,
+      "voiceOffset": 0.08,
+      "voiceDuration": 4.87,
+      "voicePath": "assets/voice/04.wav",
+      "words": [
+        {
+          "text": "بعد",
+          "start": 0.04000000000000001,
+          "duration": 0.25
+        },
+        {
+          "text": "التحقق",
+          "start": 0.29000000000000004,
+          "duration": 0.58
+        },
+        {
+          "text": "يحفظ",
+          "start": 1.0899999999999999,
+          "duration": 0.35
+        },
+        {
+          "text": "الطلب",
+          "start": 1.45,
+          "duration": 0.41
+        },
+        {
+          "text": "في",
+          "start": 1.8699999999999999,
+          "duration": 0.13
+        },
+        {
+          "text": "Database",
+          "start": 2.0,
+          "duration": 0.71
+        },
+        {
+          "text": "الآن",
+          "start": 3.01,
+          "duration": 0.23
+        },
+        {
+          "text": "أصبح",
+          "start": 3.2399999999999998,
+          "duration": 0.29
+        },
+        {
+          "text": "له",
+          "start": 3.53,
+          "duration": 0.18
+        },
+        {
+          "text": "رقم",
+          "start": 3.7199999999999998,
+          "duration": 0.28
+        },
+        {
+          "text": "يمكن",
+          "start": 4.01,
+          "duration": 0.32
+        },
+        {
+          "text": "تتبعه",
+          "start": 4.34,
+          "duration": 0.43
+        }
+      ],
+      "text": "بعد التحقق، يحفظ الطلب في Database. الآن أصبح له رقم يمكن تتبعه."
+    },
+    {
+      "id": "response",
+      "start": 25.433333,
+      "duration": 4.733333333333333,
+      "voiceOffset": 0.08,
+      "voiceDuration": 4.58,
+      "voicePath": "assets/voice/05.wav",
+      "words": [
+        {
+          "text": "ثم",
+          "start": 0.039999999999999994,
+          "duration": 0.16
+        },
+        {
+          "text": "يعود",
+          "start": 0.21000000000000002,
+          "duration": 0.26
+        },
+        {
+          "text": "Response",
+          "start": 0.47000000000000003,
+          "duration": 0.49
+        },
+        {
+          "text": "إلى",
+          "start": 0.96,
+          "duration": 0.17
+        },
+        {
+          "text": "الواجهة",
+          "start": 1.14,
+          "duration": 0.42
+        },
+        {
+          "text": "201",
+          "start": 1.9399999999999997,
+          "duration": 0.68
+        },
+        {
+          "text": "Created",
+          "start": 2.6300000000000003,
+          "duration": 0.46
+        },
+        {
+          "text": "تم",
+          "start": 3.43,
+          "duration": 0.14
+        },
+        {
+          "text": "إنشاء",
+          "start": 3.5700000000000003,
+          "duration": 0.34
+        },
+        {
+          "text": "الطلب",
+          "start": 3.9200000000000004,
+          "duration": 0.56
+        }
+      ],
+      "text": "ثم يعود Response إلى الواجهة: 201 Created. تم إنشاء الطلب."
+    },
+    {
+      "id": "complete",
+      "start": 30.166667,
+      "duration": 6.283333333333334,
+      "voiceOffset": 0.08,
+      "voiceDuration": 5.47,
+      "voicePath": "assets/voice/06.wav",
+      "words": [
+        {
+          "text": "Frontend",
+          "start": 0.04000000000000001,
+          "duration": 0.47
+        },
+        {
+          "text": "Backend",
+          "start": 0.6900000000000001,
+          "duration": 0.5
+        },
+        {
+          "text": "Database",
+          "start": 1.3499999999999999,
+          "duration": 0.62
+        },
+        {
+          "text": "ضغطة",
+          "start": 2.3,
+          "duration": 0.48
+        },
+        {
+          "text": "واحدة",
+          "start": 2.78,
+          "duration": 0.59
+        },
+        {
+          "text": "ورحلة",
+          "start": 3.61,
+          "duration": 0.45
+        },
+        {
+          "text": "كاملة",
+          "start": 4.07,
+          "duration": 0.46
+        },
+        {
+          "text": "من",
+          "start": 4.53,
+          "duration": 0.15
+        },
+        {
+          "text": "البيانات",
+          "start": 4.68,
+          "duration": 0.69
+        }
+      ],
+      "text": "Frontend، Backend، Database. ضغطة واحدة، ورحلة كاملة من البيانات."
+    }
+  ]
+}

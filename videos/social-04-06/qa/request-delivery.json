@@ -1,0 +1,14 @@
+{
+  "file": "C:\\antigravity-projects\\VISION\\videos\\social-04-06\\renders\\04-VISION-request.mp4",
+  "duration": 25.866667,
+  "dimensions": [
+    1080,
+    1920
+  ],
+  "fps": 30,
+  "audio": "AAC stereo 48kHz",
+  "fullDecode": "passed",
+  "bytes": 3550257,
+  "voice": "ar-DZ-IsmaelNeural",
+  "captions": "burned in + matching SRT"
+}

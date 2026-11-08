@@ -1,0 +1,19 @@
+{
+  "file": "C:\\antigravity-projects\\VISION\\videos\\social-04-06-energy\\deliverables\\04-VISION-Request-ENERGY.mp4",
+  "duration": 25.833333,
+  "bytes": 2069541,
+  "dimensions": [
+    1080,
+    1920
+  ],
+  "fps": 30,
+  "audio": "AAC stereo 48 kHz",
+  "fullDecode": "passed",
+  "captions": "burned in plus SRT",
+  "voice": "ar-SA-HamedNeural",
+  "rate": "+32%",
+  "postTempo": 1,
+  "renderer": "local CSS/SVG/GSAP; no Blender, WebGL or Higgsfield",
+  "htmlSha256": "1a1dc12a3747abc11d2cedf9c1ea2892e1cb08dce8d8832e315d7bf786f8cdcd",
+  "videoSha256": "1768bdf46f69371bb0c9f62943b56f6be7aa6171d9cff65803c6577f84a8167d"
+}

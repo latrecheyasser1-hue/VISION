@@ -1,0 +1,395 @@
+{
+  "id": "undo",
+  "voice": "ar-EG-ShakirNeural",
+  "rate": "-2%",
+  "postTempo": 1,
+  "speechProvider": "Microsoft Edge speech (online, narration text only)",
+  "duration": 43.6,
+  "scenes": [
+    {
+      "start": 0,
+      "duration": 7.633333333333334,
+      "text": "زر صغير اسمه «تراجع». لكن إلغاء العملية يتطلب أكثر من حذفها.",
+      "voicePath": "audio/undo/01.wav",
+      "voiceDuration": 6.801417,
+      "voiceOffset": 0.3,
+      "words": [
+        {
+          "text": "زر",
+          "start": 0.035,
+          "duration": 0.395416
+        },
+        {
+          "text": "صغير",
+          "start": 0.430416,
+          "duration": 0.522958
+        },
+        {
+          "text": "اسمه",
+          "start": 0.9533750000000001,
+          "duration": 0.446416
+        },
+        {
+          "text": "تراجع",
+          "start": 1.399791,
+          "duration": 0.727041
+        },
+        {
+          "text": "لكن",
+          "start": 3.4926660000000003,
+          "duration": 0.510208
+        },
+        {
+          "text": "إلغاء",
+          "start": 4.0028749999999995,
+          "duration": 0.357125
+        },
+        {
+          "text": "العملية",
+          "start": 4.359999999999999,
+          "duration": 0.63775
+        },
+        {
+          "text": "يتطلب",
+          "start": 4.99775,
+          "duration": 0.58675
+        },
+        {
+          "text": "أكثر",
+          "start": 5.584499999999999,
+          "duration": 0.357125
+        },
+        {
+          "text": "من",
+          "start": 5.941624999999999,
+          "duration": 0.114791
+        },
+        {
+          "text": "حذفها",
+          "start": 6.056416,
+          "duration": 0.625
+        }
+      ]
+    },
+    {
+      "start": 7.633333,
+      "duration": 4.0,
+      "text": "لنُفكّك ما يحدث عند تسجيل عملية بيع.",
+      "voicePath": "audio/undo/02.wav",
+      "voiceDuration": 3.190708,
+      "voiceOffset": 0.3,
+      "words": [
+        {
+          "text": "لنفكك",
+          "start": 0.035,
+          "duration": 0.688791
+        },
+        {
+          "text": "ما",
+          "start": 0.7237910000000001,
+          "duration": 0.140291
+        },
+        {
+          "text": "يحدث",
+          "start": 0.8640829999999999,
+          "duration": 0.408166
+        },
+        {
+          "text": "عند",
+          "start": 1.27225,
+          "duration": 0.242333
+        },
+        {
+          "text": "تسجيل",
+          "start": 1.514583,
+          "duration": 0.446416
+        },
+        {
+          "text": "عملية",
+          "start": 1.9609999999999999,
+          "duration": 0.574
+        },
+        {
+          "text": "بيع",
+          "start": 2.535,
+          "duration": 0.535708
+        }
+      ]
+    },
+    {
+      "start": 11.633333,
+      "duration": 4.933333333333334,
+      "text": "تخرج قطعة من المخزون، فتتغير الكمية.",
+      "voicePath": "audio/undo/03.wav",
+      "voiceDuration": 4.121833,
+      "voiceOffset": 0.3,
+      "words": [
+        {
+          "text": "تخرج",
+          "start": 0.035,
+          "duration": 0.522958
+        },
+        {
+          "text": "قطعة",
+          "start": 0.557958,
+          "duration": 0.497458
+        },
+        {
+          "text": "من",
+          "start": 1.0554160000000001,
+          "duration": 0.140291
+        },
+        {
+          "text": "المخزون",
+          "start": 1.195708,
+          "duration": 0.752541
+        },
+        {
+          "text": "فتتغير",
+          "start": 2.624291,
+          "duration": 0.68875
+        },
+        {
+          "text": "الكمية",
+          "start": 3.313041,
+          "duration": 0.688791
+        }
+      ]
+    },
+    {
+      "start": 16.566667,
+      "duration": 4.333333333333333,
+      "text": "وتُحفظ فاتورة جديدة تحمل تفاصيل العملية.",
+      "voicePath": "audio/undo/04.wav",
+      "voiceDuration": 3.522333,
+      "voiceOffset": 0.3,
+      "words": [
+        {
+          "text": "وتحفظ",
+          "start": 0.035,
+          "duration": 0.63775
+        },
+        {
+          "text": "فاتورة",
+          "start": 0.67275,
+          "duration": 0.548458
+        },
+        {
+          "text": "جديدة",
+          "start": 1.221208,
+          "duration": 0.574
+        },
+        {
+          "text": "تحمل",
+          "start": 1.7952080000000001,
+          "duration": 0.395416
+        },
+        {
+          "text": "تفاصيل",
+          "start": 2.1906250000000003,
+          "duration": 0.484666
+        },
+        {
+          "text": "العملية",
+          "start": 2.675291,
+          "duration": 0.727041
+        }
+      ]
+    },
+    {
+      "start": 20.9,
+      "duration": 3.433333333333333,
+      "text": "ثم تُضاف قيمة البيع إلى التقارير.",
+      "voicePath": "audio/undo/05.wav",
+      "voiceDuration": 2.6295,
+      "voiceOffset": 0.3,
+      "words": [
+        {
+          "text": "ثم",
+          "start": 0.035,
+          "duration": 0.306125
+        },
+        {
+          "text": "تضاف",
+          "start": 0.341125,
+          "duration": 0.433666
+        },
+        {
+          "text": "قيمة",
+          "start": 0.774791,
+          "duration": 0.382666
+        },
+        {
+          "text": "البيع",
+          "start": 1.157458,
+          "duration": 0.395416
+        },
+        {
+          "text": "إلى",
+          "start": 1.552875,
+          "duration": 0.153041
+        },
+        {
+          "text": "التقارير",
+          "start": 1.705916,
+          "duration": 0.803583
+        }
+      ]
+    },
+    {
+      "start": 24.333333,
+      "duration": 4.3,
+      "text": "وتبقى في السجل معلومات المستخدم ووقت التنفيذ.",
+      "voicePath": "audio/undo/06.wav",
+      "voiceDuration": 3.496833,
+      "voiceOffset": 0.3,
+      "words": [
+        {
+          "text": "وتبقى",
+          "start": 0.035,
+          "duration": 0.484708
+        },
+        {
+          "text": "في",
+          "start": 0.5197080000000001,
+          "duration": 0.051
+        },
+        {
+          "text": "السجل",
+          "start": 0.570708,
+          "duration": 0.446416
+        },
+        {
+          "text": "معلومات",
+          "start": 1.017125,
+          "duration": 0.561208
+        },
+        {
+          "text": "المستخدم",
+          "start": 1.578375,
+          "duration": 0.63775
+        },
+        {
+          "text": "ووقت",
+          "start": 2.216125,
+          "duration": 0.369875
+        },
+        {
+          "text": "التنفيذ",
+          "start": 2.586,
+          "duration": 0.790833
+        }
+      ]
+    },
+    {
+      "start": 28.633333,
+      "duration": 10.733333333333333,
+      "text": "عند الإلغاء، تعود القطعة، ويُصحَّح أثر البيع. تبقى الفاتورة بحالة «ملغاة»، ويُسجَّل التغيير.",
+      "voicePath": "audio/undo/07.wav",
+      "voiceDuration": 9.900917,
+      "voiceOffset": 0.3,
+      "words": [
+        {
+          "text": "عند",
+          "start": 0.035,
+          "duration": 0.331625
+        },
+        {
+          "text": "الإلغاء",
+          "start": 0.366625,
+          "duration": 0.548458
+        },
+        {
+          "text": "تعود",
+          "start": 1.578375,
+          "duration": 0.357125
+        },
+        {
+          "text": "القطعة",
+          "start": 1.9355000000000002,
+          "duration": 0.61225
+        },
+        {
+          "text": "ويصحح",
+          "start": 3.096208,
+          "duration": 0.714291
+        },
+        {
+          "text": "أثر",
+          "start": 3.8105,
+          "duration": 0.267875
+        },
+        {
+          "text": "البيع",
+          "start": 4.078374999999999,
+          "duration": 0.510208
+        },
+        {
+          "text": "تبقى",
+          "start": 5.444165999999999,
+          "duration": 0.280625
+        },
+        {
+          "text": "الفاتورة",
+          "start": 5.724791,
+          "duration": 0.548458
+        },
+        {
+          "text": "بحالة",
+          "start": 6.27325,
+          "duration": 0.471958
+        },
+        {
+          "text": "ملغاة",
+          "start": 6.745208,
+          "duration": 0.63775
+        },
+        {
+          "text": "ويسجل",
+          "start": 8.428875,
+          "duration": 0.5995
+        },
+        {
+          "text": "التغيير",
+          "start": 9.028375,
+          "duration": 0.752541
+        }
+      ]
+    },
+    {
+      "start": 39.366667,
+      "duration": 4.233333333333333,
+      "text": "هكذا نحسب أثر كل ضغطة.",
+      "voicePath": "audio/undo/08.wav",
+      "voiceDuration": 2.208583,
+      "voiceOffset": 0.3,
+      "words": [
+        {
+          "text": "هكذا",
+          "start": 0.035,
+          "duration": 0.484708
+        },
+        {
+          "text": "نحسب",
+          "start": 0.5197080000000001,
+          "duration": 0.433666
+        },
+        {
+          "text": "أثر",
+          "start": 0.9533750000000001,
+          "duration": 0.318875
+        },
+        {
+          "text": "كل",
+          "start": 1.27225,
+          "duration": 0.280625
+        },
+        {
+          "text": "ضغطة",
+          "start": 1.552875,
+          "duration": 0.535708
+        }
+      ]
+    }
+  ]
+}

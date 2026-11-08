@@ -1,0 +1,92 @@
+[
+  {
+    "time": 4.43,
+    "kind": "whoosh",
+    "level": 0.85,
+    "pan": 0.35
+  },
+  {
+    "time": 8.196667000000001,
+    "kind": "whoosh",
+    "level": 0.85,
+    "pan": -0.35
+  },
+  {
+    "time": 13.530000000000001,
+    "kind": "whoosh",
+    "level": 0.85,
+    "pan": 0.35
+  },
+  {
+    "time": 17.33,
+    "kind": "whoosh",
+    "level": 0.85,
+    "pan": -0.35
+  },
+  {
+    "time": 22.763333,
+    "kind": "whoosh",
+    "level": 0.85,
+    "pan": 0.35
+  },
+  {
+    "time": 0.4,
+    "kind": "stamp",
+    "level": 1,
+    "pan": 0
+  },
+  {
+    "time": 5.05,
+    "kind": "impact",
+    "level": 1,
+    "pan": 0
+  },
+  {
+    "time": 9.773333666666668,
+    "kind": "tear",
+    "level": 1,
+    "pan": 0
+  },
+  {
+    "time": 11.360000333333332,
+    "kind": "paper",
+    "level": 1,
+    "pan": 0
+  },
+  {
+    "time": 13.9,
+    "kind": "impact",
+    "level": 1,
+    "pan": 0
+  },
+  {
+    "time": 14.5,
+    "kind": "stamp",
+    "level": 0.65,
+    "pan": 0
+  },
+  {
+    "time": 17.75,
+    "kind": "type",
+    "level": 1,
+    "pan": 0
+  },
+  {
+    "time": 18.65,
+    "kind": "stamp",
+    "level": 1,
+    "pan": 0
+  },
+  {
+    "time": 23.433333,
+    "kind": "impact",
+    "level": 0.7,
+    "pan": 0
+  },
+  {
+    "time": 23.933333,
+    "kind": "resolve",
+    "level": 0.6,
+    "pan": 0
+  }
+]

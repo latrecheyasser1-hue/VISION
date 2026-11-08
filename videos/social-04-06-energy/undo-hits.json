@@ -1,0 +1,92 @@
+[
+  {
+    "time": 3.6966669999999997,
+    "kind": "whoosh",
+    "level": 0.85,
+    "pan": 0.35
+  },
+  {
+    "time": 10.363333,
+    "kind": "whoosh",
+    "level": 0.85,
+    "pan": -0.35
+  },
+  {
+    "time": 13.530000000000001,
+    "kind": "whoosh",
+    "level": 0.85,
+    "pan": 0.35
+  },
+  {
+    "time": 19.263333,
+    "kind": "whoosh",
+    "level": 0.85,
+    "pan": -0.35
+  },
+  {
+    "time": 0.8,
+    "kind": "impact",
+    "level": 1,
+    "pan": 0
+  },
+  {
+    "time": 4.504375,
+    "kind": "mechanical",
+    "level": 0.85,
+    "pan": 0
+  },
+  {
+    "time": 5.485125,
+    "kind": "mechanical",
+    "level": 0.85,
+    "pan": 0
+  },
+  {
+    "time": 6.562084,
+    "kind": "mechanical",
+    "level": 0.85,
+    "pan": 0
+  },
+  {
+    "time": 10.933333,
+    "kind": "reverse",
+    "level": 1,
+    "pan": 0
+  },
+  {
+    "time": 11.233333,
+    "kind": "mechanical",
+    "level": 1,
+    "pan": 0
+  },
+  {
+    "time": 14.35,
+    "kind": "mechanical",
+    "level": 1,
+    "pan": 0
+  },
+  {
+    "time": 15.05,
+    "kind": "stamp",
+    "level": 1,
+    "pan": 0
+  },
+  {
+    "time": 19.783333,
+    "kind": "type",
+    "level": 1,
+    "pan": 0
+  },
+  {
+    "time": 20.333333,
+    "kind": "click",
+    "level": 1,
+    "pan": 0
+  },
+  {
+    "time": 20.733333000000002,
+    "kind": "resolve",
+    "level": 0.65,
+    "pan": 0
+  }
+]

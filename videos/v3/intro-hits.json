@@ -1,0 +1,212 @@
+[
+  {
+    "time": 0.2,
+    "kind": "impact",
+    "level": 0.8,
+    "pan": 0
+  },
+  {
+    "time": 1.7546666666666666,
+    "kind": "pop",
+    "level": 0.75,
+    "pan": -0.6
+  },
+  {
+    "time": 2.8146666666666667,
+    "kind": "pop",
+    "level": 0.75,
+    "pan": 0.6
+  },
+  {
+    "time": 3.8746666666666667,
+    "kind": "pop",
+    "level": 0.75,
+    "pan": -0.6
+  },
+  {
+    "time": 4.934666666666666,
+    "kind": "pop",
+    "level": 0.75,
+    "pan": 0.6
+  },
+  {
+    "time": 8.199333666666666,
+    "kind": "whoosh",
+    "level": 0.75,
+    "pan": 0.5
+  },
+  {
+    "time": 9.641333666666666,
+    "kind": "whoosh",
+    "level": 0.75,
+    "pan": -0.5
+  },
+  {
+    "time": 11.083333666666666,
+    "kind": "whoosh",
+    "level": 0.75,
+    "pan": 0.5
+  },
+  {
+    "time": 12.285333666666666,
+    "kind": "click",
+    "level": 0.75,
+    "pan": 0
+  },
+  {
+    "time": 7.066667,
+    "kind": "whoosh",
+    "level": 1,
+    "pan": 0.5
+  },
+  {
+    "time": 14.433333,
+    "kind": "impact",
+    "level": 0.7,
+    "pan": 0
+  },
+  {
+    "time": 15.098333,
+    "kind": "pop",
+    "level": 0.35,
+    "pan": 0
+  },
+  {
+    "time": 15.158333,
+    "kind": "pop",
+    "level": 0.35,
+    "pan": 0
+  },
+  {
+    "time": 15.218333,
+    "kind": "pop",
+    "level": 0.35,
+    "pan": 0
+  },
+  {
+    "time": 15.278333,
+    "kind": "pop",
+    "level": 0.35,
+    "pan": 0
+  },
+  {
+    "time": 15.338333,
+    "kind": "pop",
+    "level": 0.35,
+    "pan": 0
+  },
+  {
+    "time": 15.398333000000001,
+    "kind": "pop",
+    "level": 0.35,
+    "pan": 0
+  },
+  {
+    "time": 15.458333,
+    "kind": "pop",
+    "level": 0.35,
+    "pan": 0
+  },
+  {
+    "time": 15.358332999999998,
+    "kind": "pop",
+    "level": 0.75,
+    "pan": 0
+  },
+  {
+    "time": 15.883332999999999,
+    "kind": "pop",
+    "level": 0.75,
+    "pan": 0
+  },
+  {
+    "time": 16.313333,
+    "kind": "click",
+    "level": 1,
+    "pan": 0
+  },
+  {
+    "time": 16.663332999999998,
+    "kind": "success",
+    "level": 0.65,
+    "pan": 0
+  },
+  {
+    "time": 13.933333,
+    "kind": "whoosh",
+    "level": 1,
+    "pan": -0.5
+  },
+  {
+    "time": 18.457333000000002,
+    "kind": "pop",
+    "level": 0.95,
+    "pan": 1
+  },
+  {
+    "time": 19.057333000000003,
+    "kind": "click",
+    "level": 0.6,
+    "pan": 0
+  },
+  {
+    "time": 19.693333,
+    "kind": "pop",
+    "level": 0.95,
+    "pan": 0.35
+  },
+  {
+    "time": 20.293333,
+    "kind": "click",
+    "level": 0.6,
+    "pan": 0
+  },
+  {
+    "time": 20.929333,
+    "kind": "pop",
+    "level": 0.95,
+    "pan": -0.30000000000000004
+  },
+  {
+    "time": 21.529333,
+    "kind": "click",
+    "level": 0.6,
+    "pan": 0
+  },
+  {
+    "time": 22.165333,
+    "kind": "pop",
+    "level": 0.95,
+    "pan": -0.9500000000000002
+  },
+  {
+    "time": 22.765333000000002,
+    "kind": "click",
+    "level": 0.6,
+    "pan": 0
+  },
+  {
+    "time": 17.433333,
+    "kind": "whoosh",
+    "level": 1,
+    "pan": 0.5
+  },
+  {
+    "time": 24.650000000000002,
+    "kind": "impact",
+    "level": 0.9,
+    "pan": 0
+  },
+  {
+    "time": 27.394333333333336,
+    "kind": "success",
+    "level": 0.9,
+    "pan": 0
+  },
+  {
+    "time": 24.3,
+    "kind": "whoosh",
+    "level": 1,
+    "pan": -0.5
+  }
+]

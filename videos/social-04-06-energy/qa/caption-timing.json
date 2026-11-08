@@ -1,0 +1,23 @@
+[
+  {
+    "id": "request",
+    "captionGroups": 13,
+    "maxSimultaneousCaptions": 1,
+    "framesChecked": 775,
+    "transition": "hard replace; no crossfade"
+  },
+  {
+    "id": "profit",
+    "captionGroups": 14,
+    "maxSimultaneousCaptions": 1,
+    "framesChecked": 796,
+    "transition": "hard replace; no crossfade"
+  },
+  {
+    "id": "undo",
+    "captionGroups": 13,
+    "maxSimultaneousCaptions": 1,
+    "framesChecked": 731,
+    "transition": "hard replace; no crossfade"
+  }
+]
