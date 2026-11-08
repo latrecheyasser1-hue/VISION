@@ -111,6 +111,7 @@ const DEVIS_I18N = {
 // INITIALIZATION
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
+  initSidebar();
   initTabs();
   initSearch();
   initModals();
@@ -126,6 +127,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 });
+
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar') || document.querySelector('.sidebar');
+  if (!sidebar) return;
+  const isCollapsed = sidebar.classList.toggle('collapsed');
+  localStorage.setItem('vision_sidebar_collapsed', isCollapsed ? 'true' : 'false');
+
+  const toggleBtn = document.getElementById('sidebar-toggle');
+  if (toggleBtn) {
+    toggleBtn.title = isCollapsed ? 'Expand sidebar (Ctrl+B)' : 'Collapse sidebar (Ctrl+B)';
+  }
+}
+
+function initSidebar() {
+  const isCollapsed = localStorage.getItem('vision_sidebar_collapsed') === 'true';
+  const sidebar = document.getElementById('sidebar') || document.querySelector('.sidebar');
+  if (sidebar && isCollapsed) {
+    sidebar.classList.add('collapsed');
+    const toggleBtn = document.getElementById('sidebar-toggle');
+    if (toggleBtn) {
+      toggleBtn.title = 'Expand sidebar (Ctrl+B)';
+    }
+  }
+
+  window.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'b' || e.key === 'B')) {
+      e.preventDefault();
+      toggleSidebar();
+    }
+  });
+}
 
 async function fetchAllData() {
   await Promise.all([
