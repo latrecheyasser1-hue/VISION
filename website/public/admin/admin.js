@@ -259,6 +259,10 @@ async function fetchStats() {
     document.getElementById('stat-collected').textContent = formatDzd(data.totalCollectedDzd);
     document.getElementById('stat-pending').textContent = formatDzd(data.totalPendingDzd);
     document.getElementById('stat-active-projects').textContent = data.activeProjectsCount;
+    const navProjBadge = document.getElementById('nav-projects-count');
+    if (navProjBadge && data.activeProjectsCount !== undefined) {
+      navProjBadge.textContent = data.activeProjectsCount;
+    }
     document.getElementById('nav-leads-count').textContent = data.newLeadsCount;
   } catch (err) {
     console.error('Stats error:', err);
@@ -272,7 +276,10 @@ async function fetchProjects() {
     const data = await res.json();
     state.projects = data;
 
-    document.getElementById('nav-projects-count').textContent = data.length;
+    const activeCount = data.filter(p => normalizeKanbanStage(p.stage) !== 'delivered' && p.status !== 'cancelled').length;
+    const navCountEl = document.getElementById('nav-projects-count');
+    if (navCountEl) navCountEl.textContent = activeCount;
+
     renderOverviewProjects(data);
     renderProjectsKanban(data);
     renderHistoryProjectsTable();
