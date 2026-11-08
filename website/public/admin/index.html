@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>VISION - Founder Dashboard</title>
-  <link rel="stylesheet" href="admin.css?v=5">
+  <link rel="stylesheet" href="admin.css?v=6">
   <style>
     .tab-section { display: none; }
     .tab-section.active { display: block; }
@@ -150,25 +150,6 @@
   <!-- MAIN CONTENT -->
   <main class="main-content">
     
-    <!-- Top Bar -->
-    <header class="top-bar">
-      <div class="page-title">
-        <h1 id="page-title-text">Overview</h1>
-        <p id="page-subtitle-text">Projects pipeline and payment milestones</p>
-      </div>
-      <div class="top-bar-actions">
-        <button class="btn btn-secondary" onclick="openModal('new-client-modal')">
-          <span>New Client</span>
-        </button>
-        <button class="btn btn-secondary" onclick="openModal('new-project-modal')">
-          <span>New Project</span>
-        </button>
-        <button class="btn btn-primary" onclick="switchTab('devis')">
-          <span>Create Quote</span>
-        </button>
-      </div>
-    </header>
-
     <div class="content-body">
       
       <!-- TAB 1: OVERVIEW (Straight to business metrics, no useless tutorial banners) -->
@@ -828,6 +809,6 @@
 </div>
 
 <div class="toast-container" id="toast-container"></div>
-<script src="admin.js?v=5"></script>
+<script src="admin.js?v=6"></script>
 </body>
 </html>
