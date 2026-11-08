@@ -1,16 +1,16 @@
-import { S3Client, PutObjectCommand, ListObjectsV2Command, GetObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, ListObjectsV2Command, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import * as dotenv from 'dotenv';
 
 dotenv.config({ path: '.env.local' });
 
-export function getStorageClient() {
-  const endpoint = process.env.AWS_ENDPOINT_URL_S3;
-  const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
-  const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
-  const region = process.env.AWS_REGION || 'eu-central-1';
+export function getR2Client() {
+  const endpoint = process.env.R2_ENDPOINT;
+  const accessKeyId = process.env.R2_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
+  const region = 'auto'; // Cloudflare R2 uses 'auto'
 
   if (!endpoint || !accessKeyId || !secretAccessKey) {
-    throw new Error('Neon Object Storage environment variables are missing');
+    throw new Error('Cloudflare R2 environment variables (R2_ENDPOINT, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY) are missing in .env.local');
   }
 
   return new S3Client({
@@ -24,23 +24,54 @@ export function getStorageClient() {
   });
 }
 
-export async function uploadAsset(bucketName: string, key: string, data: string | Uint8Array, contentType: string = 'text/plain') {
-  const s3 = getStorageClient();
+export function getR2BucketName(): string {
+  return process.env.R2_BUCKET_NAME || 'vision';
+}
+
+export function getR2PublicUrl(key: string): string {
+  const baseUrl = process.env.R2_PUBLIC_URL?.replace(/\/$/, '') || '';
+  const cleanKey = key.replace(/^\//, '');
+  return `${baseUrl}/${cleanKey}`;
+}
+
+export async function uploadToR2(
+  key: string,
+  data: string | Uint8Array | Buffer,
+  contentType: string = 'application/octet-stream'
+) {
+  const s3 = getR2Client();
+  const bucket = getR2BucketName();
   const command = new PutObjectCommand({
-    Bucket: bucketName,
+    Bucket: bucket,
     Key: key,
     Body: typeof data === 'string' ? Buffer.from(data) : data,
     ContentType: contentType,
   });
-  return await s3.send(command);
+  await s3.send(command);
+  return {
+    bucket,
+    key,
+    publicUrl: getR2PublicUrl(key),
+  };
 }
 
-export async function listBucketObjects(bucketName: string, prefix?: string) {
-  const s3 = getStorageClient();
+export async function listR2Objects(prefix?: string) {
+  const s3 = getR2Client();
+  const bucket = getR2BucketName();
   const command = new ListObjectsV2Command({
-    Bucket: bucketName,
+    Bucket: bucket,
     Prefix: prefix,
   });
   const response = await s3.send(command);
   return response.Contents || [];
+}
+
+export async function deleteFromR2(key: string) {
+  const s3 = getR2Client();
+  const bucket = getR2BucketName();
+  const command = new DeleteObjectCommand({
+    Bucket: bucket,
+    Key: key,
+  });
+  return await s3.send(command);
 }

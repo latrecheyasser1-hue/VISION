@@ -2,7 +2,7 @@ import * as dotenv from 'dotenv';
 import { db, sql } from './db/client.js';
 import * as schema from './db/schema.js';
 import { checkAuthHealth } from './services/auth.js';
-import { uploadAsset, listBucketObjects } from './services/storage.js';
+import { uploadToR2, listR2Objects, getR2PublicUrl } from './services/storage.js';
 import { invokeNeonFunction } from './services/functions.js';
 import { checkAiGateway } from './services/ai-gateway.js';
 import { getRealtimeConfig, generateRealtimeToken } from './services/realtime.js';
@@ -11,12 +11,12 @@ dotenv.config({ path: '.env.local' });
 
 export async function checkAllServices() {
   console.log('========================================================');
-  console.log('   VISION — Neon Backend Services Verification');
+  console.log('   VISION — Backend & Cloudflare R2 Verification');
   console.log('========================================================\n');
 
   const results: Record<string, { ok: boolean; details: any }> = {};
 
-  // 1. Lakebase Postgres
+  // 1. Lakebase Postgres (Neon)
   try {
     const rawResult = await sql`SELECT NOW() as current_time, version() as pg_version`;
     const clientRecords = await db.select().from(schema.clients);
@@ -31,39 +31,42 @@ export async function checkAllServices() {
         totalProjectsInCRM: projectRecords.length,
       },
     };
-    console.log(`✓ [1/6] Lakebase Postgres: Connected & verified (${clientRecords.length} clients, ${projectRecords.length} projects in CRM).`);
+    console.log(`✓ [1/6] Neon Postgres: Connected & verified (${clientRecords.length} clients, ${projectRecords.length} projects).`);
   } catch (err: any) {
     results.postgres = { ok: false, details: err.message };
-    console.error('✗ [1/6] Lakebase Postgres failed:', err.message);
+    console.error('✗ [1/6] Neon Postgres failed:', err.message);
   }
 
-  // 2. Neon Auth
+  // 2. Cloudflare R2 Storage (Bucket: vision)
+  try {
+    const testKey = `receipts/test-verification-${Date.now()}.txt`;
+    const uploadRes = await uploadToR2(testKey, 'VISION receipt test file on Cloudflare R2', 'text/plain');
+    const objects = await listR2Objects();
+    results.cloudflareR2 = {
+      ok: true,
+      details: {
+        bucket: uploadRes.bucket,
+        uploadedKey: testKey,
+        publicUrl: uploadRes.publicUrl,
+        totalObjectsInBucket: objects.length,
+      },
+    };
+    console.log(`✓ [2/6] Cloudflare R2: Connected! Uploaded "${testKey}".`);
+    console.log(`       Public link: ${uploadRes.publicUrl}`);
+    console.log(`       Total objects in bucket "vision": ${objects.length}`);
+  } catch (err: any) {
+    results.cloudflareR2 = { ok: false, details: err.message };
+    console.error('✗ [2/6] Cloudflare R2 failed:', err.message);
+  }
+
+  // 3. Neon Auth
   try {
     const authStatus = await checkAuthHealth();
     results.auth = { ok: true, details: authStatus };
-    console.log(`✓ [2/6] Neon Auth: JWKS endpoint accessible (keys: ${authStatus.keysCount}).`);
+    console.log(`✓ [3/6] Neon Auth: JWKS endpoint accessible (keys: ${authStatus.keysCount}).`);
   } catch (err: any) {
     results.auth = { ok: false, details: err.message };
-    console.error('✗ [2/6] Neon Auth failed:', err.message);
-  }
-
-  // 3. Object Storage
-  try {
-    const testKey = `verification-${Date.now()}.txt`;
-    await uploadAsset('assets', testKey, 'VISION test asset upload to Neon S3', 'text/plain');
-    const objects = await listBucketObjects('assets');
-    results.objectStorage = {
-      ok: true,
-      details: {
-        bucket: 'assets',
-        lastUploaded: testKey,
-        totalObjects: objects.length,
-      },
-    };
-    console.log(`✓ [3/6] Neon Object Storage: Successfully uploaded and listed in bucket "assets" (total: ${objects.length}).`);
-  } catch (err: any) {
-    results.objectStorage = { ok: false, details: err.message };
-    console.error('✗ [3/6] Neon Object Storage failed:', err.message);
+    console.error('✗ [3/6] Neon Auth failed:', err.message);
   }
 
   // 4. Neon Functions
