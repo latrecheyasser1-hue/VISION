@@ -480,7 +480,7 @@ function renderLeadsTable(leads) {
 
 // 5. Receipts Storage Explorer
 function renderStorageExplorer() {
-  const grid = document.getElementById('r2-receipts-grid');
+  const grid = document.getElementById('receipts-grid');
   if (!grid) return;
 
   const receipts = [];
