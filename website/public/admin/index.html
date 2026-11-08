@@ -1,0 +1,871 @@
+<!doctype html>
+<html lang="fr" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VISION — Admin Dashboard & CRM</title>
+  <link rel="icon" href="../assets/eye.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="admin.css">
+  <style>
+    /* Specific polish & micro-interactions */
+    .tab-section { display: none; }
+    .tab-section.active { display: block; }
+    .receipt-thumb {
+      width: 44px;
+      height: 44px;
+      object-fit: cover;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+    .receipt-thumb:hover { transform: scale(1.1); }
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .toast {
+      padding: 12px 20px;
+      border-radius: var(--radius-md);
+      background: var(--ink);
+      color: #fff;
+      font-size: 0.88rem;
+      font-weight: 600;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: slideIn 0.25s ease;
+    }
+    .toast.success { background: #065F46; }
+    .toast.error { background: #991B1B; }
+    @keyframes slideIn {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .badge-stage {
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .stage-scoping { background: #FEF3C7; color: #92400E; }
+    .stage-design_20 { background: #E0F2FE; color: #0369A1; }
+    .stage-dev_30 { background: #F3E8FF; color: #6B21A8; }
+    .stage-delivered_30 { background: #DCFCE7; color: #166534; }
+    .wa-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: #059669;
+      text-decoration: none;
+      font-weight: 600;
+      background: #ECFDF5;
+      padding: 3px 8px;
+      border-radius: var(--radius-sm);
+      transition: all 0.15s ease;
+    }
+    .wa-link:hover {
+      background: #D1FAE5;
+      transform: translateY(-1px);
+    }
+    .r2-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s;
+    }
+    .r2-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+    .r2-card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      cursor: pointer;
+      background: #f1f5f9;
+    }
+    .r2-card-body {
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  
+  <!-- ========================================================
+       SIDEBAR (Refero / Polar Design Style)
+       ======================================================== -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <a href="/admin" class="brand-link">
+        <svg viewBox="0 0 200 160" width="32" height="24" fill="currentColor">
+          <path fill="#080e17" d="M4 57L65 13Q100 -9 135 13L196 57H162L119 31Q100 20 81 31L38 57ZM4 70H38L81 96Q100 107 119 96L162 70H196L135 114Q100 136 65 114Z"/>
+          <circle cx="100" cy="63" r="21" fill="#00bceb"/>
+        </svg>
+        <span>VISION</span>
+        <span class="brand-badge">FOUNDER</span>
+      </a>
+      <a href="/" target="_blank" title="Voir le site public" style="color: var(--ink-muted); text-decoration: none;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+          <polyline points="15 3 21 3 21 9"></polyline>
+          <line x1="10" y1="14" x2="21" y2="3"></line>
+        </svg>
+      </a>
+    </div>
+
+    <!-- Quick Search -->
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input type="text" id="global-search" placeholder="Rechercher client, projet...">
+      <span class="search-shortcut">⌘K</span>
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-tab="overview">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7"></rect>
+          <rect x="14" y="3" width="7" height="7"></rect>
+          <rect x="14" y="14" width="7" height="7"></rect>
+          <rect x="3" y="14" width="7" height="7"></rect>
+        </svg>
+        <span>Vue d'ensemble</span>
+      </button>
+
+      <button class="nav-item" data-tab="projects">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+          <polyline points="2 17 12 22 22 17"></polyline>
+          <polyline points="2 12 12 17 22 12"></polyline>
+        </svg>
+        <span>Projets</span>
+        <span class="badge" id="nav-projects-count">0</span>
+      </button>
+
+      <button class="nav-item" data-tab="clients">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        <span>Clients</span>
+        <span class="badge" id="nav-clients-count">0</span>
+      </button>
+
+      <button class="nav-item" data-tab="leads">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+          <polyline points="22,6 12,13 2,6"></polyline>
+        </svg>
+        <span>Demandes (Leads)</span>
+        <span class="badge" id="nav-leads-count" style="background: var(--cyan); color: var(--ink);">0</span>
+      </button>
+
+      <button class="nav-item" data-tab="devis">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
+        <span>Devis & Facturation</span>
+      </button>
+
+      <button class="nav-item" data-tab="storage">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+          <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+          <line x1="12" y1="22.08" x2="12" y2="12"></line>
+        </svg>
+        <span>Reçus BaridiMob (R2)</span>
+      </button>
+    </nav>
+
+    <!-- Sidebar Footer -->
+    <div class="sidebar-footer">
+      <div class="status-pill">
+        <span class="status-dot"></span>
+        <span>Neon & Cloudflare R2 Actifs</span>
+      </div>
+      <div class="user-profile">
+        <div class="user-avatar">Y</div>
+        <div class="user-info">
+          <span class="user-name">Yasser Latreche</span>
+          <span class="user-role">Founder & Software Engineer</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ========================================================
+       MAIN CONTENT
+       ======================================================== -->
+  <main class="main-content">
+    
+    <!-- Top Bar -->
+    <header class="top-bar">
+      <div class="page-title">
+        <h1 id="page-title-text">Vue d'ensemble</h1>
+        <p id="page-subtitle-text">Suivi des projets, paiements BaridiMob 50/20/30 et clients VISION</p>
+      </div>
+      <div class="top-bar-actions">
+        <button class="btn btn-secondary" onclick="openModal('new-client-modal')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+          <span>Nouveau Client</span>
+        </button>
+        <button class="btn btn-secondary" onclick="openModal('new-project-modal')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+          <span>Nouveau Projet</span>
+        </button>
+        <button class="btn btn-primary" onclick="switchTab('devis')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+          <span>Créer un Devis</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="content-body">
+      
+      <!-- ========================================================
+           TAB 1: OVERVIEW
+           ======================================================== -->
+      <section id="tab-overview" class="tab-section active">
+        
+        <!-- Welcome Banner (Refero style) -->
+        <div style="background: linear-gradient(135deg, #080E17 0%, #162030 100%); color: #fff; padding: 24px 28px; border-radius: var(--radius-lg); margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.08); box-shadow: var(--shadow-md);">
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+              <span style="background: var(--cyan); color: var(--ink); font-size: 0.7rem; font-weight: 800; padding: 2px 8px; border-radius: var(--radius-full);">ESPACE FONDATEUR</span>
+              <span style="font-size: 0.85rem; color: var(--ice);">Algérie · Mode BaridiMob 50/20/30</span>
+            </div>
+            <h2 style="font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em;">مرحباً ياسر — لوحة تحكم وكالة VISION</h2>
+            <p style="font-size: 0.85rem; color: #94A3B8; margin-top: 4px;">إدارة شاملة لجميع المشاريع، متابعة دفعات بريدي موب عبر الوصولات، وتوليد عروض الأسعار (Devis) الرسمية.</p>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn btn-cyan" onclick="switchTab('projects')">Voir les Projets →</button>
+          </div>
+        </div>
+
+        <!-- 4 KPI Stat Cards -->
+        <div class="stat-grid">
+          <div class="stat-card accent-dark">
+            <span class="stat-label">Chiffre d'Affaires Global</span>
+            <div class="stat-value"><span id="stat-revenue">0</span><span class="stat-currency">DZD</span></div>
+            <span class="stat-desc">Valeur totale des projets signés</span>
+          </div>
+
+          <div class="stat-card accent-green">
+            <span class="stat-label">Encaissé BaridiMob</span>
+            <div class="stat-value" style="color: #059669;"><span id="stat-collected">0</span><span class="stat-currency">DZD</span></div>
+            <span class="stat-desc">Reçus vérifiés et validés</span>
+          </div>
+
+          <div class="stat-card accent-orange">
+            <span class="stat-label">Reste à Percevoir</span>
+            <div class="stat-value" style="color: #D97706;"><span id="stat-pending">0</span><span class="stat-currency">DZD</span></div>
+            <span class="stat-desc">En attente (Étapes 20% & 30%)</span>
+          </div>
+
+          <div class="stat-card accent-cyan">
+            <span class="stat-label">Projets Actifs en cours</span>
+            <div class="stat-value" style="color: var(--cyan-dark);"><span id="stat-active-projects">0</span></div>
+            <span class="stat-desc">En cadrage, design ou dév</span>
+          </div>
+        </div>
+
+        <!-- Milestone Workflow Explanation Card -->
+        <div class="card" style="margin-top: 24px;">
+          <div class="card-header">
+            <div class="card-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
+              <span>Système de Paiement & Workflow VISION (Algérie)</span>
+            </div>
+            <span class="badge badge-cyan">BaridiMob Uniquement</span>
+          </div>
+          <div class="card-body">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;">
+              <div style="background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                  <strong style="color: var(--ink); font-size: 0.95rem;">1. العربون (M1)</strong>
+                  <span class="badge badge-green">50% du Total</span>
+                </div>
+                <p style="font-size: 0.82rem; color: var(--ink-muted);">Versé après validation du Devis pour lancer le projet, réserver les ressources et débuter l'architecture.</p>
+              </div>
+
+              <div style="background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                  <strong style="color: var(--ink); font-size: 0.95rem;">2. اعتماد التصميم (M2)</strong>
+                  <span class="badge badge-cyan">20% du Total</span>
+                </div>
+                <p style="font-size: 0.82rem; color: var(--ink-muted);">Versé après la réunion de présentation du Design & UI/UX et la validation complète de l'aspect visuel.</p>
+              </div>
+
+              <div style="background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                  <strong style="color: var(--ink); font-size: 0.95rem;">3. التسليم النهائي (M3)</strong>
+                  <span class="badge badge-purple">30% du Total</span>
+                </div>
+                <p style="font-size: 0.82rem; color: var(--ink-muted);">Versé après le développement complet du backend, la base de données, les tests de sécurité et la mise en production.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Projects Table -->
+        <div class="card" style="margin-top: 24px;">
+          <div class="card-header">
+            <div class="card-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              <span>Aperçu Rapide des Projets Récents</span>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="switchTab('projects')">Voir Tous les Projets</button>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Projet & Client</th>
+                  <th>Type</th>
+                  <th>Prix Total</th>
+                  <th>Progression 50 / 20 / 30</th>
+                  <th>Étape</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="overview-projects-tbody">
+                <tr><td colspan="6" style="text-align: center; color: var(--ink-muted);">Chargement des projets...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ========================================================
+           TAB 2: PROJECTS
+           ======================================================== -->
+      <section id="tab-projects" class="tab-section">
+        
+        <div class="card">
+          <div class="card-header">
+            <div style="display: flex; align-items: center; gap: 16px;">
+              <div class="card-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/></svg>
+                <span>Tous les Projets Clients</span>
+              </div>
+              <div class="filter-pills" id="projects-filter-pills">
+                <button class="filter-pill active" data-filter="all">Tous</button>
+                <button class="filter-pill" data-filter="scoping">Cadrage</button>
+                <button class="filter-pill" data-filter="design_20">Design (20%)</button>
+                <button class="filter-pill" data-filter="dev_30">Dév & DB (30%)</button>
+                <button class="filter-pill" data-filter="delivered_30">Livrés</button>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="openModal('new-project-modal')">+ Nouveau Projet</button>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Projet & Client</th>
+                  <th>Contact</th>
+                  <th>Montant Global</th>
+                  <th>M1: 50% (Acompte)</th>
+                  <th>M2: 20% (Design)</th>
+                  <th>M3: 30% (Livraison)</th>
+                  <th>Étape Actuelle</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="projects-table-tbody">
+                <tr><td colspan="8" style="text-align: center; color: var(--ink-muted);">Chargement...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ========================================================
+           TAB 3: CLIENTS
+           ======================================================== -->
+      <section id="tab-clients" class="tab-section">
+        
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+              <span>Répertoire des Clients VISION</span>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="openModal('new-client-modal')">+ Ajouter un Client</button>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Entreprise / Marque</th>
+                  <th>Contact Principal</th>
+                  <th>Wilaya</th>
+                  <th>Téléphone / WhatsApp</th>
+                  <th>Email</th>
+                  <th>Secteur d'Activité</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="clients-table-tbody">
+                <tr><td colspan="7" style="text-align: center; color: var(--ink-muted);">Chargement...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ========================================================
+           TAB 4: LEADS
+           ======================================================== -->
+      <section id="tab-leads" class="tab-section">
+        
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              <span>Demandes Entrantes (Leads du Site Web)</span>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="fetchLeads()">Rafraîchir</button>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nom du Prospect</th>
+                  <th>WhatsApp / Tél</th>
+                  <th>Activité</th>
+                  <th>Problème / Besoin Exprimé</th>
+                  <th>Statut</th>
+                  <th>Date</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="leads-table-tbody">
+                <tr><td colspan="7" style="text-align: center; color: var(--ink-muted);">Chargement...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ========================================================
+           TAB 5: DEVIS GENERATOR
+           ======================================================== -->
+      <section id="tab-devis" class="tab-section">
+        
+        <div style="display: grid; grid-template-columns: 360px 1fr; gap: 24px; align-items: start;">
+          
+          <!-- Builder Controls Card (Left) -->
+          <div class="card no-print">
+            <div class="card-header">
+              <div class="card-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                <span>Paramètres du Devis</span>
+              </div>
+            </div>
+            <div class="card-body" style="display: flex; flex-direction: column; gap: 16px;">
+              
+              <div class="form-group">
+                <label>Sélectionner le Client</label>
+                <select id="devis-client-select" onchange="onDevisClientChange()">
+                  <option value="">-- Choisir un client --</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Nom du Client / Entreprise</label>
+                <input type="text" id="devis-client-name" placeholder="Ex: ClinicFlow DZ" oninput="renderDevisLive()">
+              </div>
+
+              <div class="form-group">
+                <label>Wilaya & Coordonnées</label>
+                <input type="text" id="devis-client-contact" placeholder="Alger · 0550 12 34 56" oninput="renderDevisLive()">
+              </div>
+
+              <div class="form-group">
+                <label>Titre du Projet</label>
+                <input type="text" id="devis-project-title" placeholder="Ex: Plateforme Médicale SaaS" oninput="renderDevisLive()">
+              </div>
+
+              <!-- Checkboxes for Domain & Hosting -->
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label class="form-checkbox">
+                  <input type="checkbox" id="devis-domain-check" onchange="renderDevisLive()" checked>
+                  <span style="font-size: 0.85rem; font-weight: 600;">Nom de domaine inclus (à notre charge)</span>
+                </label>
+                <label class="form-checkbox">
+                  <input type="checkbox" id="devis-hosting-check" onchange="renderDevisLive()" checked>
+                  <span style="font-size: 0.85rem; font-weight: 600;">Hébergement & SSL inclus (à notre charge)</span>
+                </label>
+              </div>
+
+              <!-- Features / Item list in builder -->
+              <div style="border-top: 1px solid var(--border); padding-top: 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <label style="font-size: 0.82rem; font-weight: 700;">Fonctionnalités & Tarifs (DZD)</label>
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="addDevisItemRow()">+ Ligne</button>
+                </div>
+                <div id="devis-items-inputs" style="display: flex; flex-direction: column; gap: 8px;">
+                  <!-- Dynamic rows injected here -->
+                </div>
+              </div>
+
+              <!-- Action buttons -->
+              <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+                <button class="btn btn-primary" onclick="saveDevisToDb()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                  <span>Enregistrer dans Neon DB</span>
+                </button>
+                <button class="btn btn-secondary" onclick="window.print()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                  <span>Imprimer / Télécharger PDF</span>
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Printable Devis Sheet (Right) -->
+          <div class="devis-sheet" id="devis-printable-area">
+            
+            <div class="devis-header">
+              <div class="devis-brand">
+                <svg viewBox="0 0 200 160" width="48" height="36" fill="currentColor">
+                  <path fill="#080e17" d="M4 57L65 13Q100 -9 135 13L196 57H162L119 31Q100 20 81 31L38 57ZM4 70H38L81 96Q100 107 119 96L162 70H196L135 114Q100 136 65 114Z"/>
+                  <circle cx="100" cy="63" r="21" fill="#00bceb"/>
+                </svg>
+                <div>
+                  <h2 style="margin: 0; line-height: 1;">VISION</h2>
+                  <small style="color: var(--ink-muted); font-size: 0.8rem; font-weight: 600;">Agence de Développement Numérique · Algérie</small>
+                </div>
+              </div>
+
+              <div class="devis-meta">
+                <span class="devis-number" id="devis-view-number">DEVIS N° DEV-2026-001</span>
+                <div style="font-size: 0.82rem; color: var(--ink-muted); margin-top: 4px;">Date: <strong id="devis-view-date">08/11/2026</strong></div>
+                <div style="font-size: 0.82rem; color: var(--ink-muted);">Validité: <strong>15 jours</strong></div>
+              </div>
+            </div>
+
+            <!-- Client Info Block -->
+            <div class="devis-client-box">
+              <div>
+                <small style="text-transform: uppercase; font-size: 0.7rem; font-weight: 700; color: var(--ink-muted);">ÉMETTEUR</small>
+                <div style="font-weight: 700; color: var(--ink); margin-top: 2px;">VISION DIGITAL AGENCY</div>
+                <div style="font-size: 0.82rem; color: var(--ink-muted);">Fondateur: Yasser Latreche</div>
+                <div style="font-size: 0.82rem; color: var(--ink-muted);">contact@vision.dz · Algérie</div>
+              </div>
+              <div>
+                <small style="text-transform: uppercase; font-size: 0.7rem; font-weight: 700; color: var(--ink-muted);">DESTINATAIRE (CLIENT)</small>
+                <div style="font-weight: 800; color: var(--ink); margin-top: 2px;" id="devis-view-client-name">ClinicFlow DZ</div>
+                <div style="font-size: 0.82rem; color: var(--ink-muted);" id="devis-view-client-contact">Alger · contact@clinicflow.dz</div>
+                <div style="font-size: 0.82rem; color: var(--cyan-dark); font-weight: 600; margin-top: 4px;" id="devis-view-project-title">Plateforme Médicale SaaS</div>
+              </div>
+            </div>
+
+            <!-- Domain & Hosting Status Line -->
+            <div style="display: flex; gap: 16px; margin-bottom: 20px; font-size: 0.85rem;">
+              <div id="devis-view-domain" style="display: flex; align-items: center; gap: 6px; font-weight: 600; color: #059669;">
+                ✓ Nom de domaine inclus (pris en charge par VISION)
+              </div>
+              <div id="devis-view-hosting" style="display: flex; align-items: center; gap: 6px; font-weight: 600; color: #059669;">
+                ✓ Hébergement Cloud haute performance inclus
+              </div>
+            </div>
+
+            <!-- Itemized Table -->
+            <table class="devis-table" style="margin-bottom: 24px;">
+              <thead>
+                <tr>
+                  <th style="padding: 10px 14px;">Description du module / fonctionnalité</th>
+                  <th style="padding: 10px 14px; text-align: right; width: 160px;">Montant (DZD)</th>
+                </tr>
+              </thead>
+              <tbody id="devis-view-items-tbody">
+                <!-- Injected live -->
+              </tbody>
+            </table>
+
+            <!-- Total Box -->
+            <div class="devis-total-box">
+              <div class="devis-total-line">
+                <span>TOTAL DU PROJET :</span>
+                <span style="color: var(--cyan-dark); font-size: 1.4rem;" id="devis-view-total">0 DZD</span>
+              </div>
+            </div>
+
+            <!-- 50 / 20 / 30 Milestones Box -->
+            <div class="devis-milestones-box">
+              <div style="font-weight: 800; font-size: 0.95rem; margin-bottom: 8px; color: #166534;">
+                ÉCHÉANCIER DE PAIEMENT CONVENTIONNEL (50% / 20% / 30%) :
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; font-size: 0.82rem;">
+                <div style="background: #fff; padding: 10px; border-radius: var(--radius-sm); border: 1px solid #BBF7D0;">
+                  <strong style="color: var(--ink);">1. العربون (M1 - 50%)</strong>
+                  <div style="color: #059669; font-size: 1.1rem; font-weight: 800; margin-top: 4px;" id="devis-view-m1">0 DZD</div>
+                  <small style="color: var(--ink-muted);">À la signature pour lancer les travaux</small>
+                </div>
+
+                <div style="background: #fff; padding: 10px; border-radius: var(--radius-sm); border: 1px solid #BBF7D0;">
+                  <strong style="color: var(--ink);">2. التصميم (M2 - 20%)</strong>
+                  <div style="color: #0284C7; font-size: 1.1rem; font-weight: 800; margin-top: 4px;" id="devis-view-m2">0 DZD</div>
+                  <small style="color: var(--ink-muted);">Après validation du design & UI/UX</small>
+                </div>
+
+                <div style="background: #fff; padding: 10px; border-radius: var(--radius-sm); border: 1px solid #BBF7D0;">
+                  <strong style="color: var(--ink);">3. التسليم (M3 - 30%)</strong>
+                  <div style="color: #7C3AED; font-size: 1.1rem; font-weight: 800; margin-top: 4px;" id="devis-view-m3">0 DZD</div>
+                  <small style="color: var(--ink-muted);">Après backend, tests & livraison finale</small>
+                </div>
+              </div>
+            </div>
+
+            <!-- BaridiMob RIP & Coordonnées -->
+            <div class="devis-rip-box">
+              <div style="font-weight: 700; margin-bottom: 4px; color: var(--ink);">COORDONNÉES DE RÈGLEMENT (BARIDIMOB UNIQUEMENT) :</div>
+              <div>Bénéficiaire : <strong>LATRECHE YASSER</strong></div>
+              <div>RIP BaridiMob : <strong style="letter-spacing: 0.08em; color: var(--ink);">007 99999 0000000000 00</strong></div>
+              <small style="color: var(--ink-muted); display: block; margin-top: 4px;">
+                * Prière d'envoyer la capture d'écran du reçu de virement par email ou WhatsApp pour validation instantanée.
+              </small>
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- ========================================================
+           TAB 6: CLOUDFLARE R2 RECEIPTS EXPLORER
+           ======================================================== -->
+      <section id="tab-storage" class="tab-section">
+        
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+              <span>خزينة وصولات BaridiMob (Stockées sur Cloudflare R2: bucket "vision")</span>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="fetchProjects()">Actualiser</button>
+          </div>
+          <div class="card-body">
+            <p style="font-size: 0.85rem; color: var(--ink-muted); margin-bottom: 20px;">
+              Tous les reçus téléchargés sont automatiquement hébergés sur le bucket Cloudflare R2 <code>vision</code> avec accès public direct et sauvegardés dans la base de données Neon Postgres.
+            </p>
+            <div id="r2-receipts-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+              <!-- Dynamic receipt cards -->
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+    </div>
+  </main>
+
+</div>
+
+<!-- ========================================================
+     MODALS
+     ======================================================== -->
+
+<!-- 1. Upload Receipt Modal -->
+<div class="modal-overlay" id="upload-receipt-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Uploader un Reçu BaridiMob</h3>
+      <button class="modal-close" onclick="closeModal('upload-receipt-modal')">&times;</button>
+    </div>
+    <form id="upload-receipt-form" onsubmit="handleReceiptUpload(event)">
+      <div class="modal-body">
+        <input type="hidden" id="receipt-project-id">
+        
+        <div class="form-group">
+          <label>Projet concerné</label>
+          <input type="text" id="receipt-project-title" readonly style="background: var(--paper); color: var(--ink-muted);">
+        </div>
+
+        <div class="form-group">
+          <label>Tranche du paiement (Milestone)</label>
+          <select id="receipt-milestone" required>
+            <option value="m1">1. العربون M1 (50%) - Début du projet</option>
+            <option value="m2">2. التصميم M2 (20%) - Validation UI/UX</option>
+            <option value="m3">3. التسليم M3 (30%) - Livraison & Sécurité</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Capture d'écran du reçu (BaridiMob)</label>
+          <input type="file" id="receipt-file" accept="image/*" required style="padding: 8px;">
+          <small style="color: var(--ink-muted); font-size: 0.78rem;">Formats acceptés: JPG, PNG, WEBP (Max 15 Mo). Le fichier sera stocké sur Cloudflare R2.</small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('upload-receipt-modal')">Annuler</button>
+        <button type="submit" class="btn btn-primary" id="btn-submit-receipt">
+          <span>Uploader sur Cloudflare R2</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 2. View Receipt Modal (Zoom) -->
+<div class="modal-overlay" id="view-receipt-modal">
+  <div class="modal-content" style="max-width: 720px;">
+    <div class="modal-header">
+      <h3 class="modal-title" id="view-receipt-title">Reçu BaridiMob Vérifié</h3>
+      <button class="modal-close" onclick="closeModal('view-receipt-modal')">&times;</button>
+    </div>
+    <div class="modal-body" style="text-align: center;">
+      <img id="view-receipt-img" src="" alt="Reçu BaridiMob" style="max-width: 100%; max-height: 70vh; border-radius: var(--radius-md); box-shadow: var(--shadow-md);">
+      <div style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
+        <span id="view-receipt-info" style="font-size: 0.82rem; color: var(--ink-muted);"></span>
+        <a id="view-receipt-open-btn" href="#" target="_blank" class="btn btn-secondary btn-sm">Ouvrir l'original (R2) ↗</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 3. New Project Modal -->
+<div class="modal-overlay" id="new-project-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Créer un Nouveau Projet</h3>
+      <button class="modal-close" onclick="closeModal('new-project-modal')">&times;</button>
+    </div>
+    <form id="new-project-form" onsubmit="handleNewProject(event)">
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Client</label>
+          <select id="proj-client-id" required>
+            <option value="">-- Sélectionner un client --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Titre du projet</label>
+          <input type="text" id="proj-title" placeholder="Ex: Boutique E-commerce Asel" required>
+        </div>
+        <div class="form-group">
+          <label>Type de solution</label>
+          <select id="proj-type" required>
+            <option value="ecommerce">E-commerce</option>
+            <option value="saas">SaaS / Web App</option>
+            <option value="landing">Landing Page / Site Vitrine</option>
+            <option value="custom_software">Logiciel Sur-Mesure / Desktop</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Montant Global Convenu (DZD)</label>
+          <input type="number" id="proj-price" placeholder="Ex: 150000" required oninput="calcProjectSplitPreview()">
+          <small id="proj-split-preview" style="color: var(--cyan-dark); font-weight: 600; font-size: 0.8rem; margin-top: 4px;">
+            50% = 0 DZD | 20% = 0 DZD | 30% = 0 DZD
+          </small>
+        </div>
+        <div style="display: flex; gap: 12px;">
+          <label class="form-checkbox" style="flex: 1;">
+            <input type="checkbox" id="proj-domain" checked>
+            <span style="font-size: 0.82rem;">Nom de Domaine inclus</span>
+          </label>
+          <label class="form-checkbox" style="flex: 1;">
+            <input type="checkbox" id="proj-hosting" checked>
+            <span style="font-size: 0.82rem;">Hébergement inclus</span>
+          </label>
+        </div>
+        <div class="form-group">
+          <label>Notes / Objectifs du projet</label>
+          <textarea id="proj-notes" rows="2" placeholder="Détails du cahier des charges..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('new-project-modal')">Annuler</button>
+        <button type="submit" class="btn btn-primary">Créer le Projet</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 4. New Client Modal -->
+<div class="modal-overlay" id="new-client-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Ajouter un Client</h3>
+      <button class="modal-close" onclick="closeModal('new-client-modal')">&times;</button>
+    </div>
+    <form id="new-client-form" onsubmit="handleNewClient(event)">
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Nom de l'entreprise / marque</label>
+          <input type="text" id="client-company" placeholder="Ex: Pyjama DZ" required>
+        </div>
+        <div class="form-group">
+          <label>Nom du contact / Responsable</label>
+          <input type="text" id="client-contact" placeholder="Ex: Mohamed Benali" required>
+        </div>
+        <div class="form-group">
+          <label>Numéro de téléphone / WhatsApp</label>
+          <input type="text" id="client-phone" placeholder="Ex: 0550 12 34 56" required>
+        </div>
+        <div class="form-group">
+          <label>Wilaya</label>
+          <input type="text" id="client-wilaya" placeholder="Ex: Alger, Oran, Constantine..." required>
+        </div>
+        <div class="form-group">
+          <label>Email (optionnel)</label>
+          <input type="email" id="client-email" placeholder="contact@entreprise.dz">
+        </div>
+        <div class="form-group">
+          <label>Secteur d'activité</label>
+          <input type="text" id="client-industry" placeholder="Ex: Prêt-à-porter, Santé, Restauration...">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('new-client-modal')">Annuler</button>
+        <button type="submit" class="btn btn-primary">Enregistrer le Client</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Toast notifications -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- Admin JS logic -->
+<script src="admin.js"></script>
+</body>
+</html>

@@ -107,14 +107,18 @@ async function seed() {
       })
       .returning();
 
-    await db.insert(projects).values({
+    await (db.insert(projects) as any).values({
       clientId: insertedClient.id,
       title: item.project.title,
       type: item.project.type,
-      stage: item.project.stage,
+      stage: 'delivered_30',
       priceTotalDzd: item.project.priceTotalDzd,
-      depositPaidDzd: item.project.depositPaidDzd,
-      balanceDueDzd: item.project.balanceDueDzd,
+      m1AmountDzd: String(Math.round(Number(item.project.priceTotalDzd) * 0.50)),
+      m1Paid: true,
+      m2AmountDzd: String(Math.round(Number(item.project.priceTotalDzd) * 0.20)),
+      m2Paid: true,
+      m3AmountDzd: String(Number(item.project.priceTotalDzd) - Math.round(Number(item.project.priceTotalDzd) * 0.50) - Math.round(Number(item.project.priceTotalDzd) * 0.20)),
+      m3Paid: true,
       productionUrl: item.project.productionUrl,
       isPublicPortfolio: item.project.isPublicPortfolio,
     });

@@ -1,11 +1,20 @@
 import { pgTable, text, varchar, timestamp, boolean, numeric, jsonb, uuid, pgEnum } from 'drizzle-orm/pg-core';
 
 export const projectStageEnum = pgEnum('project_stage', [
-  'scoping', 'design', 'development', 'qa_testing', 'delivered', 'maintenance'
+  'scoping',             // 01. Meeting & Scoping
+  'devis_sent',          // 02. Devis envoyé & négociation
+  'deposit_50_received', // 03. Acompte 50% reçu (Lancement)
+  'design_phase',        // 04. Design UI/UX & Mockups
+  'design_approved_20',  // 05. Design validé (Paiement 20%)
+  'backend_dev',         // 06. Backend, Database & Logique
+  'dev_review',          // 07. Meeting de revue & ajustements
+  'security_qa',         // 08. Security check & Tests finaux
+  'delivered_30',        // 09. Livraison finale (Paiement 30%)
+  'maintenance'          // 10. Support & maintenance
 ]);
 
 export const leadStatusEnum = pgEnum('lead_status', [
-  'new', 'contacted', 'qualifying', 'proposal_sent', 'converted', 'lost'
+  'new', 'contacted', 'meeting_scheduled', 'proposal_sent', 'converted', 'lost'
 ]);
 
 export const invoiceTypeEnum = pgEnum('invoice_type', [
@@ -13,24 +22,16 @@ export const invoiceTypeEnum = pgEnum('invoice_type', [
 ]);
 
 export const invoiceStatusEnum = pgEnum('invoice_status', [
-  'draft', 'sent', 'partial', 'paid', 'cancelled'
+  'draft', 'sent', 'accepted', 'rejected'
 ]);
 
-// 1. Admin Users (Yasser)
-export const adminUsers = pgTable('admin_users', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  username: varchar('username', { length: 50 }).notNull().unique(),
-  passwordHash: text('password_hash').notNull(),
-  pinCode: varchar('pin_code', { length: 10 }),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-});
-
-// 2. Clients (Algerian Businesses)
+// 1. Clients (Algerian Businesses)
 export const clients = pgTable('clients', {
   id: uuid('id').defaultRandom().primaryKey(),
   companyName: varchar('company_name', { length: 150 }).notNull(),
   contactName: varchar('contact_name', { length: 150 }).notNull(),
   phone: varchar('phone', { length: 30 }).notNull(),
+  email: varchar('email', { length: 150 }),
   wilaya: varchar('wilaya', { length: 50 }),
   industry: varchar('industry', { length: 100 }),
   status: varchar('status', { length: 30 }).default('active'),
@@ -39,7 +40,7 @@ export const clients = pgTable('clients', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// 3. Leads (Inquiries from website brief / WhatsApp)
+// 2. Leads (Inquiries from website brief / WhatsApp)
 export const leads = pgTable('leads', {
   id: uuid('id').defaultRandom().primaryKey(),
   source: varchar('source', { length: 50 }).default('website_brief'),
@@ -54,40 +55,68 @@ export const leads = pgTable('leads', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
-// 4. Projects & Deliverables
+// 3. Projects (With 50% / 20% / 30% Milestones & BaridiMob Receipts)
 export const projects = pgTable('projects', {
   id: uuid('id').defaultRandom().primaryKey(),
   clientId: uuid('client_id').references(() => clients.id).notNull(),
   title: varchar('title', { length: 150 }).notNull(),
-  type: varchar('type', { length: 50 }).notNull(),
+  type: varchar('type', { length: 50 }).notNull(), // ecommerce, web_app, desktop_offline, pos_system
   stage: projectStageEnum('stage').default('scoping'),
   priceTotalDzd: numeric('price_total_dzd', { precision: 12, scale: 2 }).default('0').notNull(),
-  depositPaidDzd: numeric('deposit_paid_dzd', { precision: 12, scale: 2 }).default('0').notNull(),
-  balanceDueDzd: numeric('balance_due_dzd', { precision: 12, scale: 2 }).default('0').notNull(),
+  
+  // Options
+  domainIncluded: boolean('domain_included').default(false),
+  hostingIncluded: boolean('hosting_included').default(false),
+
+  // Milestone 1: 50% Launch
+  m1AmountDzd: numeric('m1_amount_dzd', { precision: 12, scale: 2 }).default('0').notNull(),
+  m1Paid: boolean('m1_paid').default(false),
+  m1ReceiptUrl: text('m1_receipt_url'),
+  m1PaidAt: timestamp('m1_paid_at'),
+
+  // Milestone 2: 20% Design Approval
+  m2AmountDzd: numeric('m2_amount_dzd', { precision: 12, scale: 2 }).default('0').notNull(),
+  m2Paid: boolean('m2_paid').default(false),
+  m2ReceiptUrl: text('m2_receipt_url'),
+  m2PaidAt: timestamp('m2_paid_at'),
+
+  // Milestone 3: 30% Final Delivery & Security Check
+  m3AmountDzd: numeric('m3_amount_dzd', { precision: 12, scale: 2 }).default('0').notNull(),
+  m3Paid: boolean('m3_paid').default(false),
+  m3ReceiptUrl: text('m3_receipt_url'),
+  m3PaidAt: timestamp('m3_paid_at'),
+
+  // Technical links
   repoUrl: text('repo_url'),
   stagingUrl: text('staging_url'),
   productionUrl: text('production_url'),
-  startDate: timestamp('start_date'),
-  targetDeliveryDate: timestamp('target_delivery_date'),
-  actualDeliveryDate: timestamp('actual_delivery_date'),
-  deliverablesJson: jsonb('deliverables_json'),
   isPublicPortfolio: boolean('is_public_portfolio').default(false),
+  notes: text('notes'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
-// 5. Invoices & Payments (Facturation DZD)
+// 4. Invoices & Quotes (Devis)
 export const invoices = pgTable('invoices', {
   id: uuid('id').defaultRandom().primaryKey(),
   invoiceNumber: varchar('invoice_number', { length: 50 }).unique().notNull(),
   projectId: uuid('project_id').references(() => projects.id).notNull(),
   clientId: uuid('client_id').references(() => clients.id).notNull(),
   type: invoiceTypeEnum('type').default('devis'),
-  amountDzd: numeric('amount_dzd', { precision: 12, scale: 2 }).notNull(),
+  totalAmountDzd: numeric('total_amount_dzd', { precision: 12, scale: 2 }).notNull(),
+  
+  // 50 / 20 / 30 breakdown
+  m1DepositDzd: numeric('m1_deposit_dzd', { precision: 12, scale: 2 }).notNull(),
+  m2DesignDzd: numeric('m2_design_dzd', { precision: 12, scale: 2 }).notNull(),
+  m3DeliveryDzd: numeric('m3_delivery_dzd', { precision: 12, scale: 2 }).notNull(),
+
+  domainIncluded: boolean('domain_included').default(false),
+  hostingIncluded: boolean('hosting_included').default(false),
+  
+  itemsJson: jsonb('items_json').notNull(), // [{ feature, description, priceDzd }]
   status: invoiceStatusEnum('status').default('draft'),
-  paymentMethod: varchar('payment_method', { length: 50 }), // baridimob, ccp, cash, virement
+  pdfUrl: text('pdf_url'), // Link in Cloudflare R2
   issueDate: timestamp('issue_date').defaultNow().notNull(),
   dueDate: timestamp('due_date'),
-  itemsJson: jsonb('items_json').notNull(),
   notes: text('notes'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });

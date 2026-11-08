@@ -4,7 +4,9 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "start": "tsx src/index.ts",
+    "start": "tsx src/server.ts",
+    "server": "tsx src/server.ts",
+    "admin:dev": "tsx src/server.ts",
     "test:services": "tsx src/index.ts",
     "db:push": "drizzle-kit push"
   },
@@ -13,11 +15,17 @@
     "@neon/config": "^1.13.0",
     "@neon/env": "^2.1.0",
     "@neondatabase/serverless": "^1.2.0",
+    "cors": "^2.8.6",
     "dotenv": "^18.0.9",
     "drizzle-orm": "^0.45.4",
+    "express": "^5.3.0",
+    "multer": "^2.5.0",
     "ws": "^8.22.1"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/multer": "^2.3.0",
     "@types/node": "^26.6.6",
     "@types/ws": "^8.18.2",
     "drizzle-kit": "^0.31.11",
