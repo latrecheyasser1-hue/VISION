@@ -11,11 +11,11 @@ let state = {
   leads: [],
   stats: null,
   activeTab: 'overview',
-  devisLang: 'en', // 'en', 'fr', or 'ar'
+  devisLang: 'en',
   devisItems: [
     { title: 'Custom UI/UX Architecture & Interactive Prototype', price: 60000 },
     { title: 'Full-Stack Web Development & High Performance Engineering', price: 80000 },
-    { title: 'Cloud Infrastructure, Neon Postgres & Cloudflare R2 Storage', price: 70000 },
+    { title: 'Cloud Infrastructure, Database Setup & Secure Storage', price: 70000 },
     { title: 'BaridiMob Payment Verification & Operations Dashboard', price: 40000 },
   ],
 };
@@ -34,10 +34,10 @@ const DEVIS_I18N = {
     domainExc: 'Domain name: Charged separately to client',
     hostingInc: 'High-performance Cloud Hosting & SSL included',
     hostingExc: 'Cloud Hosting & SSL: Charged separately to client',
-    thDesc: 'Deliverable Description',
+    thDesc: 'Description',
     thAmount: 'Amount (DZD)',
     labelTotal: 'TOTAL PROJECT VALUE:',
-    scheduleTitle: 'STANDARD PAYMENT SCHEDULE (50% / 20% / 30%):',
+    scheduleTitle: 'PAYMENT SCHEDULE (50% / 20% / 30%):',
     m1Title: '1. Deposit (M1 - 50%)',
     m1Sub: 'Upon contract signature to start work',
     m2Title: '2. Design Approval (M2 - 20%)',
@@ -157,12 +157,12 @@ function showToast(message, type = 'success') {
 // TABS & NAVIGATION (ENGLISH)
 // ==========================================
 const TAB_TITLES = {
-  overview: { title: "Overview", sub: "Monitor client projects, 50/20/30 milestones, and BaridiMob email receipts" },
-  projects: { title: "Projects & Milestones (50/20/30)", sub: "Track development progress, phase stages, and verified Cloudflare R2 receipts" },
-  clients: { title: "Clients Directory", sub: "Client contacts, locations, and ongoing project history" },
-  leads: { title: "Inbound Leads", sub: "Prospective client briefs submitted via the public website" },
-  devis: { title: "Quotations & Devis Generator", sub: "Automated 50/20/30 split schedule with multi-language export" },
-  storage: { title: "BaridiMob Receipt Vault", sub: "Secure email receipts backed by Cloudflare R2 bucket 'vision'" },
+  overview: { title: "Overview", sub: "Projects pipeline and payment milestones" },
+  projects: { title: "Projects", sub: "Development progress and milestones tracking" },
+  clients: { title: "Clients", sub: "Client directory and project history" },
+  leads: { title: "Leads", sub: "Incoming project inquiries from website" },
+  devis: { title: "Quotes & Devis", sub: "Multi-language quotation generator (50/20/30 split)" },
+  storage: { title: "Receipts", sub: "Verified payment receipts archive" },
 };
 
 function initTabs() {
@@ -324,13 +324,13 @@ function renderOverviewProjects(projects) {
   }).join('');
 }
 
-// 2. Full Projects Table with 50/20/30 Milestones & BaridiMob Upload
+// 2. Full Projects Table
 function renderProjectsTable(projects) {
   const tbody = document.getElementById('projects-table-tbody');
   if (!tbody) return;
 
   if (projects.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--ink-muted); padding: 32px;">No projects recorded yet. Click "New Project" to add one.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--ink-muted); padding: 32px;">No projects recorded yet.</td></tr>`;
     return;
   }
 
@@ -352,7 +352,7 @@ function renderProjectsTable(projects) {
             </div>
             ${receiptUrl ? `
               <button class="btn btn-secondary btn-sm" style="padding: 2px 8px; font-size: 0.72rem;" onclick="viewReceipt('${escapeHtml(p.title)} - ${label}', '${receiptUrl}')">
-                View Receipt (R2)
+                View Receipt
               </button>
             ` : '<small style="color: var(--ink-muted); font-size: 0.7rem;">No receipt</small>'}
           </div>
@@ -478,7 +478,7 @@ function renderLeadsTable(leads) {
   }).join('');
 }
 
-// 5. Cloudflare R2 Receipts Storage Explorer
+// 5. Receipts Storage Explorer
 function renderStorageExplorer() {
   const grid = document.getElementById('r2-receipts-grid');
   if (!grid) return;
@@ -487,48 +487,47 @@ function renderStorageExplorer() {
   for (const p of state.projects) {
     const clientName = p.client ? p.client.companyName : 'Client';
     if (p.m1Paid && p.m1ReceiptUrl) {
-      receipts.push({ projectTitle: p.title, clientName, milestone: 'M1 - 50% (Deposit)', url: p.m1ReceiptUrl, date: p.m1PaidAt });
+      receipts.push({ projectTitle: p.title, clientName, milestone: 'Deposit (50%)', url: p.m1ReceiptUrl, date: p.m1PaidAt });
     }
     if (p.m2Paid && p.m2ReceiptUrl) {
-      receipts.push({ projectTitle: p.title, clientName, milestone: 'M2 - 20% (Design)', url: p.m2ReceiptUrl, date: p.m2PaidAt });
+      receipts.push({ projectTitle: p.title, clientName, milestone: 'Design (20%)', url: p.m2ReceiptUrl, date: p.m2PaidAt });
     }
     if (p.m3Paid && p.m3ReceiptUrl) {
-      receipts.push({ projectTitle: p.title, clientName, milestone: 'M3 - 30% (Delivery)', url: p.m3ReceiptUrl, date: p.m3PaidAt });
+      receipts.push({ projectTitle: p.title, clientName, milestone: 'Delivery (30%)', url: p.m3ReceiptUrl, date: p.m3PaidAt });
     }
   }
 
   if (receipts.length === 0) {
     grid.innerHTML = `
       <div style="grid-column: 1 / -1; padding: 40px; text-align: center; background: var(--paper); border: 1px dashed var(--border); border-radius: var(--radius-lg);">
-        <p style="color: var(--ink-muted); font-size: 0.95rem;">No BaridiMob receipts uploaded yet.</p>
+        <p style="color: var(--ink-muted); font-size: 0.95rem;">No receipts uploaded yet.</p>
       </div>
     `;
     return;
   }
 
   grid.innerHTML = receipts.map(r => `
-    <div class="r2-card">
-      <img src="${r.url}" alt="BaridiMob Receipt" loading="lazy" onclick="viewReceipt('${escapeHtml(r.projectTitle)} - ${r.milestone}', '${r.url}')">
-      <div class="r2-card-body">
+    <div class="receipt-card">
+      <img src="${r.url}" alt="Receipt" loading="lazy" onclick="viewReceipt('${escapeHtml(r.projectTitle)} - ${r.milestone}', '${r.url}')">
+      <div class="receipt-card-body">
         <strong style="font-size: 0.88rem; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(r.projectTitle)}</strong>
         <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem;">
           <span style="color: var(--ink-muted);">${escapeHtml(r.clientName)}</span>
           <span class="badge badge-green" style="font-size: 0.65rem;">${r.milestone}</span>
         </div>
-        <a href="${r.url}" target="_blank" style="font-size: 0.72rem; color: var(--cyan-dark); text-decoration: none; margin-top: 4px;">Open in Cloudflare R2</a>
+        <a href="${r.url}" target="_blank" style="font-size: 0.72rem; color: var(--cyan-dark); text-decoration: none; margin-top: 4px;">View Full Image</a>
       </div>
     </div>
   `).join('');
 }
 
 // ==========================================
-// DEVIS GENERATOR (TRI-LINGUAL: EN, FR, AR)
+// DEVIS GENERATOR (TRI-LINGUAL)
 // ==========================================
 function setDevisLanguage(lang) {
   if (!['en', 'fr', 'ar'].includes(lang)) return;
   state.devisLang = lang;
 
-  // Update language buttons active state
   document.querySelectorAll('.lang-btn-group .lang-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.lang === lang);
   });
@@ -583,7 +582,6 @@ function renderDevisLive() {
     printableArea.setAttribute('dir', i18n.dir);
   }
 
-  // Update i18n labels on printable sheet
   document.getElementById('devis-brand-tagline').textContent = i18n.tagline;
   document.getElementById('devis-label-date').textContent = i18n.labelDate;
   document.getElementById('devis-label-validity').textContent = i18n.labelValidity;
@@ -605,7 +603,6 @@ function renderDevisLive() {
   document.getElementById('devis-label-beneficiary').textContent = i18n.beneficiary;
   document.getElementById('devis-receipt-instruction').textContent = i18n.instruction;
 
-  // Client inputs
   const clientNameInput = document.getElementById('devis-client-name');
   const clientContactInput = document.getElementById('devis-client-contact');
   const projectTitleInput = document.getElementById('devis-project-title');
@@ -620,7 +617,6 @@ function renderDevisLive() {
   document.getElementById('devis-view-client-contact').textContent = clientContact;
   document.getElementById('devis-view-project-title').textContent = projectTitle;
 
-  // Domain & hosting status lines
   const domainEl = document.getElementById('devis-view-domain');
   if (domainEl) {
     if (domainCheck && domainCheck.checked) {
@@ -643,7 +639,6 @@ function renderDevisLive() {
     }
   }
 
-  // Items table
   let total = 0;
   const tbody = document.getElementById('devis-view-items-tbody');
   if (tbody) {
@@ -716,7 +711,7 @@ async function saveDevisToDb() {
     if (!res.ok) throw new Error('Failed to save quote');
     const invoice = await res.json();
     document.getElementById('devis-view-number').textContent = `DEVIS N° ${invoice.invoiceNumber}`;
-    showToast(`Quote ${invoice.invoiceNumber} saved to Neon DB successfully.`);
+    showToast(`Quote ${invoice.invoiceNumber} saved successfully.`);
   } catch (err) {
     showToast(err.message, 'error');
   }
@@ -791,7 +786,7 @@ async function handleReceiptUpload(e) {
 
   try {
     submitBtn.disabled = true;
-    submitBtn.innerHTML = '<span>Uploading to Cloudflare R2...</span>';
+    submitBtn.innerHTML = '<span>Uploading receipt...</span>';
 
     const res = await fetch(`/api/projects/${projectId}/receipt`, {
       method: 'POST',
@@ -804,7 +799,7 @@ async function handleReceiptUpload(e) {
     }
 
     const data = await res.json();
-    showToast('Receipt verified and stored in Cloudflare R2.');
+    showToast('Receipt uploaded and verified.');
     closeModal('upload-receipt-modal');
     await fetchProjects();
     await fetchStats();
@@ -812,14 +807,13 @@ async function handleReceiptUpload(e) {
     showToast(err.message, 'error');
   } finally {
     submitBtn.disabled = false;
-    submitBtn.innerHTML = '<span>Upload to Cloudflare R2</span>';
+    submitBtn.innerHTML = '<span>Upload Receipt</span>';
   }
 }
 
 function viewReceipt(title, url) {
   document.getElementById('view-receipt-title').textContent = title;
   document.getElementById('view-receipt-img').src = url;
-  document.getElementById('view-receipt-info').textContent = 'Cloudflare R2 Bucket: vision';
   document.getElementById('view-receipt-open-btn').href = url;
   openModal('view-receipt-modal');
 }
@@ -918,10 +912,10 @@ function updateClientSelects() {
   ).join('');
 
   if (projSelect) {
-    projSelect.innerHTML = `<option value="">-- Select a client --</option>` + optionsHtml;
+    projSelect.innerHTML = `<option value="">-- Select Client --</option>` + optionsHtml;
   }
   if (devisSelect) {
-    devisSelect.innerHTML = `<option value="">-- Choose a client --</option>` + optionsHtml;
+    devisSelect.innerHTML = `<option value="">-- Select Client --</option>` + optionsHtml;
   }
 }
 

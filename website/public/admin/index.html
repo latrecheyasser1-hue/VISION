@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>VISION - Founder Dashboard & CRM</title>
-  <link rel="stylesheet" href="admin.css">
+  <title>VISION - Founder Dashboard</title>
+  <link rel="stylesheet" href="admin.css?v=3">
   <style>
     .tab-section { display: none; }
     .tab-section.active { display: block; }
@@ -56,7 +56,7 @@
     .phone-link:hover {
       text-decoration: underline;
     }
-    .r2-card {
+    .receipt-card {
       background: #fff;
       border: 1px solid var(--border);
       border-radius: var(--radius-md);
@@ -66,18 +66,18 @@
       box-shadow: var(--shadow-sm);
       transition: all 0.2s;
     }
-    .r2-card:hover {
+    .receipt-card:hover {
       box-shadow: var(--shadow-md);
       transform: translateY(-2px);
     }
-    .r2-card img {
+    .receipt-card img {
       width: 100%;
       height: 180px;
       object-fit: cover;
       cursor: pointer;
       background: #f1f5f9;
     }
-    .r2-card-body {
+    .receipt-card-body {
       padding: 12px 14px;
       display: flex;
       flex-direction: column;
@@ -98,13 +98,13 @@
       </a>
     </div>
 
-    <!-- Search input in English -->
+    <!-- Search input -->
     <div class="search-box">
-      <input type="text" id="global-search" placeholder="Search projects, clients...">
+      <input type="text" id="global-search" placeholder="Search...">
       <span class="search-shortcut">Ctrl+K</span>
     </div>
 
-    <!-- Navigation Menu (100% English, 0 icons, 0 emojis) -->
+    <!-- Navigation Menu (Clean, English, No technical jargon) -->
     <nav class="sidebar-nav">
       <button class="nav-item active" data-tab="overview">
         <span>Overview</span>
@@ -121,7 +121,7 @@
       </button>
 
       <button class="nav-item" data-tab="leads">
-        <span>Leads & Inquiries</span>
+        <span>Leads</span>
         <span class="badge" id="nav-leads-count" style="background: var(--cyan); color: var(--ink);">0</span>
       </button>
 
@@ -130,17 +130,17 @@
       </button>
 
       <button class="nav-item" data-tab="storage">
-        <span>BaridiMob Receipts</span>
+        <span>Receipts</span>
       </button>
     </nav>
 
-    <!-- Sidebar Footer (Clean profile only, removed status pill) -->
+    <!-- Sidebar Footer -->
     <div class="sidebar-footer">
       <div class="user-profile">
         <div class="user-avatar">Y</div>
         <div class="user-info">
           <span class="user-name">Yasser Latreche</span>
-          <span class="user-role">Founder & Software Engineer</span>
+          <span class="user-role">Founder</span>
         </div>
       </div>
     </div>
@@ -153,7 +153,7 @@
     <header class="top-bar">
       <div class="page-title">
         <h1 id="page-title-text">Overview</h1>
-        <p id="page-subtitle-text">Monitor client projects, 50/20/30 milestones, and BaridiMob email receipts</p>
+        <p id="page-subtitle-text">Projects pipeline and payment milestones</p>
       </div>
       <div class="top-bar-actions">
         <button class="btn btn-secondary" onclick="openModal('new-client-modal')">
@@ -170,85 +170,33 @@
 
     <div class="content-body">
       
-      <!-- TAB 1: OVERVIEW -->
+      <!-- TAB 1: OVERVIEW (Straight to business metrics, no useless tutorial banners) -->
       <section id="tab-overview" class="tab-section active">
         
-        <!-- Clean English Workspace Banner -->
-        <div style="background: #080E17; color: #fff; padding: 24px 28px; border-radius: var(--radius-lg); margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.08);">
-          <div>
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-              <span style="background: var(--cyan); color: var(--ink); font-size: 0.7rem; font-weight: 800; padding: 2px 8px; border-radius: var(--radius-full);">FOUNDER WORKSPACE</span>
-              <span style="font-size: 0.85rem; color: var(--ice);">Algeria · BaridiMob 50/20/30 Workflow</span>
-            </div>
-            <h2 style="font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em;">VISION Agency Dashboard</h2>
-            <p style="font-size: 0.85rem; color: #94A3B8; margin-top: 4px;">Comprehensive pipeline management, BaridiMob email receipt verification, and multi-language quotations.</p>
-          </div>
-          <div>
-            <button class="btn btn-cyan" onclick="switchTab('projects')">View Projects</button>
-          </div>
-        </div>
-
         <!-- 4 KPI Stat Cards -->
         <div class="stat-grid">
           <div class="stat-card accent-dark">
-            <span class="stat-label">Total Contracted Revenue</span>
+            <span class="stat-label">Total Revenue</span>
             <div class="stat-value"><span id="stat-revenue">0</span><span class="stat-currency">DZD</span></div>
-            <span class="stat-desc">Cumulative value of signed projects</span>
+            <span class="stat-desc">Contracted projects total</span>
           </div>
 
           <div class="stat-card accent-green">
-            <span class="stat-label">Collected via BaridiMob</span>
+            <span class="stat-label">Collected</span>
             <div class="stat-value" style="color: #059669;"><span id="stat-collected">0</span><span class="stat-currency">DZD</span></div>
-            <span class="stat-desc">Verified receipts on Cloudflare R2</span>
+            <span class="stat-desc">Verified BaridiMob payments</span>
           </div>
 
           <div class="stat-card accent-orange">
             <span class="stat-label">Pending Balance</span>
             <div class="stat-value" style="color: #D97706;"><span id="stat-pending">0</span><span class="stat-currency">DZD</span></div>
-            <span class="stat-desc">Awaiting design and delivery milestones</span>
+            <span class="stat-desc">Awaiting milestone completion</span>
           </div>
 
           <div class="stat-card accent-cyan">
             <span class="stat-label">Active Projects</span>
             <div class="stat-value" style="color: var(--cyan-dark);"><span id="stat-active-projects">0</span></div>
-            <span class="stat-desc">Currently in development or review</span>
-          </div>
-        </div>
-
-        <!-- Workflow Box -->
-        <div class="card" style="margin-top: 24px;">
-          <div class="card-header">
-            <div class="card-title">
-              <span>Standard Payment Schedule & Workflow</span>
-            </div>
-            <span class="badge badge-cyan">BaridiMob Only</span>
-          </div>
-          <div class="card-body">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;">
-              <div style="background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px;">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                  <strong style="color: var(--ink); font-size: 0.95rem;">1. Deposit (M1)</strong>
-                  <span class="badge badge-green">50%</span>
-                </div>
-                <p style="font-size: 0.82rem; color: var(--ink-muted);">Paid upon quotation approval to lock in project schedule and architecture.</p>
-              </div>
-
-              <div style="background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px;">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                  <strong style="color: var(--ink); font-size: 0.95rem;">2. Design Approval (M2)</strong>
-                  <span class="badge badge-cyan">20%</span>
-                </div>
-                <p style="font-size: 0.82rem; color: var(--ink-muted);">Paid following the UI/UX review meeting once the client signs off on design.</p>
-              </div>
-
-              <div style="background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px;">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                  <strong style="color: var(--ink); font-size: 0.95rem;">3. Final Handover (M3)</strong>
-                  <span class="badge badge-purple">30%</span>
-                </div>
-                <p style="font-size: 0.82rem; color: var(--ink-muted);">Paid following backend completion, database setup, security checks, and deployment.</p>
-              </div>
-            </div>
+            <span class="stat-desc">In progress</span>
           </div>
         </div>
 
@@ -256,9 +204,9 @@
         <div class="card" style="margin-top: 24px;">
           <div class="card-header">
             <div class="card-title">
-              <span>Recent Projects Overview</span>
+              <span>Recent Projects</span>
             </div>
-            <button class="btn btn-secondary btn-sm" onclick="switchTab('projects')">All Projects</button>
+            <button class="btn btn-secondary btn-sm" onclick="switchTab('projects')">View All</button>
           </div>
           <div class="table-responsive">
             <table>
@@ -269,7 +217,7 @@
                   <th>Total Price</th>
                   <th>Progress 50 / 20 / 30</th>
                   <th>Stage</th>
-                  <th>Actions</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody id="overview-projects-tbody">
@@ -288,7 +236,7 @@
           <div class="card-header">
             <div style="display: flex; align-items: center; gap: 16px;">
               <div class="card-title">
-                <span>Client Projects</span>
+                <span>Projects</span>
               </div>
               <div class="filter-pills" id="projects-filter-pills">
                 <button class="filter-pill active" data-filter="all">All</button>
@@ -308,11 +256,11 @@
                   <th>Project & Client</th>
                   <th>Contact</th>
                   <th>Total Price</th>
-                  <th>M1: 50% (Deposit)</th>
-                  <th>M2: 20% (Design)</th>
-                  <th>M3: 30% (Delivery)</th>
-                  <th>Current Stage</th>
-                  <th>Actions</th>
+                  <th>M1 (50%)</th>
+                  <th>M2 (20%)</th>
+                  <th>M3 (30%)</th>
+                  <th>Stage</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody id="projects-table-tbody">
@@ -330,7 +278,7 @@
         <div class="card">
           <div class="card-header">
             <div class="card-title">
-              <span>Clients Directory</span>
+              <span>Clients</span>
             </div>
             <button class="btn btn-primary btn-sm" onclick="openModal('new-client-modal')">Add Client</button>
           </div>
@@ -340,12 +288,12 @@
               <thead>
                 <tr>
                   <th>Company</th>
-                  <th>Primary Contact</th>
+                  <th>Contact</th>
                   <th>Wilaya</th>
-                  <th>Phone Number</th>
+                  <th>Phone</th>
                   <th>Email</th>
                   <th>Industry</th>
-                  <th>Actions</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody id="clients-table-tbody">
@@ -373,7 +321,7 @@
               <thead>
                 <tr>
                   <th>Prospect</th>
-                  <th>Phone Number</th>
+                  <th>Phone</th>
                   <th>Activity</th>
                   <th>Requirement</th>
                   <th>Status</th>
@@ -390,12 +338,11 @@
 
       </section>
 
-      <!-- TAB 5: DEVIS GENERATOR (With 3-Language Switcher) -->
+      <!-- TAB 5: DEVIS GENERATOR (With 3-Language Selector) -->
       <section id="tab-devis" class="tab-section">
         
         <div style="display: grid; grid-template-columns: 360px 1fr; gap: 24px; align-items: start;">
           
-          <!-- Controls Column -->
           <div class="card no-print">
             <div class="card-header">
               <div class="card-title">
@@ -406,7 +353,7 @@
               
               <!-- 3-Language Switcher for Devis -->
               <div class="form-group">
-                <label>Quote Language (Langue du Devis)</label>
+                <label>Language</label>
                 <div class="lang-btn-group">
                   <button type="button" class="lang-btn active" data-lang="en" onclick="setDevisLanguage('en')">English</button>
                   <button type="button" class="lang-btn" data-lang="fr" onclick="setDevisLanguage('fr')">Français</button>
@@ -415,9 +362,9 @@
               </div>
 
               <div class="form-group">
-                <label>Select Client</label>
+                <label>Client</label>
                 <select id="devis-client-select" onchange="onDevisClientChange()">
-                  <option value="">-- Choose a client --</option>
+                  <option value="">-- Select Client --</option>
                 </select>
               </div>
 
@@ -427,7 +374,7 @@
               </div>
 
               <div class="form-group">
-                <label>Location & Phone</label>
+                <label>Location & Contact</label>
                 <input type="text" id="devis-client-contact" placeholder="Algiers - 0550 12 34 56" oninput="renderDevisLive()">
               </div>
 
@@ -439,17 +386,17 @@
               <div style="display: flex; flex-direction: column; gap: 8px;">
                 <label class="form-checkbox">
                   <input type="checkbox" id="devis-domain-check" onchange="renderDevisLive()" checked>
-                  <span style="font-size: 0.85rem; font-weight: 600;" id="devis-ctrl-domain-label">Domain Name Included</span>
+                  <span style="font-size: 0.85rem; font-weight: 600;">Domain Included</span>
                 </label>
                 <label class="form-checkbox">
                   <input type="checkbox" id="devis-hosting-check" onchange="renderDevisLive()" checked>
-                  <span style="font-size: 0.85rem; font-weight: 600;" id="devis-ctrl-hosting-label">Cloud Hosting & SSL Included</span>
+                  <span style="font-size: 0.85rem; font-weight: 600;">Hosting & SSL Included</span>
                 </label>
               </div>
 
               <div style="border-top: 1px solid var(--border); padding-top: 14px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                  <label style="font-size: 0.82rem; font-weight: 700;">Deliverables & Pricing (DZD)</label>
+                  <label style="font-size: 0.82rem; font-weight: 700;">Items & Pricing (DZD)</label>
                   <button type="button" class="btn btn-secondary btn-sm" onclick="addDevisItemRow()">Add Item</button>
                 </div>
                 <div id="devis-items-inputs" style="display: flex; flex-direction: column; gap: 8px;"></div>
@@ -457,17 +404,17 @@
 
               <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
                 <button class="btn btn-primary" onclick="saveDevisToDb()">
-                  <span>Save to Neon DB</span>
+                  <span>Save Quote</span>
                 </button>
                 <button class="btn btn-secondary" onclick="window.print()">
-                  <span>Print / Export PDF</span>
+                  <span>Print / PDF</span>
                 </button>
               </div>
 
             </div>
           </div>
 
-          <!-- Printable Sheet Area (Multi-Language: EN, FR, AR) -->
+          <!-- Printable Sheet Area -->
           <div class="devis-sheet" id="devis-printable-area">
             
             <div class="devis-header">
@@ -505,14 +452,14 @@
                 Domain name included
               </div>
               <div id="devis-view-hosting" style="font-weight: 600; color: #059669;">
-                Cloud hosting & SSL included
+                Hosting & SSL included
               </div>
             </div>
 
             <table class="devis-table" style="margin-bottom: 24px;">
               <thead>
                 <tr>
-                  <th style="padding: 10px 14px;" id="devis-th-desc">Deliverable Description</th>
+                  <th style="padding: 10px 14px;" id="devis-th-desc">Description</th>
                   <th style="padding: 10px 14px; text-align: right; width: 160px;" id="devis-th-amount">Amount (DZD)</th>
                 </tr>
               </thead>
@@ -521,7 +468,7 @@
 
             <div class="devis-total-box">
               <div class="devis-total-line">
-                <span id="devis-label-total">TOTAL PROJECT VALUE:</span>
+                <span id="devis-label-total">TOTAL:</span>
                 <span style="color: var(--cyan-dark); font-size: 1.4rem;" id="devis-view-total">0 DZD</span>
               </div>
             </div>
@@ -535,30 +482,30 @@
                 <div style="background: #fff; padding: 10px; border-radius: var(--radius-sm); border: 1px solid #BBF7D0;">
                   <strong style="color: var(--ink);" id="devis-m1-title">1. Deposit (M1 - 50%)</strong>
                   <div style="color: #059669; font-size: 1.1rem; font-weight: 800; margin-top: 4px;" id="devis-view-m1">0 DZD</div>
-                  <small style="color: var(--ink-muted);" id="devis-m1-sub">Upon signature to initiate work</small>
+                  <small style="color: var(--ink-muted);" id="devis-m1-sub">Project kickoff</small>
                 </div>
 
                 <div style="background: #fff; padding: 10px; border-radius: var(--radius-sm); border: 1px solid #BBF7D0;">
-                  <strong style="color: var(--ink);" id="devis-m2-title">2. Design Approval (M2 - 20%)</strong>
+                  <strong style="color: var(--ink);" id="devis-m2-title">2. Design (M2 - 20%)</strong>
                   <div style="color: #0284C7; font-size: 1.1rem; font-weight: 800; margin-top: 4px;" id="devis-view-m2">0 DZD</div>
-                  <small style="color: var(--ink-muted);" id="devis-m2-sub">After UI/UX review & validation</small>
+                  <small style="color: var(--ink-muted);" id="devis-m2-sub">Design sign-off</small>
                 </div>
 
                 <div style="background: #fff; padding: 10px; border-radius: var(--radius-sm); border: 1px solid #BBF7D0;">
-                  <strong style="color: var(--ink);" id="devis-m3-title">3. Final Delivery (M3 - 30%)</strong>
+                  <strong style="color: var(--ink);" id="devis-m3-title">3. Final (M3 - 30%)</strong>
                   <div style="color: #7C3AED; font-size: 1.1rem; font-weight: 800; margin-top: 4px;" id="devis-view-m3">0 DZD</div>
-                  <small style="color: var(--ink-muted);" id="devis-m3-sub">After backend, testing & delivery</small>
+                  <small style="color: var(--ink-muted);" id="devis-m3-sub">Delivery & handover</small>
                 </div>
               </div>
             </div>
 
-            <!-- Payment details: EMAIL ONLY -->
+            <!-- Payment details -->
             <div class="devis-rip-box">
-              <div style="font-weight: 700; margin-bottom: 4px; color: var(--ink);" id="devis-payment-heading">BARIDIMOB PAYMENT DETAILS:</div>
+              <div style="font-weight: 700; margin-bottom: 4px; color: var(--ink);" id="devis-payment-heading">BARIDIMOB DETAILS:</div>
               <div><span id="devis-label-beneficiary">Beneficiary:</span> <strong>LATRECHE YASSER</strong></div>
               <div>RIP BaridiMob: <strong style="letter-spacing: 0.08em; color: var(--ink);">007 99999 0000000000 00</strong></div>
               <small style="color: var(--ink-muted); display: block; margin-top: 4px;" id="devis-receipt-instruction">
-                Payment made strictly via BaridiMob. Please send receipt screenshot via email to contact@visiondz.com for immediate validation.
+                Please send receipt screenshot via email to contact@visiondz.com for immediate validation.
               </small>
             </div>
 
@@ -574,14 +521,11 @@
         <div class="card">
           <div class="card-header">
             <div class="card-title">
-              <span>BaridiMob Receipt Vault (Cloudflare R2)</span>
+              <span>Payment Receipts</span>
             </div>
             <button class="btn btn-secondary btn-sm" onclick="fetchProjects()">Refresh</button>
           </div>
           <div class="card-body">
-            <p style="font-size: 0.85rem; color: var(--ink-muted); margin-bottom: 20px;">
-              Email receipts uploaded by founder, backed by Cloudflare R2 bucket <code>vision</code> and linked in Neon Postgres.
-            </p>
             <div id="r2-receipts-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;"></div>
           </div>
         </div>
@@ -593,13 +537,13 @@
 
 </div>
 
-<!-- MODALS (With clean 'x' close button) -->
+<!-- MODALS -->
 
 <!-- Upload Receipt Modal -->
 <div class="modal-overlay" id="upload-receipt-modal">
   <div class="modal-content">
     <div class="modal-header">
-      <h3 class="modal-title">Upload BaridiMob Receipt</h3>
+      <h3 class="modal-title">Upload Receipt</h3>
       <button class="modal-close" onclick="closeModal('upload-receipt-modal')">&times;</button>
     </div>
     <form id="upload-receipt-form" onsubmit="handleReceiptUpload(event)">
@@ -607,29 +551,29 @@
         <input type="hidden" id="receipt-project-id">
         
         <div class="form-group">
-          <label>Target Project</label>
+          <label>Project</label>
           <input type="text" id="receipt-project-title" readonly style="background: var(--paper); color: var(--ink-muted);">
         </div>
 
         <div class="form-group">
-          <label>Milestone Phase</label>
+          <label>Milestone</label>
           <select id="receipt-milestone" required>
-            <option value="m1">1. Deposit M1 (50%) - Project kickoff</option>
-            <option value="m2">2. Design M2 (20%) - UI/UX sign-off</option>
-            <option value="m3">3. Delivery M3 (30%) - Final handover & security</option>
+            <option value="m1">Deposit (50%)</option>
+            <option value="m2">Design (20%)</option>
+            <option value="m3">Delivery (30%)</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label>Receipt Screenshot (Received via Email)</label>
+          <label>Receipt Screenshot</label>
           <input type="file" id="receipt-file" accept="image/*" required style="padding: 8px;">
-          <small style="color: var(--ink-muted); font-size: 0.78rem;">JPG, PNG, WEBP (Max 15 MB). Uploaded directly to Cloudflare R2 bucket.</small>
+          <small style="color: var(--ink-muted); font-size: 0.78rem;">JPG, PNG, WEBP (Max 15 MB)</small>
         </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" onclick="closeModal('upload-receipt-modal')">Cancel</button>
         <button type="submit" class="btn btn-primary" id="btn-submit-receipt">
-          <span>Upload to Cloudflare R2</span>
+          <span>Upload Receipt</span>
         </button>
       </div>
     </form>
@@ -640,14 +584,13 @@
 <div class="modal-overlay" id="view-receipt-modal">
   <div class="modal-content" style="max-width: 720px;">
     <div class="modal-header">
-      <h3 class="modal-title" id="view-receipt-title">Verified BaridiMob Receipt</h3>
+      <h3 class="modal-title" id="view-receipt-title">Payment Receipt</h3>
       <button class="modal-close" onclick="closeModal('view-receipt-modal')">&times;</button>
     </div>
     <div class="modal-body" style="text-align: center;">
-      <img id="view-receipt-img" src="" alt="BaridiMob Receipt" style="max-width: 100%; max-height: 70vh; border-radius: var(--radius-md); box-shadow: var(--shadow-md);">
-      <div style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
-        <span id="view-receipt-info" style="font-size: 0.82rem; color: var(--ink-muted);"></span>
-        <a id="view-receipt-open-btn" href="#" target="_blank" class="btn btn-secondary btn-sm">Open Original in R2</a>
+      <img id="view-receipt-img" src="" alt="Receipt" style="max-width: 100%; max-height: 70vh; border-radius: var(--radius-md); box-shadow: var(--shadow-md);">
+      <div style="margin-top: 12px; display: flex; justify-content: flex-end;">
+        <a id="view-receipt-open-btn" href="#" target="_blank" class="btn btn-secondary btn-sm">Open Full Image</a>
       </div>
     </div>
   </div>
@@ -657,7 +600,7 @@
 <div class="modal-overlay" id="new-project-modal">
   <div class="modal-content">
     <div class="modal-header">
-      <h3 class="modal-title">Create New Project</h3>
+      <h3 class="modal-title">Create Project</h3>
       <button class="modal-close" onclick="closeModal('new-project-modal')">&times;</button>
     </div>
     <form id="new-project-form" onsubmit="handleNewProject(event)">
@@ -665,24 +608,24 @@
         <div class="form-group">
           <label>Client</label>
           <select id="proj-client-id" required>
-            <option value="">-- Select a client --</option>
+            <option value="">-- Select Client --</option>
           </select>
         </div>
         <div class="form-group">
           <label>Project Title</label>
-          <input type="text" id="proj-title" placeholder="Ex: Asel Butik E-Commerce & POS" required>
+          <input type="text" id="proj-title" placeholder="Ex: Boutique Asel E-Commerce" required>
         </div>
         <div class="form-group">
-          <label>Solution Type</label>
+          <label>Type</label>
           <select id="proj-type" required>
             <option value="ecommerce">E-Commerce</option>
             <option value="saas">SaaS / Web App</option>
-            <option value="landing">Landing Page / Showcase</option>
-            <option value="custom_software">Custom Desktop / POS</option>
+            <option value="landing">Landing Page</option>
+            <option value="custom_software">Custom Desktop</option>
           </select>
         </div>
         <div class="form-group">
-          <label>Total Agreed Price (DZD)</label>
+          <label>Agreed Price (DZD)</label>
           <input type="number" id="proj-price" placeholder="Ex: 180000" required oninput="calcProjectSplitPreview()">
           <small id="proj-split-preview" style="color: var(--cyan-dark); font-weight: 600; font-size: 0.8rem; margin-top: 4px;">
             50% = 0 DZD | 20% = 0 DZD | 30% = 0 DZD
@@ -691,16 +634,16 @@
         <div style="display: flex; gap: 12px;">
           <label class="form-checkbox" style="flex: 1;">
             <input type="checkbox" id="proj-domain" checked>
-            <span style="font-size: 0.82rem;">Domain Name Included</span>
+            <span style="font-size: 0.82rem;">Domain Included</span>
           </label>
           <label class="form-checkbox" style="flex: 1;">
             <input type="checkbox" id="proj-hosting" checked>
-            <span style="font-size: 0.82rem;">Cloud Hosting Included</span>
+            <span style="font-size: 0.82rem;">Hosting Included</span>
           </label>
         </div>
         <div class="form-group">
-          <label>Project Notes / Scope</label>
-          <textarea id="proj-notes" rows="2" placeholder="Key deliverables and client notes..."></textarea>
+          <label>Notes</label>
+          <textarea id="proj-notes" rows="2" placeholder="Project scope..."></textarea>
         </div>
       </div>
       <div class="modal-footer">
@@ -725,7 +668,7 @@
           <input type="text" id="client-company" placeholder="Ex: Pyjama DZ" required>
         </div>
         <div class="form-group">
-          <label>Primary Contact Name</label>
+          <label>Contact Name</label>
           <input type="text" id="client-contact" placeholder="Ex: Mohamed Benali" required>
         </div>
         <div class="form-group">
@@ -737,12 +680,12 @@
           <input type="text" id="client-wilaya" placeholder="Ex: Algiers, Oran..." required>
         </div>
         <div class="form-group">
-          <label>Email Address</label>
+          <label>Email</label>
           <input type="email" id="client-email" placeholder="contact@company.dz">
         </div>
         <div class="form-group">
           <label>Industry</label>
-          <input type="text" id="client-industry" placeholder="Ex: Apparel, Healthcare, Retail...">
+          <input type="text" id="client-industry" placeholder="Ex: Retail, Healthcare...">
         </div>
       </div>
       <div class="modal-footer">
@@ -754,6 +697,6 @@
 </div>
 
 <div class="toast-container" id="toast-container"></div>
-<script src="admin.js"></script>
+<script src="admin.js?v=3"></script>
 </body>
 </html>
