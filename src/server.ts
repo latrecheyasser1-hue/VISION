@@ -233,7 +233,19 @@ app.patch('/api/projects/:id', async (req, res) => {
         delivered_30: 'delivered',
         maintenance: 'maintenance',
       };
-      updateData.stage = stageMap[updateData.stage] || updateData.stage;
+      const normalizedNewStage = stageMap[updateData.stage] || updateData.stage;
+      updateData.stage = normalizedNewStage;
+
+      // Rule: Projects cannot be moved backward to a previous stage
+      const [currentProject] = await db.select({ stage: schema.projects.stage }).from(schema.projects).where(eq(schema.projects.id, id));
+      if (currentProject) {
+        const STAGE_ORDER = ['scoping', 'devis', 'deposit_50', 'design', 'design_approved_20', 'development', 'security_qa', 'delivered', 'maintenance'];
+        const currentIdx = STAGE_ORDER.indexOf(currentProject.stage || 'scoping');
+        const newIdx = STAGE_ORDER.indexOf(normalizedNewStage);
+        if (newIdx !== -1 && currentIdx !== -1 && newIdx < currentIdx) {
+          return res.status(400).json({ error: 'Projects cannot be moved backward to a previous stage' });
+        }
+      }
     }
 
     if (updateData.priceTotalDzd) {

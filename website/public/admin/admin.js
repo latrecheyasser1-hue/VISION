@@ -860,6 +860,16 @@ async function handleKanbanDrop(e, targetStage) {
   const currentStage = normalizeKanbanStage(p.stage);
   if (currentStage === targetStage) return;
 
+  // RULE 0: Backward movement strictly forbidden (Projects can only move forward)
+  const STAGE_ORDER = ['scoping', 'devis', 'deposit_50', 'design', 'design_approved_20', 'development', 'security_qa', 'delivered'];
+  const currentIdx = STAGE_ORDER.indexOf(currentStage);
+  const targetIdx = STAGE_ORDER.indexOf(targetStage);
+
+  if (targetIdx !== -1 && currentIdx !== -1 && targetIdx < currentIdx) {
+    showToast('Projects cannot be moved backward to a previous stage.', 'error');
+    return;
+  }
+
   // RULE 1: Moving from scoping to devis -> Open Quote Creator
   if (targetStage === 'devis') {
     await updateProjectStage(projectId, 'devis');
