@@ -226,7 +226,7 @@ async function fetchProjects() {
     state.projects = data;
 
     document.getElementById('nav-projects-count').textContent = data.length;
-    renderOverviewProjects(data.slice(0, 5));
+    renderOverviewProjects(data);
     renderProjectsTable(data);
     renderStorageExplorer();
     updateProjectSelects();

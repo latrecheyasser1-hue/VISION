@@ -496,6 +496,8 @@ body {
 /* Table */
 .table-responsive {
   overflow-x: auto;
+  overflow-y: auto;
+  max-height: 540px;
   width: 100%;
 }
 
@@ -514,6 +516,9 @@ th {
   padding: 12px 20px;
   background-color: var(--paper);
   border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 
 td {

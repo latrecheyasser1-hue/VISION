@@ -158,12 +158,12 @@ async function updateRealProjects() {
           title: 'HK STORE — E-Commerce & POS',
           type: 'ecommerce',
           stage: 'scoping' as const, // Pending payment!
-          priceTotalDzd: '160000',
-          m1AmountDzd: '80000',
+          priceTotalDzd: '60000',
+          m1AmountDzd: '30000',
           m1Paid: false, // NOT PAID
-          m2AmountDzd: '32000',
+          m2AmountDzd: '12000',
           m2Paid: false, // NOT PAID
-          m3AmountDzd: '48000',
+          m3AmountDzd: '18000',
           m3Paid: false, // NOT PAID
           notes: 'E-commerce platform and inventory system. Payment pending verification.',
           startDate: new Date('2026-10-25T16:00:00Z'),
