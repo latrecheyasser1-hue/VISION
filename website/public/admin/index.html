@@ -145,25 +145,20 @@
         <span class="badge" id="nav-leads-count" style="background: var(--cyan); color: var(--ink);">0</span>
       </button>
 
-      <button class="nav-item" data-tab="devis" title="Quotes & Devis">
+      <button class="nav-item" data-tab="history" title="History">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-          <polyline points="14 2 14 8 20 8"></polyline>
-          <line x1="16" y1="13" x2="8" y2="13"></line>
-          <line x1="16" y1="17" x2="8" y2="17"></line>
-          <polyline points="10 9 9 9 8 9"></polyline>
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
         </svg>
-        <span class="nav-text">Quotes & Devis</span>
+        <span class="nav-text">History</span>
       </button>
 
-      <button class="nav-item" data-tab="storage" title="Receipts">
+      <button class="nav-item" data-tab="todo" title="To-Do">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"></path>
-          <line x1="8" y1="7" x2="16" y2="7"></line>
-          <line x1="8" y1="11" x2="16" y2="11"></line>
-          <line x1="8" y1="15" x2="12" y2="15"></line>
+          <path d="M9 11l3 3L22 4"></path>
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
         </svg>
-        <span class="nav-text">Receipts</span>
+        <span class="nav-text">To-Do</span>
       </button>
     </nav>
 
@@ -326,199 +321,236 @@
 
       </section>
 
-      <!-- TAB 5: DEVIS GENERATOR (With 3-Language Selector) -->
-      <section id="tab-devis" class="tab-section">
+      <!-- TAB 5: HISTORY (3 Categories: Projects, Leads, Receipts & Quotes) -->
+      <section id="tab-history" class="tab-section">
         
-        <div style="display: grid; grid-template-columns: 360px 1fr; gap: 24px; align-items: start;">
-          
-          <div class="card no-print">
-            <div class="card-header">
-              <div class="card-title">
-                <span>Quote Parameters</span>
+        <div class="card" style="margin-bottom: 20px;">
+          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div class="filter-pills" id="history-category-pills">
+                <button class="filter-pill active" data-category="projects" onclick="switchHistoryCategory('projects')">Projects History</button>
+                <button class="filter-pill" data-category="leads" onclick="switchHistoryCategory('leads')">Leads History</button>
+                <button class="filter-pill" data-category="financials" onclick="switchHistoryCategory('financials')">Receipts & Quotes</button>
               </div>
             </div>
-            <div class="card-body" style="display: flex; flex-direction: column; gap: 16px;">
-              
-              <!-- 3-Language Switcher for Devis -->
-              <div class="form-group">
-                <label>Language</label>
-                <div class="lang-btn-group">
-                  <button type="button" class="lang-btn active" data-lang="en" onclick="setDevisLanguage('en')">English</button>
-                  <button type="button" class="lang-btn" data-lang="fr" onclick="setDevisLanguage('fr')">Français</button>
-                  <button type="button" class="lang-btn" data-lang="ar" onclick="setDevisLanguage('ar')">العربية</button>
-                </div>
-              </div>
+            <div id="history-search-wrap">
+              <input type="text" id="history-search-input" placeholder="Search history..." oninput="filterHistorySearch(this.value)" style="padding: 6px 12px; font-size: 0.8rem; border: 1px solid var(--border); border-radius: var(--radius-sm); width: 220px;">
+            </div>
+          </div>
+        </div>
 
-              <div class="form-group">
-                <label>Client</label>
-                <select id="devis-client-select" onchange="onDevisClientChange()">
-                  <option value="">-- Select Client --</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label>Client / Company Name</label>
-                <input type="text" id="devis-client-name" placeholder="Ex: ClinicFlow DZ" oninput="renderDevisLive()">
-              </div>
-
-              <div class="form-group">
-                <label>Location & Contact</label>
-                <input type="text" id="devis-client-contact" placeholder="Algiers - 0550 12 34 56" oninput="renderDevisLive()">
-              </div>
-
-              <div class="form-group">
-                <label>Project Title</label>
-                <input type="text" id="devis-project-title" placeholder="Ex: Medical Management SaaS" oninput="renderDevisLive()">
-              </div>
-
-              <div style="display: flex; flex-direction: column; gap: 8px;">
-                <label class="form-checkbox">
-                  <input type="checkbox" id="devis-domain-check" onchange="renderDevisLive()" checked>
-                  <span style="font-size: 0.85rem; font-weight: 600;">Domain Included</span>
-                </label>
-                <label class="form-checkbox">
-                  <input type="checkbox" id="devis-hosting-check" onchange="renderDevisLive()" checked>
-                  <span style="font-size: 0.85rem; font-weight: 600;">Hosting & SSL Included</span>
-                </label>
-              </div>
-
-              <div style="border-top: 1px solid var(--border); padding-top: 14px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                  <label style="font-size: 0.82rem; font-weight: 700;">Items & Pricing (DZD)</label>
-                  <button type="button" class="btn btn-secondary btn-sm" onclick="addDevisItemRow()">Add Item</button>
-                </div>
-                <div id="devis-items-inputs" style="display: flex; flex-direction: column; gap: 8px;"></div>
-              </div>
-
-              <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
-                <button class="btn btn-primary" onclick="saveDevisToDb()">
-                  <span>Save Quote</span>
-                </button>
-                <button class="btn btn-secondary" onclick="exportDevisPdf()" id="btn-export-devis-pdf">
-                  <span>Save PDF</span>
-                </button>
-              </div>
-
+        <!-- Category 1: Projects History (Scoping & Above) -->
+        <div id="history-cat-projects" class="history-category-panel active">
+          
+          <!-- Stage Filter Pills -->
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px;">
+            <span style="font-size: 0.78rem; font-weight: 700; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap;">Stage Filter:</span>
+            <div class="filter-pills" id="history-stage-pills">
+              <button class="filter-pill active" data-stage="all" onclick="filterHistoryProjectsByStage('all')">All</button>
+              <button class="filter-pill" data-stage="scoping" onclick="filterHistoryProjectsByStage('scoping')">1. Scoping</button>
+              <button class="filter-pill" data-stage="devis" onclick="filterHistoryProjectsByStage('devis')">2. Devis</button>
+              <button class="filter-pill" data-stage="deposit_50" onclick="filterHistoryProjectsByStage('deposit_50')">3. Deposit (50%)</button>
+              <button class="filter-pill" data-stage="design" onclick="filterHistoryProjectsByStage('design')">4. Design</button>
+              <button class="filter-pill" data-stage="design_approved_20" onclick="filterHistoryProjectsByStage('design_approved_20')">5. Design Approved</button>
+              <button class="filter-pill" data-stage="development" onclick="filterHistoryProjectsByStage('development')">6. Development</button>
+              <button class="filter-pill" data-stage="security_qa" onclick="filterHistoryProjectsByStage('security_qa')">7. Security QA</button>
+              <button class="filter-pill" data-stage="delivered" onclick="filterHistoryProjectsByStage('delivered')">8. Delivered</button>
             </div>
           </div>
 
-          <!-- Printable Sheet Area -->
-          <div class="devis-sheet" id="devis-printable-area">
-            
-            <div class="devis-header">
-              <div class="devis-brand">
-                <div>
-                  <h2 style="margin: 0; line-height: 1; letter-spacing: -0.03em;">VISION</h2>
-                  <small style="color: var(--ink-muted); font-size: 0.8rem; font-weight: 600;" id="devis-brand-tagline">Digital Development Agency · Algeria</small>
-                </div>
-              </div>
-
-              <div class="devis-meta">
-                <span class="devis-number" id="devis-view-number">DEVIS N° DEV-2026-001</span>
-                <div style="font-size: 0.82rem; color: var(--ink-muted); margin-top: 4px;"><span id="devis-label-date">Date:</span> <strong id="devis-view-date">08/11/2026</strong></div>
-                <div style="font-size: 0.82rem; color: var(--ink-muted);"><span id="devis-label-validity">Validity:</span> <strong id="devis-view-validity-val">15 days</strong></div>
-              </div>
+          <div class="card">
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Project & Client</th>
+                    <th>Type</th>
+                    <th>Current Stage</th>
+                    <th>Total Price</th>
+                    <th>Milestones (50 / 20 / 30)</th>
+                    <th>Created Date</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="history-projects-tbody">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
             </div>
-
-            <div class="devis-client-box">
-              <div>
-                <small style="text-transform: uppercase; font-size: 0.7rem; font-weight: 700; color: var(--ink-muted);" id="devis-label-issuer">ISSUER</small>
-                <div style="font-weight: 700; color: var(--ink); margin-top: 2px;">VISION DIGITAL AGENCY</div>
-                <div style="font-size: 0.82rem; color: var(--ink-muted);" id="devis-label-founder">Founder: Yasser Latreche</div>
-                <div style="font-size: 0.82rem; color: var(--ink-muted);">contact@visiondz.com · Algeria</div>
-              </div>
-              <div>
-                <small style="text-transform: uppercase; font-size: 0.7rem; font-weight: 700; color: var(--ink-muted);" id="devis-label-client">CLIENT</small>
-                <div style="font-weight: 800; color: var(--ink); margin-top: 2px;" id="devis-view-client-name">ClinicFlow DZ</div>
-                <div style="font-size: 0.82rem; color: var(--ink-muted);" id="devis-view-client-contact">Algiers · contact@clinicflow.dz</div>
-                <div style="font-size: 0.82rem; color: var(--cyan-dark); font-weight: 600; margin-top: 4px;" id="devis-view-project-title">Medical Management SaaS</div>
-              </div>
-            </div>
-
-            <div style="display: flex; gap: 16px; margin-bottom: 20px; font-size: 0.85rem;">
-              <div id="devis-view-domain" style="font-weight: 600; color: #059669;">
-                Domain name included
-              </div>
-              <div id="devis-view-hosting" style="font-weight: 600; color: #059669;">
-                Hosting & SSL included
-              </div>
-            </div>
-
-            <table class="devis-table" style="margin-bottom: 24px;">
-              <thead>
-                <tr>
-                  <th style="padding: 10px 14px;" id="devis-th-desc">Description</th>
-                  <th style="padding: 10px 14px; text-align: right; width: 160px;" id="devis-th-amount">Amount (DZD)</th>
-                </tr>
-              </thead>
-              <tbody id="devis-view-items-tbody"></tbody>
-            </table>
-
-            <div class="devis-total-box">
-              <div class="devis-total-line">
-                <span id="devis-label-total">TOTAL:</span>
-                <span style="color: var(--cyan-dark); font-size: 1.4rem;" id="devis-view-total">0 DZD</span>
-              </div>
-            </div>
-
-            <!-- 50 / 20 / 30 Schedule -->
-            <div class="devis-milestones-box">
-              <div style="font-weight: 800; font-size: 0.95rem; margin-bottom: 8px; color: #166534;" id="devis-schedule-title">
-                PAYMENT SCHEDULE (50% / 20% / 30%):
-              </div>
-              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; font-size: 0.82rem;">
-                <div style="background: #fff; padding: 10px; border-radius: var(--radius-sm); border: 1px solid #BBF7D0;">
-                  <strong style="color: var(--ink);" id="devis-m1-title">1. Deposit (M1 - 50%)</strong>
-                  <div style="color: #059669; font-size: 1.1rem; font-weight: 800; margin-top: 4px;" id="devis-view-m1">0 DZD</div>
-                  <small style="color: var(--ink-muted);" id="devis-m1-sub">Project kickoff</small>
-                </div>
-
-                <div style="background: #fff; padding: 10px; border-radius: var(--radius-sm); border: 1px solid #BBF7D0;">
-                  <strong style="color: var(--ink);" id="devis-m2-title">2. Design (M2 - 20%)</strong>
-                  <div style="color: #0284C7; font-size: 1.1rem; font-weight: 800; margin-top: 4px;" id="devis-view-m2">0 DZD</div>
-                  <small style="color: var(--ink-muted);" id="devis-m2-sub">Design sign-off</small>
-                </div>
-
-                <div style="background: #fff; padding: 10px; border-radius: var(--radius-sm); border: 1px solid #BBF7D0;">
-                  <strong style="color: var(--ink);" id="devis-m3-title">3. Final (M3 - 30%)</strong>
-                  <div style="color: #7C3AED; font-size: 1.1rem; font-weight: 800; margin-top: 4px;" id="devis-view-m3">0 DZD</div>
-                  <small style="color: var(--ink-muted);" id="devis-m3-sub">Delivery & handover</small>
-                </div>
-              </div>
-            </div>
-
-            <!-- Payment details -->
-            <div class="devis-rip-box">
-              <div style="font-weight: 700; margin-bottom: 4px; color: var(--ink);" id="devis-payment-heading">BARIDIMOB DETAILS:</div>
-              <div><span id="devis-label-beneficiary">Beneficiary:</span> <strong>LATRECHE YASSER</strong></div>
-              <div>RIP BaridiMob: <strong style="letter-spacing: 0.08em; color: var(--ink);">007 99999 0000000000 00</strong></div>
-              <small style="color: var(--ink-muted); display: block; margin-top: 4px;" id="devis-receipt-instruction">
-                Please send receipt screenshot via email to contact@visiondz.com for immediate validation.
-              </small>
-            </div>
-
           </div>
 
         </div>
 
+        <!-- Category 2: Leads History -->
+        <div id="history-cat-leads" class="history-category-panel" style="display: none;">
+          <div class="card">
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Prospect</th>
+                    <th>Phone</th>
+                    <th>Activity</th>
+                    <th>Source</th>
+                    <th>Status</th>
+                    <th>Submission Date</th>
+                  </tr>
+                </thead>
+                <tbody id="history-leads-tbody">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Category 3: Receipts & Quotes History -->
+        <div id="history-cat-financials" class="history-category-panel" style="display: none;">
+          <div class="card" style="margin-bottom: 20px;">
+            <div class="card-header">
+              <div class="card-title">
+                <span>Verified Payment Receipts (BaridiMob)</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <div id="history-receipts-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <span>Generated Quotes (Devis)</span>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Quote N°</th>
+                    <th>Client & Project</th>
+                    <th>Total Amount</th>
+                    <th>Status</th>
+                    <th>Issue Date</th>
+                    <th style="text-align: right;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="history-invoices-tbody">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
       </section>
 
-      <!-- TAB 6: RECEIPTS STORAGE -->
-      <section id="tab-storage" class="tab-section">
+      <!-- TAB 6: TO-DO (Placeholder Workspace) -->
+      <section id="tab-todo" class="tab-section">
         
         <div class="card">
           <div class="card-header">
             <div class="card-title">
-              <span>Payment Receipts</span>
+              <span>To-Do List</span>
             </div>
-            <button class="btn btn-secondary btn-sm" onclick="fetchProjects()">Refresh</button>
           </div>
-          <div class="card-body">
-            <div id="receipts-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;"></div>
+          <div class="card-body" style="padding: 60px 20px; text-align: center;">
+            <div style="max-width: 440px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 12px;">
+              <div style="width: 56px; height: 56px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--ink-muted);">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 11l3 3L22 4"></path>
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                </svg>
+              </div>
+              <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--ink); margin: 0;">To-Do Workspace</h3>
+              <p style="font-size: 0.85rem; color: var(--ink-muted); margin: 0; line-height: 1.45;">
+                This workspace is reserved for custom task management and action items. It will be configured as soon as all core pipeline workflows are finalized.
+              </p>
+            </div>
           </div>
         </div>
 
       </section>
+
+      <!-- Hidden Printable Area for PDF exports -->
+      <div style="display: none;">
+        <div class="devis-sheet" id="devis-printable-area">
+          <div class="devis-header">
+            <div class="devis-brand">
+              <div>
+                <h2 style="margin: 0; line-height: 1; letter-spacing: -0.03em;">VISION</h2>
+                <small style="color: var(--ink-muted); font-size: 0.8rem; font-weight: 600;" id="devis-brand-tagline">Digital Development Agency · Algeria</small>
+              </div>
+            </div>
+            <div class="devis-meta">
+              <span class="devis-number" id="devis-view-number">DEVIS N° DEV-2026-001</span>
+              <div style="font-size: 0.82rem; color: var(--ink-muted); margin-top: 4px;"><span id="devis-label-date">Date:</span> <strong id="devis-view-date">08/11/2026</strong></div>
+              <div style="font-size: 0.82rem; color: var(--ink-muted);"><span id="devis-label-validity">Validity:</span> <strong id="devis-view-validity-val">15 days</strong></div>
+            </div>
+          </div>
+          <div class="devis-client-box">
+            <div>
+              <small style="text-transform: uppercase; font-size: 0.7rem; font-weight: 700; color: var(--ink-muted);" id="devis-label-issuer">ISSUER</small>
+              <div style="font-weight: 700; color: var(--ink); margin-top: 2px;">VISION DIGITAL AGENCY</div>
+              <div style="font-size: 0.82rem; color: var(--ink-muted);" id="devis-label-founder">Founder: Yasser Latreche</div>
+              <div style="font-size: 0.82rem; color: var(--ink-muted);">contact@visiondz.com · Algeria</div>
+            </div>
+            <div>
+              <small style="text-transform: uppercase; font-size: 0.7rem; font-weight: 700; color: var(--ink-muted);" id="devis-label-client">CLIENT</small>
+              <div style="font-weight: 800; color: var(--ink); margin-top: 2px;" id="devis-view-client-name">ClinicFlow DZ</div>
+              <div style="font-size: 0.82rem; color: var(--ink-muted);" id="devis-view-client-contact">Algiers · contact@clinicflow.dz</div>
+              <div style="font-size: 0.82rem; color: var(--cyan-dark); font-weight: 600; margin-top: 4px;" id="devis-view-project-title">Medical Management SaaS</div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 16px; margin-bottom: 20px; font-size: 0.85rem;">
+            <div id="devis-view-domain" style="font-weight: 600; color: #059669;">Domain name included</div>
+            <div id="devis-view-hosting" style="font-weight: 600; color: #059669;">Hosting & SSL included</div>
+          </div>
+          <table class="devis-table" style="margin-bottom: 24px;">
+            <thead>
+              <tr>
+                <th style="padding: 10px 14px;" id="devis-th-desc">Description</th>
+                <th style="padding: 10px 14px; text-align: right; width: 160px;" id="devis-th-amount">Amount (DZD)</th>
+              </tr>
+            </thead>
+            <tbody id="devis-view-items-tbody"></tbody>
+          </table>
+          <div class="devis-total-box">
+            <div class="devis-total-line">
+              <span id="devis-label-total">TOTAL:</span>
+              <span style="color: var(--cyan-dark); font-size: 1.4rem;" id="devis-view-total">0 DZD</span>
+            </div>
+          </div>
+          <div class="devis-milestones-box">
+            <div style="font-weight: 800; font-size: 0.95rem; margin-bottom: 8px; color: #166534;" id="devis-schedule-title">PAYMENT SCHEDULE (50% / 20% / 30%):</div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; font-size: 0.82rem;">
+              <div style="background: #fff; padding: 10px; border-radius: var(--radius-sm); border: 1px solid #BBF7D0;">
+                <strong style="color: var(--ink);" id="devis-m1-title">1. Deposit (M1 - 50%)</strong>
+                <div style="color: #059669; font-size: 1.1rem; font-weight: 800; margin-top: 4px;" id="devis-view-m1">0 DZD</div>
+                <small style="color: var(--ink-muted);" id="devis-m1-sub">Project kickoff</small>
+              </div>
+              <div style="background: #fff; padding: 10px; border-radius: var(--radius-sm); border: 1px solid #BBF7D0;">
+                <strong style="color: var(--ink);" id="devis-m2-title">2. Design (M2 - 20%)</strong>
+                <div style="color: #0284C7; font-size: 1.1rem; font-weight: 800; margin-top: 4px;" id="devis-view-m2">0 DZD</div>
+                <small style="color: var(--ink-muted);" id="devis-m2-sub">Design sign-off</small>
+              </div>
+              <div style="background: #fff; padding: 10px; border-radius: var(--radius-sm); border: 1px solid #BBF7D0;">
+                <strong style="color: var(--ink);" id="devis-m3-title">3. Final (M3 - 30%)</strong>
+                <div style="color: #7C3AED; font-size: 1.1rem; font-weight: 800; margin-top: 4px;" id="devis-view-m3">0 DZD</div>
+                <small style="color: var(--ink-muted);" id="devis-m3-sub">Delivery & handover</small>
+              </div>
+            </div>
+          </div>
+          <div class="devis-rip-box">
+            <div style="font-weight: 700; margin-bottom: 4px; color: var(--ink);" id="devis-payment-heading">BARIDIMOB DETAILS:</div>
+            <div><span id="devis-label-beneficiary">Beneficiary:</span> <strong>LATRECHE YASSER</strong></div>
+            <div>RIP BaridiMob: <strong style="letter-spacing: 0.08em; color: var(--ink);">007 99999 0000000000 00</strong></div>
+            <small style="color: var(--ink-muted); display: block; margin-top: 4px;" id="devis-receipt-instruction">
+              Please send receipt screenshot via email to contact@visiondz.com for immediate validation.
+            </small>
+          </div>
+        </div>
+      </div>
 
     </div>
   </main>
@@ -942,8 +974,9 @@
         <textarea id="modal-devis-notes" rows="2" placeholder="Specific technical requirements or notes..."></textarea>
       </div>
     </div>
-    <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
+    <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;">
       <button type="button" class="btn btn-secondary" onclick="closeModal('project-devis-modal')">Cancel</button>
+      <button type="button" class="btn btn-secondary" onclick="exportModalDevisPdf()">Save PDF</button>
       <button type="button" class="btn btn-secondary" onclick="saveModalDevis(false)">Save Draft</button>
       <button type="button" class="btn btn-primary" style="background: #059669; border-color: #059669;" onclick="saveModalDevis(true)">Save & Approve Quote</button>
     </div>
@@ -952,6 +985,6 @@
 
 <div class="toast-container" id="toast-container"></div>
 <script src="html2pdf.bundle.min.js"></script>
-<script src="admin.js?v=16"></script>
+<script src="admin.js?v=18"></script>
 </body>
 </html>

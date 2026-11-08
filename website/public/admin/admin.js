@@ -9,8 +9,12 @@ let state = {
   projects: [],
   clients: [],
   leads: [],
+  invoices: [],
   stats: null,
   activeTab: 'overview',
+  historyCategory: 'projects',
+  historyStageFilter: 'all',
+  historySearchQuery: '',
   devisLang: 'en',
   devisItems: [
     { title: 'Custom UI/UX Architecture & Interactive Prototype', price: 60000 },
@@ -122,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (window.location.hash) {
     const tab = window.location.hash.replace('#', '');
-    if (['overview', 'projects', 'clients', 'leads', 'devis', 'storage'].includes(tab)) {
+    if (['overview', 'projects', 'clients', 'leads', 'history', 'todo', 'devis', 'storage'].includes(tab)) {
       switchTab(tab);
     }
   }
@@ -165,6 +169,7 @@ async function fetchAllData() {
     fetchClients(),
     fetchProjects(),
     fetchLeads(),
+    fetchInvoices(),
   ]);
 }
 
@@ -193,8 +198,10 @@ const TAB_TITLES = {
   projects: { title: "Projects", sub: "Development progress and milestones tracking" },
   clients: { title: "Clients", sub: "Client directory and project history" },
   leads: { title: "Leads", sub: "Incoming project inquiries from website" },
-  devis: { title: "Quotes & Devis", sub: "Multi-language quotation generator (50/20/30 split)" },
-  storage: { title: "Receipts", sub: "Verified payment receipts archive" },
+  history: { title: "History", sub: "Comprehensive historical logs for leads, projects, and finances" },
+  todo: { title: "To-Do", sub: "Task management and action items workspace" },
+  devis: { title: "History", sub: "Comprehensive historical logs for leads, projects, and finances" },
+  storage: { title: "History", sub: "Comprehensive historical logs for leads, projects, and finances" },
 };
 
 function initTabs() {
@@ -208,6 +215,11 @@ function initTabs() {
 }
 
 function switchTab(tabId) {
+  if (tabId === 'storage' || tabId === 'devis') {
+    tabId = 'history';
+    state.historyCategory = 'financials';
+  }
+
   state.activeTab = tabId;
   window.location.hash = tabId;
 
@@ -227,7 +239,10 @@ function switchTab(tabId) {
   if (titleEl) titleEl.textContent = meta.title;
   if (subEl) subEl.textContent = meta.sub;
 
-  if (tabId === 'storage') renderStorageExplorer();
+  if (tabId === 'history') {
+    renderHistoryView();
+    fetchInvoices();
+  }
 }
 
 // ==========================================
@@ -260,7 +275,8 @@ async function fetchProjects() {
     document.getElementById('nav-projects-count').textContent = data.length;
     renderOverviewProjects(data);
     renderProjectsKanban(data);
-    renderStorageExplorer();
+    renderHistoryProjectsTable();
+    renderHistoryFinancials();
     updateProjectSelects();
   } catch (err) {
     console.error('Projects error:', err);
@@ -289,8 +305,21 @@ async function fetchLeads() {
     const data = await res.json();
     state.leads = data;
     renderLeadsTable(data);
+    renderHistoryLeadsTable();
   } catch (err) {
     console.error('Leads error:', err);
+  }
+}
+
+async function fetchInvoices() {
+  try {
+    const res = await fetch('/api/invoices');
+    if (!res.ok) throw new Error('Failed to fetch invoices');
+    const data = await res.json();
+    state.invoices = data;
+    renderHistoryFinancials();
+  } catch (err) {
+    console.error('Invoices error:', err);
   }
 }
 
@@ -951,6 +980,7 @@ async function approveProjectQuote(projectId) {
     showToast('Quote approved by client successfully.');
     await fetchProjects();
     await fetchStats();
+    await fetchInvoices();
   } catch (err) {
     showToast(err.message, 'error');
   }
@@ -1104,47 +1134,457 @@ function renderLeadsTable(leads) {
   }).join('');
 }
 
-// 5. Receipts Storage Explorer
-function renderStorageExplorer() {
-  const grid = document.getElementById('receipts-grid');
-  if (!grid) return;
+// ==========================================
+// 5. UNIFIED HISTORY & AUDIT LOGS
+// ==========================================
 
-  const receipts = [];
-  for (const p of state.projects) {
-    const clientName = p.client ? p.client.companyName : 'Client';
-    if (p.m1Paid && p.m1ReceiptUrl) {
-      receipts.push({ projectTitle: p.title, clientName, milestone: 'Deposit (50%)', url: p.m1ReceiptUrl, date: p.m1PaidAt });
-    }
-    if (p.m2Paid && p.m2ReceiptUrl) {
-      receipts.push({ projectTitle: p.title, clientName, milestone: 'Design (20%)', url: p.m2ReceiptUrl, date: p.m2PaidAt });
-    }
-    if (p.m3Paid && p.m3ReceiptUrl) {
-      receipts.push({ projectTitle: p.title, clientName, milestone: 'Delivery (30%)', url: p.m3ReceiptUrl, date: p.m3PaidAt });
-    }
+function switchHistoryCategory(category) {
+  state.historyCategory = category;
+
+  // Toggle active class on pills
+  const pills = document.querySelectorAll('#history-category-pills .filter-pill');
+  pills.forEach(pill => {
+    pill.classList.toggle('active', pill.dataset.category === category);
+  });
+
+  // Toggle visible category section
+  const pSection = document.getElementById('history-cat-projects');
+  const lSection = document.getElementById('history-cat-leads');
+  const fSection = document.getElementById('history-cat-financials');
+
+  if (pSection) pSection.style.display = (category === 'projects') ? 'block' : 'none';
+  if (lSection) lSection.style.display = (category === 'leads') ? 'block' : 'none';
+  if (fSection) fSection.style.display = (category === 'financials') ? 'block' : 'none';
+
+  renderHistoryView();
+}
+
+function filterHistoryProjectsByStage(stage) {
+  state.historyStageFilter = stage;
+
+  const pills = document.querySelectorAll('#history-stage-pills .filter-pill');
+  pills.forEach(pill => {
+    pill.classList.toggle('active', pill.dataset.stage === stage);
+  });
+
+  renderHistoryProjectsTable();
+}
+
+function filterHistorySearch(query) {
+  state.historySearchQuery = (query || '').toLowerCase().trim();
+  renderHistoryView();
+}
+
+function renderHistoryView() {
+  if (state.historyCategory === 'projects') {
+    renderHistoryProjectsTable();
+  } else if (state.historyCategory === 'leads') {
+    renderHistoryLeadsTable();
+  } else if (state.historyCategory === 'financials') {
+    renderHistoryFinancials();
   }
+}
 
-  if (receipts.length === 0) {
-    grid.innerHTML = `
-      <div style="grid-column: 1 / -1; padding: 40px; text-align: center; background: var(--paper); border: 1px dashed var(--border); border-radius: var(--radius-lg);">
-        <p style="color: var(--ink-muted); font-size: 0.95rem;">No receipts uploaded yet.</p>
-      </div>
+// Category 1: Projects History (Scoping & Above, with Stage Filter)
+function renderHistoryProjectsTable() {
+  const tbody = document.getElementById('history-projects-tbody');
+  if (!tbody) return;
+
+  const projects = Array.isArray(state.projects) ? state.projects : [];
+  const stageFilter = state.historyStageFilter || 'all';
+  const query = state.historySearchQuery || '';
+
+  const filtered = projects.filter(p => {
+    const normStage = normalizeKanbanStage(p.stage);
+
+    if (stageFilter !== 'all' && normStage !== stageFilter) {
+      return false;
+    }
+
+    if (query) {
+      const client = p.client || {};
+      const clientName = (client.companyName || client.fullName || '').toLowerCase();
+      const title = (p.title || '').toLowerCase();
+      const type = (p.type || '').toLowerCase();
+      if (!title.includes(query) && !clientName.includes(query) && !type.includes(query)) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" style="text-align: center; color: var(--ink-muted); padding: 40px;">
+          No projects found matching the selected filter.
+        </td>
+      </tr>
     `;
     return;
   }
 
-  grid.innerHTML = receipts.map(r => `
-    <div class="receipt-card">
-      <img src="${r.url}" alt="Receipt" loading="lazy" onclick="viewReceipt('${escapeHtml(r.projectTitle)} - ${r.milestone}', '${r.url}')">
-      <div class="receipt-card-body">
-        <strong style="font-size: 0.88rem; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(r.projectTitle)}</strong>
-        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem;">
-          <span style="color: var(--ink-muted);">${escapeHtml(r.clientName)}</span>
-          <span class="badge badge-green" style="font-size: 0.65rem;">${r.milestone}</span>
+  tbody.innerHTML = filtered.map(p => {
+    const client = p.client || {};
+    const clientDisplay = escapeHtml(client.companyName || client.fullName || 'Client');
+    const clientWilaya = escapeHtml(client.wilaya || 'DZ');
+    const normStage = normalizeKanbanStage(p.stage);
+    const stageBadgeHtml = getStageBadge(p.stage);
+    const totalPrice = Number(p.priceTotalDzd) || 0;
+    const priceDisplay = (normStage === 'scoping' && totalPrice === 0)
+      ? '<span style="color: var(--ink-muted); font-size: 0.8rem; font-style: italic;">Scoping / To Quote</span>'
+      : `<strong style="color: var(--ink);">${formatDzd(totalPrice)}</strong>`;
+
+    const m1Status = p.m1Paid
+      ? '<span class="badge badge-green" style="font-size: 0.68rem;" title="M1 50% Verified">M1 50%</span>'
+      : '<span class="badge badge-gray" style="font-size: 0.68rem;" title="M1 Pending">M1 Pending</span>';
+
+    const m2Status = p.m2Paid
+      ? '<span class="badge badge-blue" style="font-size: 0.68rem;" title="M2 20% Verified">M2 20%</span>'
+      : '<span class="badge badge-gray" style="font-size: 0.68rem;" title="M2 Pending">M2 Pending</span>';
+
+    const m3Status = p.m3Paid
+      ? '<span class="badge badge-purple" style="font-size: 0.68rem;" title="M3 30% Verified">M3 30%</span>'
+      : '<span class="badge badge-gray" style="font-size: 0.68rem;" title="M3 Pending">M3 Pending</span>';
+
+    return `
+      <tr>
+        <td>
+          <div style="font-weight: 700; color: var(--ink); font-size: 0.88rem;">${escapeHtml(p.title)}</div>
+          <div style="font-size: 0.75rem; color: var(--ink-muted); margin-top: 2px;">${clientDisplay} · ${clientWilaya}</div>
+        </td>
+        <td>
+          <span class="badge" style="background: var(--surface); border: 1px solid var(--border); font-size: 0.72rem; text-transform: uppercase;">${escapeHtml(p.type || 'Custom')}</span>
+        </td>
+        <td>${stageBadgeHtml}</td>
+        <td>${priceDisplay}</td>
+        <td>
+          <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+            ${m1Status}
+            ${m2Status}
+            ${m3Status}
+          </div>
+        </td>
+        <td><small style="color: var(--ink-muted);">${formatDateShort(p.createdAt)}</small></td>
+        <td>
+          <button class="btn btn-secondary btn-sm" onclick="openProjectDetailsModal('${p.id}')">Details</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// Category 2: Leads History
+function renderHistoryLeadsTable() {
+  const tbody = document.getElementById('history-leads-tbody');
+  if (!tbody) return;
+
+  const leads = Array.isArray(state.leads) ? state.leads : [];
+  const query = state.historySearchQuery || '';
+
+  const filtered = leads.filter(l => {
+    if (!query) return true;
+    const name = (l.name || '').toLowerCase();
+    const phone = (l.phone || '').toLowerCase();
+    const activity = (l.activity || '').toLowerCase();
+    const problem = (l.problemDescription || l.selectedChallenge || '').toLowerCase();
+    return name.includes(query) || phone.includes(query) || activity.includes(query) || problem.includes(query);
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" style="text-align: center; color: var(--ink-muted); padding: 40px;">
+          No leads found matching the search.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(l => {
+    return `
+      <tr>
+        <td>
+          <strong style="color: var(--ink); font-size: 0.88rem;">${escapeHtml(l.name)}</strong>
+          ${l.selectedChallenge ? `<div style="font-size: 0.72rem; color: var(--ink-muted); margin-top: 2px;">${escapeHtml(l.selectedChallenge)}</div>` : ''}
+        </td>
+        <td>
+          ${l.phone ? `<a href="tel:${escapeHtml(l.phone)}" class="phone-link" style="font-weight: 600;">${escapeHtml(l.phone)}</a>` : '<span style="color: var(--ink-muted);">-</span>'}
+        </td>
+        <td>
+          <span class="badge badge-cyan" style="font-size: 0.72rem;">${escapeHtml(l.activity || 'General')}</span>
+        </td>
+        <td>
+          <span class="badge" style="background: var(--surface); border: 1px solid var(--border); font-size: 0.72rem;">Website</span>
+        </td>
+        <td>
+          <span class="badge ${l.status === 'new' ? 'badge-yellow' : 'badge-green'}" style="font-size: 0.72rem;">
+            ${escapeHtml(l.status || 'new')}
+          </span>
+        </td>
+        <td><small style="color: var(--ink-muted);">${formatDateShort(l.createdAt)}</small></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// Category 3: Receipts & Quotes History
+function renderHistoryFinancials() {
+  // 1. Receipts Grid
+  const receiptsGrid = document.getElementById('history-receipts-grid');
+  if (receiptsGrid) {
+    const receipts = [];
+    const query = state.historySearchQuery || '';
+
+    for (const p of state.projects) {
+      const clientName = p.client ? (p.client.companyName || p.client.fullName || 'Client') : 'Client';
+      if (p.m1Paid && p.m1ReceiptUrl) {
+        receipts.push({ projectTitle: p.title, clientName, milestone: 'Deposit (50%)', url: p.m1ReceiptUrl, date: p.m1PaidAt });
+      }
+      if (p.m2Paid && p.m2ReceiptUrl) {
+        receipts.push({ projectTitle: p.title, clientName, milestone: 'Design (20%)', url: p.m2ReceiptUrl, date: p.m2PaidAt });
+      }
+      if (p.m3Paid && p.m3ReceiptUrl) {
+        receipts.push({ projectTitle: p.title, clientName, milestone: 'Delivery (30%)', url: p.m3ReceiptUrl, date: p.m3PaidAt });
+      }
+    }
+
+    const filteredReceipts = receipts.filter(r => {
+      if (!query) return true;
+      return r.projectTitle.toLowerCase().includes(query) || r.clientName.toLowerCase().includes(query) || r.milestone.toLowerCase().includes(query);
+    });
+
+    if (filteredReceipts.length === 0) {
+      receiptsGrid.innerHTML = `
+        <div style="grid-column: 1 / -1; padding: 32px; text-align: center; background: var(--paper); border: 1px dashed var(--border); border-radius: var(--radius-md);">
+          <p style="color: var(--ink-muted); font-size: 0.88rem; margin: 0;">No verified payment receipts found.</p>
         </div>
-        <a href="${r.url}" target="_blank" style="font-size: 0.72rem; color: var(--cyan-dark); text-decoration: none; margin-top: 4px;">View Full Image</a>
-      </div>
-    </div>
-  `).join('');
+      `;
+    } else {
+      receiptsGrid.innerHTML = filteredReceipts.map(r => `
+        <div class="receipt-card">
+          <img src="${r.url}" alt="Receipt" loading="lazy" onclick="viewReceipt('${escapeHtml(r.projectTitle)} - ${r.milestone}', '${r.url}')">
+          <div class="receipt-card-body">
+            <strong style="font-size: 0.85rem; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;">${escapeHtml(r.projectTitle)}</strong>
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; margin-top: 4px;">
+              <span style="color: var(--ink-muted);">${escapeHtml(r.clientName)}</span>
+              <span class="badge badge-green" style="font-size: 0.65rem;">${r.milestone}</span>
+            </div>
+            <a href="${r.url}" target="_blank" style="font-size: 0.72rem; color: var(--cyan-dark); text-decoration: none; margin-top: 6px; display: inline-block;">View Full Image</a>
+          </div>
+        </div>
+      `).join('');
+    }
+  }
+
+  // 2. Invoices & Quotes Table
+  const invoicesTbody = document.getElementById('history-invoices-tbody');
+  if (invoicesTbody) {
+    const invoices = Array.isArray(state.invoices) ? state.invoices : [];
+    const query = state.historySearchQuery || '';
+
+    const filteredInvoices = invoices.filter(inv => {
+      if (!query) return true;
+      const num = (inv.invoiceNumber || '').toLowerCase();
+      const proj = state.projects.find(p => p.id === inv.projectId);
+      const projTitle = (proj ? proj.title : '').toLowerCase();
+      const client = state.clients.find(c => c.id === inv.clientId);
+      const clientName = (client ? (client.companyName || client.fullName || '') : '').toLowerCase();
+      return num.includes(query) || projTitle.includes(query) || clientName.includes(query);
+    });
+
+    if (filteredInvoices.length === 0) {
+      invoicesTbody.innerHTML = `
+        <tr>
+          <td colspan="6" style="text-align: center; color: var(--ink-muted); padding: 32px;">
+            No quotation records found.
+          </td>
+        </tr>
+      `;
+    } else {
+      invoicesTbody.innerHTML = filteredInvoices.map(inv => {
+        const proj = state.projects.find(p => p.id === inv.projectId);
+        const client = state.clients.find(c => c.id === inv.clientId) || (proj ? proj.client : null);
+        const clientDisplay = escapeHtml(client ? (client.companyName || client.fullName || 'Client') : 'Client');
+        const projTitle = escapeHtml(proj ? proj.title : 'Project');
+        const total = Number(inv.totalAmountDzd) || 0;
+        const statusBadge = (inv.status === 'accepted' || inv.status === 'approved')
+          ? '<span class="badge badge-green" style="font-size: 0.72rem;">Approved</span>'
+          : '<span class="badge badge-yellow" style="font-size: 0.72rem;">Draft</span>';
+
+        return `
+          <tr>
+            <td>
+              <strong style="color: var(--ink); font-family: monospace; font-size: 0.85rem;">${escapeHtml(inv.invoiceNumber || 'DEV')}</strong>
+            </td>
+            <td>
+              <div style="font-weight: 600; color: var(--ink); font-size: 0.85rem;">${clientDisplay}</div>
+              <div style="font-size: 0.75rem; color: var(--ink-muted);">${projTitle}</div>
+            </td>
+            <td>
+              <strong style="color: var(--cyan-dark);">${formatDzd(total)}</strong>
+            </td>
+            <td>${statusBadge}</td>
+            <td><small style="color: var(--ink-muted);">${formatDateShort(inv.createdAt)}</small></td>
+            <td style="text-align: right;">
+              <button class="btn btn-secondary btn-sm" onclick="downloadInvoicePdf('${inv.id}')">Download PDF</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+  }
+}
+
+// Download PDF for historical invoice
+function downloadInvoicePdf(invoiceId) {
+  const inv = (state.invoices || []).find(x => x.id === invoiceId);
+  if (!inv) {
+    showToast('Quote record not found', 'error');
+    return;
+  }
+  const proj = (state.projects || []).find(p => p.id === inv.projectId);
+  const client = (state.clients || []).find(c => c.id === inv.clientId) || (proj ? proj.client : null);
+
+  const numEl = document.getElementById('devis-view-number');
+  if (numEl) numEl.textContent = `DEVIS N° ${inv.invoiceNumber || 'DEV-2026'}`;
+
+  const dateEl = document.getElementById('devis-view-date');
+  if (dateEl) dateEl.textContent = formatDateShort(inv.createdAt);
+
+  const clientNameEl = document.getElementById('devis-view-client-name');
+  if (clientNameEl) clientNameEl.textContent = client ? (client.companyName || client.fullName) : 'Client';
+
+  const clientContactEl = document.getElementById('devis-view-client-contact');
+  if (clientContactEl) clientContactEl.textContent = client ? `${client.wilaya || 'Algeria'} · ${client.phone || ''}` : '-';
+
+  const projTitleEl = document.getElementById('devis-view-project-title');
+  if (projTitleEl) projTitleEl.textContent = proj ? proj.title : 'Web Application';
+
+  const domainEl = document.getElementById('devis-view-domain');
+  if (domainEl) {
+    domainEl.textContent = inv.domainIncluded ? 'Domain name included' : 'Domain name excluded';
+    domainEl.style.color = inv.domainIncluded ? '#059669' : '#B45309';
+  }
+
+  const hostingEl = document.getElementById('devis-view-hosting');
+  if (hostingEl) {
+    hostingEl.textContent = inv.hostingIncluded ? 'Hosting & SSL included' : 'Hosting & SSL excluded';
+    hostingEl.style.color = inv.hostingIncluded ? '#059669' : '#B45309';
+  }
+
+  const items = Array.isArray(inv.itemsJson) ? inv.itemsJson : [];
+  const tbody = document.getElementById('devis-view-items-tbody');
+  let total = 0;
+  if (tbody) {
+    tbody.innerHTML = items.map(it => {
+      const p = Number(it.priceDzd || it.price || 0);
+      total += p;
+      return `
+        <tr>
+          <td style="padding: 10px 14px; border-bottom: 1px solid var(--border);">${escapeHtml(it.description || it.title || 'Item')}</td>
+          <td style="padding: 10px 14px; text-align: right; border-bottom: 1px solid var(--border); font-weight: 700;">${formatDzd(p)}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  const totalAmount = Number(inv.totalAmountDzd) || total;
+  const m1 = Number(inv.m1DepositDzd) || Math.round(totalAmount * 0.5);
+  const m2 = Number(inv.m2DesignDzd) || Math.round(totalAmount * 0.2);
+  const m3 = Number(inv.m3DeliveryDzd) || (totalAmount - m1 - m2);
+
+  const totalEl = document.getElementById('devis-view-total');
+  if (totalEl) totalEl.textContent = formatDzd(totalAmount);
+
+  const m1El = document.getElementById('devis-view-m1');
+  if (m1El) m1El.textContent = formatDzd(m1);
+
+  const m2El = document.getElementById('devis-view-m2');
+  if (m2El) m2El.textContent = formatDzd(m2);
+
+  const m3El = document.getElementById('devis-view-m3');
+  if (m3El) m3El.textContent = formatDzd(m3);
+
+  exportDevisPdf();
+}
+
+// Export modal quote directly as PDF
+function exportModalDevisPdf() {
+  const clientName = (document.getElementById('modal-devis-client-name')?.value || 'Client').trim();
+  const projectTitle = (document.getElementById('modal-devis-project-title')?.value || 'Web Application').trim();
+  const domainIncluded = Boolean(document.getElementById('modal-devis-domain-check')?.checked);
+  const hostingIncluded = Boolean(document.getElementById('modal-devis-hosting-check')?.checked);
+
+  const validItems = modalDevisItems.filter(i => (i.title && i.title.trim().length > 0) || Number(i.price) > 0);
+  if (validItems.length === 0) {
+    showToast('Please add at least one line item deliverable.', 'error');
+    return;
+  }
+
+  const clientNameEl = document.getElementById('devis-view-client-name');
+  if (clientNameEl) clientNameEl.textContent = clientName;
+
+  const clientContactEl = document.getElementById('devis-view-client-contact');
+  if (clientContactEl) clientContactEl.textContent = 'Algeria';
+
+  const projTitleEl = document.getElementById('devis-view-project-title');
+  if (projTitleEl) projTitleEl.textContent = projectTitle;
+
+  const dateEl = document.getElementById('devis-view-date');
+  if (dateEl) dateEl.textContent = new Date().toLocaleDateString('en-GB');
+
+  const domainEl = document.getElementById('devis-view-domain');
+  if (domainEl) {
+    domainEl.textContent = domainIncluded ? 'Domain name included' : 'Domain name excluded';
+    domainEl.style.color = domainIncluded ? '#059669' : '#B45309';
+  }
+
+  const hostingEl = document.getElementById('devis-view-hosting');
+  if (hostingEl) {
+    hostingEl.textContent = hostingIncluded ? 'Hosting & SSL included' : 'Hosting & SSL excluded';
+    hostingEl.style.color = hostingIncluded ? '#059669' : '#B45309';
+  }
+
+  let total = 0;
+  const tbody = document.getElementById('devis-view-items-tbody');
+  if (tbody) {
+    tbody.innerHTML = validItems.map(it => {
+      const p = Number(it.price) || 0;
+      total += p;
+      return `
+        <tr>
+          <td style="padding: 10px 14px; border-bottom: 1px solid var(--border);">${escapeHtml(it.title || 'Item')}</td>
+          <td style="padding: 10px 14px; text-align: right; border-bottom: 1px solid var(--border); font-weight: 700;">${formatDzd(p)}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  const m1 = Math.round(total * 0.5);
+  const m2 = Math.round(total * 0.2);
+  const m3 = total - m1 - m2;
+
+  const totalEl = document.getElementById('devis-view-total');
+  if (totalEl) totalEl.textContent = formatDzd(total);
+
+  const m1El = document.getElementById('devis-view-m1');
+  if (m1El) m1El.textContent = formatDzd(m1);
+
+  const m2El = document.getElementById('devis-view-m2');
+  if (m2El) m2El.textContent = formatDzd(m2);
+
+  const m3El = document.getElementById('devis-view-m3');
+  if (m3El) m3El.textContent = formatDzd(m3);
+
+  exportDevisPdf();
+}
+
+// Alias for backwards compatibility
+function renderStorageExplorer() {
+  renderHistoryFinancials();
 }
 
 // ==========================================
@@ -1535,6 +1975,7 @@ async function saveModalDevis(approveImmediately = false) {
 
     await fetchProjects();
     await fetchStats();
+    await fetchInvoices();
   } catch (err) {
     showToast(err.message, 'error');
   }
@@ -1606,6 +2047,7 @@ async function handleReceiptUpload(e) {
     closeModal('upload-receipt-modal');
     await fetchProjects();
     await fetchStats();
+    await fetchInvoices();
   } catch (err) {
     showToast(err.message, 'error');
   } finally {
@@ -1687,6 +2129,7 @@ async function handleNewProject(e) {
     document.getElementById('new-project-form').reset();
     await fetchProjects();
     await fetchStats();
+    await fetchInvoices();
   } catch (err) {
     showToast(err.message, 'error');
   }
