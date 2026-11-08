@@ -43,6 +43,8 @@ app.get('/api/stats', async (req, res) => {
     let totalPendingDzd = 0;
 
     for (const p of allProjects) {
+      if ((p as any).status === 'cancelled') continue;
+
       const total = Number(p.priceTotalDzd) || 0;
       totalRevenueDzd += total;
 
@@ -55,7 +57,7 @@ app.get('/api/stats', async (req, res) => {
       totalPendingDzd += (total - collected);
     }
 
-    const activeProjects = allProjects.filter(p => p.stage !== 'delivered');
+    const activeProjects = allProjects.filter(p => (p as any).status !== 'cancelled' && p.stage !== 'delivered');
 
     res.json({
       totalRevenueDzd,
@@ -209,11 +211,23 @@ app.patch('/api/projects/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const updateData: any = {};
-    const allowed = ['title', 'stage', 'type', 'priceTotalDzd', 'domainIncluded', 'hostingIncluded', 'repoUrl', 'stagingUrl', 'productionUrl', 'isPublicPortfolio', 'notes', 'devisStatus', 'designStatus', 'm1Paid', 'm2Paid', 'm3Paid'];
+    const allowed = ['title', 'stage', 'type', 'priceTotalDzd', 'domainIncluded', 'hostingIncluded', 'repoUrl', 'stagingUrl', 'productionUrl', 'isPublicPortfolio', 'notes', 'devisStatus', 'designStatus', 'status', 'm1Paid', 'm2Paid', 'm3Paid'];
 
     for (const key of allowed) {
       if (req.body[key] !== undefined) {
         updateData[key] = req.body[key];
+      }
+    }
+
+    // Cancellation Rule: Can only cancel projects in scoping, devis, or deposit_50 before m1 is paid
+    if (updateData.status === 'cancelled') {
+      const [currProject] = await db.select().from(schema.projects).where(eq(schema.projects.id, id));
+      if (!currProject) {
+        return res.status(404).json({ error: 'Project not found' });
+      }
+      const stage = currProject.stage || 'scoping';
+      if (!['scoping', 'devis', 'deposit_50'].includes(stage) || currProject.m1Paid) {
+        return res.status(400).json({ error: 'Only projects in Scoping, Devis, or pending Deposit (unpaid) can be cancelled' });
       }
     }
 
@@ -286,7 +300,7 @@ app.post('/api/projects/:id/receipt', upload.single('receipt'), async (req, res)
     // Upload to Cloudflare R2 bucket "vision"
     const uploadResult = await uploadToR2(key, req.file.buffer, req.file.mimetype);
 
-    // Update Project milestone in Neon Postgres
+    // Update Project milestone in Neon Postgres & automatically advance stage
     let updated: any;
     if (milestone === 'm1') {
       [updated] = await db.update(schema.projects)
@@ -294,6 +308,7 @@ app.post('/api/projects/:id/receipt', upload.single('receipt'), async (req, res)
           m1Paid: true,
           m1ReceiptUrl: uploadResult.publicUrl,
           m1PaidAt: new Date(),
+          stage: 'design',
         })
         .where(dSql`${schema.projects.id} = ${id}`)
         .returning();
@@ -303,6 +318,7 @@ app.post('/api/projects/:id/receipt', upload.single('receipt'), async (req, res)
           m2Paid: true,
           m2ReceiptUrl: uploadResult.publicUrl,
           m2PaidAt: new Date(),
+          stage: 'development',
         })
         .where(dSql`${schema.projects.id} = ${id}`)
         .returning();
@@ -312,6 +328,7 @@ app.post('/api/projects/:id/receipt', upload.single('receipt'), async (req, res)
           m3Paid: true,
           m3ReceiptUrl: uploadResult.publicUrl,
           m3PaidAt: new Date(),
+          stage: 'delivered',
         })
         .where(dSql`${schema.projects.id} = ${id}`)
         .returning();

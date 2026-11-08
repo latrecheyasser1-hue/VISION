@@ -470,6 +470,21 @@ function openProjectDetailsModal(projectId) {
   document.getElementById('pd-domain-status').textContent = p.domainIncluded ? 'Included (Covered by VISION)' : 'Not Included';
   document.getElementById('pd-hosting-status').textContent = p.hostingIncluded ? 'Included (Covered by VISION)' : 'Not Included';
 
+  // Cancel Action
+  const cancelWrap = document.getElementById('pd-cancel-action-wrap');
+  if (cancelWrap) {
+    const currentStage = normalizeKanbanStage(p.stage);
+    if (['scoping', 'devis', 'deposit_50'].includes(currentStage) && !p.m1Paid && p.status !== 'cancelled') {
+      cancelWrap.innerHTML = `
+        <button type="button" class="btn btn-secondary btn-sm" style="color: #DC2626; border-color: #FCA5A5; font-weight: 600;" onclick="closeModal('project-details-modal'); requestCancelProject('${p.id}')">
+          Cancel Project (Move to Trash)
+        </button>
+      `;
+    } else {
+      cancelWrap.innerHTML = '';
+    }
+  }
+
   openModal('project-details-modal');
 }
 
@@ -478,12 +493,14 @@ function renderOverviewProjects(projects) {
   const tbody = document.getElementById('overview-projects-tbody');
   if (!tbody) return;
 
-  if (projects.length === 0) {
+  const validProjects = (Array.isArray(projects) ? projects : []).filter(p => p.status !== 'cancelled');
+
+  if (validProjects.length === 0) {
     tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--ink-muted); padding: 24px;">No projects recorded yet.</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = projects.map(p => {
+  tbody.innerHTML = validProjects.map(p => {
     const clientName = p.client ? p.client.companyName : 'Unknown Client';
     const total = Number(p.priceTotalDzd) || 0;
 
@@ -542,7 +559,8 @@ function renderProjectsKanban(projects) {
   const container = document.getElementById('projects-kanban-board');
   if (!container) return;
 
-  const list = Array.isArray(projects) ? projects : [];
+  // Filter out cancelled projects from active pipeline
+  const list = (Array.isArray(projects) ? projects : []).filter(p => p.status !== 'cancelled');
 
   // Group projects by normalized stage
   const grouped = {};
@@ -594,6 +612,9 @@ function renderProjectsKanban(projects) {
                 <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); prepareDevisForProject('${p.id}')">
                   Prepare Quote
                 </button>
+                <button class="btn btn-secondary btn-sm" style="color: #DC2626; border-color: transparent; padding: 4px 6px;" title="Cancel Project" onclick="event.stopPropagation(); requestCancelProject('${p.id}')">
+                  Cancel
+                </button>
               </div>
             `;
           } else if (currentStage === 'devis') {
@@ -614,6 +635,9 @@ function renderProjectsKanban(projects) {
                     </button>
                     <button class="btn btn-primary btn-sm" style="background: #059669; border-color: #059669;" onclick="event.stopPropagation(); approveProjectQuote('${p.id}')">
                       Approve Quote
+                    </button>
+                    <button class="btn btn-secondary btn-sm" style="color: #DC2626; border-color: transparent; padding: 4px 6px;" title="Cancel Project" onclick="event.stopPropagation(); requestCancelProject('${p.id}')">
+                      Cancel
                     </button>
                   </div>
                 ` : `
@@ -645,9 +669,12 @@ function renderProjectsKanban(projects) {
                 </div>
               </div>
               ${!p.m1Paid ? `
-                <div class="kanban-card-actions-row" style="margin-top: 6px;">
-                  <button class="btn btn-primary btn-sm" style="width: 100%; background: #F59E0B; border-color: #F59E0B;" onclick="event.stopPropagation(); openUploadReceiptModal('${p.id}', '${escapeHtml(p.title)}', 'm1')">
+                <div class="kanban-card-actions-row" style="margin-top: 6px; display: flex; gap: 6px;">
+                  <button class="btn btn-primary btn-sm" style="flex: 1; background: #F59E0B; border-color: #F59E0B;" onclick="event.stopPropagation(); openUploadReceiptModal('${p.id}', '${escapeHtml(p.title)}', 'm1')">
                     Upload 50% Receipt
+                  </button>
+                  <button class="btn btn-secondary btn-sm" style="color: #DC2626; border-color: transparent; padding: 4px 6px;" title="Cancel Project" onclick="event.stopPropagation(); requestCancelProject('${p.id}')">
+                    Cancel
                   </button>
                 </div>
               ` : `
@@ -968,6 +995,74 @@ async function handleKanbanDrop(e, targetStage) {
   await updateProjectStage(projectId, targetStage);
 }
 
+// ==========================================
+// KANBAN TRASH DROPZONE & PROJECT CANCELLATION
+// ==========================================
+function handleTrashDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  const dropzone = document.getElementById('kanban-trash-dropzone');
+  if (dropzone) dropzone.classList.add('drag-over');
+}
+
+function handleTrashDragLeave(e) {
+  const dropzone = document.getElementById('kanban-trash-dropzone');
+  if (dropzone) dropzone.classList.remove('drag-over');
+}
+
+async function handleTrashDrop(e) {
+  e.preventDefault();
+  const dropzone = document.getElementById('kanban-trash-dropzone');
+  if (dropzone) dropzone.classList.remove('drag-over');
+
+  const projectId = e.dataTransfer.getData('text/plain');
+  if (!projectId) return;
+
+  await requestCancelProject(projectId);
+}
+
+async function requestCancelProject(projectId) {
+  const p = state.projects.find(x => x.id === projectId);
+  if (!p) return;
+
+  const currentStage = normalizeKanbanStage(p.stage);
+
+  if (!['scoping', 'devis', 'deposit_50'].includes(currentStage)) {
+    showToast('Only projects in Scoping, Devis, or pending Deposit can be cancelled.', 'error');
+    return;
+  }
+
+  if (currentStage === 'deposit_50' && p.m1Paid) {
+    showToast('Cannot cancel: 50% deposit has already been verified.', 'error');
+    return;
+  }
+
+  const stageLabel = currentStage === 'scoping' ? '1. Scoping' : (currentStage === 'devis' ? '2. Devis' : '3. Deposit (50%)');
+  const confirmMsg = `Cancel project "${p.title}"?\n\nIt will be moved out of the active pipeline and archived in History at the ${stageLabel} stage.`;
+  if (!confirm(confirmMsg)) {
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/projects/${p.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'cancelled' })
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || 'Failed to cancel project');
+    }
+
+    showToast(`Project "${p.title}" cancelled and archived to History.`);
+    await fetchProjects();
+    await fetchStats();
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
 // Quote Gate & Approval Functions
 async function approveProjectQuote(projectId) {
   try {
@@ -1195,9 +1290,12 @@ function renderHistoryProjectsTable() {
 
   const filtered = projects.filter(p => {
     const normStage = normalizeKanbanStage(p.stage);
+    const isCancelled = p.status === 'cancelled';
 
-    if (stageFilter !== 'all' && normStage !== stageFilter) {
-      return false;
+    if (stageFilter === 'cancelled') {
+      if (!isCancelled) return false;
+    } else if (stageFilter !== 'all') {
+      if (normStage !== stageFilter) return false;
     }
 
     if (query) {
@@ -1229,7 +1327,10 @@ function renderHistoryProjectsTable() {
     const clientDisplay = escapeHtml(client.companyName || client.fullName || 'Client');
     const clientWilaya = escapeHtml(client.wilaya || 'DZ');
     const normStage = normalizeKanbanStage(p.stage);
-    const stageBadgeHtml = getStageBadge(p.stage);
+    const isCancelled = p.status === 'cancelled';
+    const stageBadgeHtml = getStageBadge(p.stage) + (isCancelled
+      ? ' <span class="badge" style="background: #FEE2E2; color: #DC2626; border: 1px solid #FCA5A5; font-size: 0.65rem; margin-left: 4px;">Cancelled</span>'
+      : '');
     const totalPrice = Number(p.priceTotalDzd) || 0;
     const priceDisplay = (normStage === 'scoping' && totalPrice === 0)
       ? '<span style="color: var(--ink-muted); font-size: 0.8rem; font-style: italic;">Scoping / To Quote</span>'
@@ -1247,6 +1348,16 @@ function renderHistoryProjectsTable() {
       ? '<span class="badge badge-purple" style="font-size: 0.68rem;" title="M3 30% Verified">M3 30%</span>'
       : '<span class="badge badge-gray" style="font-size: 0.68rem;" title="M3 Pending">M3 Pending</span>';
 
+    const milestonesDisplay = isCancelled && !p.m1Paid
+      ? '<span class="badge" style="background: #FEE2E2; color: #DC2626; font-size: 0.68rem;">Cancelled pre-kickoff</span>'
+      : `
+        <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+          ${m1Status}
+          ${m2Status}
+          ${m3Status}
+        </div>
+      `;
+
     return `
       <tr>
         <td>
@@ -1259,11 +1370,7 @@ function renderHistoryProjectsTable() {
         <td>${stageBadgeHtml}</td>
         <td>${priceDisplay}</td>
         <td>
-          <div style="display: flex; gap: 4px; flex-wrap: wrap;">
-            ${m1Status}
-            ${m2Status}
-            ${m3Status}
-          </div>
+          ${milestonesDisplay}
         </td>
         <td><small style="color: var(--ink-muted);">${formatDateShort(p.createdAt)}</small></td>
         <td>
@@ -2042,7 +2149,15 @@ async function handleReceiptUpload(e) {
     }
 
     const data = await res.json();
-    showToast('Receipt uploaded and verified.');
+    if (milestone === 'm1') {
+      showToast('50% Deposit verified. Project advanced directly to Design UI/UX.');
+    } else if (milestone === 'm2') {
+      showToast('20% Design payment verified. Project advanced to Development.');
+    } else if (milestone === 'm3') {
+      showToast('Final 30% payment verified. Project advanced to Delivered.');
+    } else {
+      showToast('Receipt uploaded and verified.');
+    }
     closeModal('upload-receipt-modal');
     await fetchProjects();
     await fetchStats();
