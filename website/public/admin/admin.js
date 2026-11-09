@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (window.location.hash) {
     const tab = window.location.hash.replace('#', '');
-    if (['overview', 'projects', 'clients', 'leads', 'history', 'todo', 'devis', 'storage'].includes(tab)) {
+    if (['overview', 'projects', 'clients', 'leads', 'history', 'meetings', 'todo', 'devis', 'storage'].includes(tab)) {
       switchTab(tab);
     }
   }
@@ -199,10 +199,11 @@ const TAB_TITLES = {
   projects: { title: "Projects", sub: "Development progress and milestones tracking" },
   clients: { title: "Clients", sub: "Client directory and project history" },
   leads: { title: "Leads", sub: "Incoming project inquiries from website" },
-  history: { title: "History", sub: "Comprehensive historical logs for leads, projects, and finances" },
-  todo: { title: "To-Do", sub: "Task management and action items workspace" },
-  devis: { title: "History", sub: "Comprehensive historical logs for leads, projects, and finances" },
-  storage: { title: "History", sub: "Comprehensive historical logs for leads, projects, and finances" },
+  history: { title: "History", sub: "Comprehensive historical logs for projects and milestones" },
+  meetings: { title: "Meetings", sub: "Client discovery calls and review sessions" },
+  todo: { title: "Meetings", sub: "Client discovery calls and review sessions" },
+  devis: { title: "History", sub: "Comprehensive historical logs for projects and milestones" },
+  storage: { title: "History", sub: "Comprehensive historical logs for projects and milestones" },
 };
 
 function initTabs() {
@@ -216,6 +217,10 @@ function initTabs() {
 }
 
 function switchTab(tabId) {
+  if (tabId === 'todo') {
+    tabId = 'meetings';
+  }
+
   if (tabId === 'storage' || tabId === 'devis') {
     tabId = 'history';
     state.historyCategory = 'projects';
