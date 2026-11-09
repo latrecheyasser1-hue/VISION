@@ -1,0 +1,1146 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VISION - Founder Dashboard</title>
+  <link rel="stylesheet" href="admin.css?v=11">
+  <style>
+    .tab-section { display: none; }
+    .tab-section.active { display: block; }
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .toast {
+      padding: 12px 20px;
+      border-radius: var(--radius-md);
+      background: var(--ink);
+      color: #fff;
+      font-size: 0.88rem;
+      font-weight: 600;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: slideIn 0.25s ease;
+    }
+    .toast.success { background: #065F46; }
+    .toast.error { background: #991B1B; }
+    @keyframes slideIn {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .badge-stage {
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .stage-scoping { background: #FEF3C7; color: #92400E; }
+    .stage-design_20 { background: #E0F2FE; color: #0369A1; }
+    .stage-dev_30 { background: #F3E8FF; color: #6B21A8; }
+    .stage-delivered_30 { background: #DCFCE7; color: #166534; }
+    .stage-delivered { background: #DCFCE7; color: #166534; }
+    .phone-link {
+      color: #059669;
+      text-decoration: none;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: color 0.15s ease;
+    }
+    .phone-link:hover {
+      text-decoration: underline;
+      color: #047857;
+    }
+    .receipt-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s;
+    }
+    .receipt-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+    .receipt-card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      cursor: pointer;
+      background: #f1f5f9;
+    }
+    .receipt-card-body {
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    /* Kanban Trash Dropzone (Bottom Right) */
+    .kanban-trash-dock {
+      position: fixed;
+      bottom: 24px;
+      right: 28px;
+      z-index: 100;
+      pointer-events: auto;
+    }
+    .kanban-trash-zone {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 18px;
+      background: #ffffff;
+      border: 2px dashed #DC2626;
+      border-radius: var(--radius-md);
+      box-shadow: 0 4px 18px rgba(220, 38, 38, 0.16);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+    }
+    .kanban-trash-zone:hover {
+      box-shadow: 0 6px 24px rgba(220, 38, 38, 0.26);
+      transform: translateY(-2px);
+    }
+    .kanban-trash-zone.drag-over {
+      background: #FEE2E2;
+      border-color: #B91C1C;
+      border-style: solid;
+      transform: scale(1.06);
+      box-shadow: 0 8px 30px rgba(220, 38, 38, 0.35);
+    }
+    .trash-icon-pill {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #FEE2E2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #DC2626;
+      flex-shrink: 0;
+    }
+    .trash-details {
+      display: flex;
+      flex-direction: column;
+    }
+    .trash-main-label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #DC2626;
+      line-height: 1.2;
+    }
+    .trash-sub-label {
+      font-size: 0.7rem;
+      color: var(--ink-muted);
+      line-height: 1.2;
+      margin-top: 2px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ADMIN PIN AUTHENTICATION GATE (SIMPLE, NO KEYBOARD, 5 ATTEMPTS, 15-MIN LOCKOUT) -->
+<div id="admin-auth-gate" style="display: none; position: fixed; inset: 0; z-index: 999999; background: #0B0F19; align-items: center; justify-content: center; padding: 20px;">
+  <div style="width: 100%; max-width: 380px; background: #111827; border: 1px solid #1F2937; border-radius: 14px; padding: 34px 28px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); text-align: center; color: #F9FAFB;">
+    
+    <!-- Brand Header -->
+    <div style="margin-bottom: 24px;">
+      <div style="font-size: 1.6rem; font-weight: 800; letter-spacing: 0.12em; color: #FFFFFF; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">VISION</div>
+      <div style="font-size: 0.74rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #94A3B8; margin-top: 4px;">Admin Portal Access</div>
+    </div>
+
+    <!-- Alert / Lockout Banner -->
+    <div id="auth-alert-banner" style="display: none; margin-bottom: 20px; padding: 12px 14px; border-radius: 8px; font-size: 0.82rem; line-height: 1.4; text-align: left;">
+      <div id="auth-alert-title" style="font-weight: 700; margin-bottom: 2px;"></div>
+      <div id="auth-alert-detail" style="font-weight: 400;"></div>
+    </div>
+
+    <!-- PIN Form (Simple: Input + Unlock button, NO virtual keyboard) -->
+    <form id="admin-pin-form" onsubmit="handlePinSubmit(event)" style="display: flex; flex-direction: column; gap: 16px;">
+      <div>
+        <label for="admin-pin-input" style="display: block; font-size: 0.74rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #94A3B8; margin-bottom: 8px; text-align: left;">
+          Security PIN
+        </label>
+        <div style="position: relative;">
+          <input 
+            type="password" 
+            id="admin-pin-input" 
+            maxlength="6" 
+            inputmode="numeric" 
+            pattern="[0-9]*" 
+            placeholder="••••••" 
+            autocomplete="off" 
+            autofocus
+            style="width: 100%; box-sizing: border-box; text-align: center; font-size: 1.6rem; letter-spacing: 0.35em; font-family: monospace; font-weight: 700; padding: 12px 14px; background: #0B0F19; border: 1px solid #374151; border-radius: 8px; color: #F9FAFB; outline: none; transition: border-color 0.15s, box-shadow 0.15s;"
+            onfocus="this.style.borderColor='#0284C7'; this.style.boxShadow='0 0 0 2px rgba(2, 132, 199, 0.2)';"
+            onblur="this.style.borderColor='#374151'; this.style.boxShadow='none';"
+          >
+        </div>
+      </div>
+
+      <button 
+        type="submit" 
+        id="admin-pin-submit-btn" 
+        style="width: 100%; padding: 12px; background: #0284C7; color: #FFFFFF; border: none; border-radius: 8px; font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: background 0.15s; letter-spacing: 0.02em;"
+        onmouseover="if(!this.disabled) this.style.background='#0369A1';"
+        onmouseout="if(!this.disabled) this.style.background='#0284C7';"
+      >
+        Unlock Dashboard
+      </button>
+    </form>
+
+    <!-- Attempts Remaining / Status Info -->
+    <div id="auth-status-info" style="margin-top: 18px; font-size: 0.74rem; color: #64748B;">
+      5 attempts allowed before 15-minute security lockout.
+    </div>
+
+  </div>
+</div>
+
+<div class="app-container">
+  
+  <!-- SIDEBAR (Collapsible) -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <a href="/admin" class="brand-link">
+        <span>VISION</span>
+      </a>
+      <button class="sidebar-toggle-btn" id="sidebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar (Ctrl+B)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="9" y1="3" x2="9" y2="21"></line>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Navigation Menu (Clean, English, Monochrome Line Icons) -->
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-tab="overview" title="Overview">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7"></rect>
+          <rect x="14" y="3" width="7" height="7"></rect>
+          <rect x="14" y="14" width="7" height="7"></rect>
+          <rect x="3" y="14" width="7" height="7"></rect>
+        </svg>
+        <span class="nav-text">Overview</span>
+      </button>
+
+      <button class="nav-item" data-tab="projects" title="Projects">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <span class="nav-text">Projects</span>
+        <span class="badge" id="nav-projects-count">0</span>
+        <span class="badge" id="nav-deadline-alert" style="display: none; background: #DC2626; color: #fff; margin-left: 6px; padding: 2px 6px; font-size: 0.68rem; font-weight: 700;">!</span>
+      </button>
+
+      <button class="nav-item" data-tab="clients" title="Clients">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        <span class="nav-text">Clients</span>
+        <span class="badge" id="nav-clients-count">0</span>
+      </button>
+
+      <button class="nav-item" data-tab="leads" title="Leads">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <circle cx="12" cy="12" r="6"></circle>
+          <circle cx="12" cy="12" r="2"></circle>
+        </svg>
+        <span class="nav-text">Leads</span>
+        <span class="badge" id="nav-leads-count" style="display: none; background: var(--cyan); color: var(--ink);"></span>
+      </button>
+
+      <button class="nav-item" data-tab="history" title="History">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        <span class="nav-text">History</span>
+      </button>
+
+      <button class="nav-item" data-tab="meetings" title="Meetings">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+        <span class="nav-text">Meetings</span>
+      </button>
+    </nav>
+
+    <!-- Sidebar Footer -->
+    <div class="sidebar-footer">
+      <div class="user-profile">
+        <div class="user-avatar">Y</div>
+        <div class="user-info">
+          <span class="user-name">Yasser Latreche</span>
+          <span class="user-role">Founder</span>
+        </div>
+      </div>
+      <button type="button" class="btn btn-secondary btn-sm" onclick="lockAdminDashboard()" style="margin-top: 10px; width: 100%; font-size: 0.75rem; padding: 5px 8px; border-color: var(--border); color: var(--ink-muted);" title="Lock Admin Dashboard">
+        Lock Dashboard
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    
+    <div class="content-body">
+      
+      <!-- TAB 1: OVERVIEW (Straight to business metrics, no useless tutorial banners) -->
+      <section id="tab-overview" class="tab-section active">
+        
+        <!-- Urgent Deadline Alert Banner (Dynamic) -->
+        <div id="overview-deadline-alerts" style="display: none; margin-bottom: 20px;"></div>
+
+        <!-- 4 KPI Stat Cards -->
+        <div class="stat-grid">
+          <div class="stat-card accent-dark">
+            <span class="stat-label">Total Revenue</span>
+            <div class="stat-value"><span id="stat-revenue">0</span><span class="stat-currency">DZD</span></div>
+            <span class="stat-desc">Contracted projects total</span>
+          </div>
+
+          <div class="stat-card accent-green">
+            <span class="stat-label">Collected</span>
+            <div class="stat-value" style="color: #059669;"><span id="stat-collected">0</span><span class="stat-currency">DZD</span></div>
+            <span class="stat-desc">Verified BaridiMob payments</span>
+          </div>
+
+          <div class="stat-card accent-orange">
+            <span class="stat-label">Pending Balance</span>
+            <div class="stat-value" style="color: #D97706;"><span id="stat-pending">0</span><span class="stat-currency">DZD</span></div>
+            <span class="stat-desc">Awaiting milestone completion</span>
+          </div>
+
+          <div class="stat-card accent-cyan">
+            <span class="stat-label">Active Projects</span>
+            <div class="stat-value" style="color: var(--cyan-dark);"><span id="stat-active-projects">0</span></div>
+            <span class="stat-desc">In progress</span>
+          </div>
+        </div>
+
+        <!-- Recent Projects Table -->
+        <div class="card" style="margin-top: 24px;">
+          <div class="card-header">
+            <div class="card-title">
+              <span>Recent Projects</span>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="switchTab('projects')">View All</button>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Project & Client</th>
+                  <th>Type</th>
+                  <th>Total Price</th>
+                  <th>Progress 50 / 20 / 30</th>
+                  <th>Stage</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="overview-projects-tbody">
+                <tr><td colspan="6" style="text-align: center; color: var(--ink-muted);">Loading projects...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- TAB 2: PROJECTS (Kanban Pipeline Board) -->
+      <section id="tab-projects" class="tab-section">
+        
+        <div class="projects-board-header">
+          <div>
+            <h2 class="projects-board-title">Projects Pipeline</h2>
+            <p style="font-size: 0.82rem; color: var(--ink-muted); margin-top: 2px;">End-to-end project lifecycle tracking</p>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openModal('new-project-modal')">New Project</button>
+        </div>
+
+        <!-- Urgent Deadline Alert Banner (Dynamic) -->
+        <div id="projects-deadline-alerts" style="display: none; margin-bottom: 20px;"></div>
+
+        <div class="kanban-board-container" id="projects-kanban-board">
+          <!-- Kanban Columns Rendered by JS -->
+        </div>
+
+        <!-- Trash / Cancel Project Dropzone (Bottom Right) -->
+        <div id="kanban-trash-dock" class="kanban-trash-dock">
+          <div id="kanban-trash-dropzone" class="kanban-trash-zone"
+               ondragover="handleTrashDragOver(event)"
+               ondragleave="handleTrashDragLeave(event)"
+               ondrop="handleTrashDrop(event)">
+            <div class="trash-icon-pill">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                <line x1="10" y1="11" x2="10" y2="17"></line>
+                <line x1="14" y1="11" x2="14" y2="17"></line>
+              </svg>
+            </div>
+            <div class="trash-details">
+              <span class="trash-main-label">Cancel Project (Trash)</span>
+              <span class="trash-sub-label">Drop here if cancelled (Scoping, Devis, Deposit)</span>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- TAB 3: CLIENTS -->
+      <section id="tab-clients" class="tab-section">
+        
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <span>Clients</span>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="openModal('new-client-modal')">Add Client</button>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Company</th>
+                  <th>Contact</th>
+                  <th>Industry</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="clients-table-tbody">
+                <tr><td colspan="4" style="text-align: center; color: var(--ink-muted);">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- TAB 4: LEADS -->
+      <section id="tab-leads" class="tab-section">
+        
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <span>Inbound Leads</span>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Prospect</th>
+                  <th>Phone</th>
+                  <th>Activity</th>
+                  <th>Requirement</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="leads-table-tbody">
+                <tr><td colspan="7" style="text-align: center; color: var(--ink-muted);">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- TAB 5: HISTORY (3 Categories: Projects, Leads, Receipts & Quotes) -->
+      <section id="tab-history" class="tab-section">
+        
+        <div class="card" style="margin-bottom: 20px;">
+          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div class="card-title">
+              <span>Projects History</span>
+            </div>
+            <div id="history-search-wrap">
+              <input type="text" id="history-search-input" placeholder="Search history..." oninput="filterHistorySearch(this.value)" style="padding: 6px 12px; font-size: 0.8rem; border: 1px solid var(--border); border-radius: var(--radius-sm); width: 220px;">
+            </div>
+          </div>
+        </div>
+
+        <!-- Category 1: Projects History (Scoping & Above) -->
+        <div id="history-cat-projects" class="history-category-panel active">
+          
+          <!-- Stage Filter Pills -->
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px;">
+            <span style="font-size: 0.78rem; font-weight: 700; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap;">Stage Filter:</span>
+            <div class="filter-pills" id="history-stage-pills">
+              <button class="filter-pill active" data-stage="all" onclick="filterHistoryProjectsByStage('all')">All</button>
+              <button class="filter-pill" data-stage="scoping" onclick="filterHistoryProjectsByStage('scoping')">1. Scoping</button>
+              <button class="filter-pill" data-stage="devis" onclick="filterHistoryProjectsByStage('devis')">2. Devis</button>
+              <button class="filter-pill" data-stage="deposit_50" onclick="filterHistoryProjectsByStage('deposit_50')">3. Deposit (50%)</button>
+              <button class="filter-pill" data-stage="design" onclick="filterHistoryProjectsByStage('design')">4. Design</button>
+              <button class="filter-pill" data-stage="design_approved_20" onclick="filterHistoryProjectsByStage('design_approved_20')">5. Design Approved</button>
+              <button class="filter-pill" data-stage="development" onclick="filterHistoryProjectsByStage('development')">6. Development</button>
+              <button class="filter-pill" data-stage="security_qa" onclick="filterHistoryProjectsByStage('security_qa')">7. Security QA</button>
+              <button class="filter-pill" data-stage="delivered" onclick="filterHistoryProjectsByStage('delivered')">8. Delivered</button>
+              <button class="filter-pill" data-stage="cancelled" onclick="filterHistoryProjectsByStage('cancelled')" style="color: #DC2626;">Cancelled</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Project & Client</th>
+                    <th>Type</th>
+                    <th>Current Stage</th>
+                    <th>Total Price</th>
+                    <th>Milestones (50 / 20 / 30)</th>
+                    <th>Created Date</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="history-projects-tbody">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+
+
+
+
+      </section>
+
+      <!-- TAB 6: MEETINGS -->
+      <section id="tab-meetings" class="tab-section">
+        
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <span>Meetings</span>
+            </div>
+          </div>
+          <div class="card-body" style="padding: 60px 20px; text-align: center;">
+            <div style="max-width: 440px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 12px;">
+              <div style="width: 56px; height: 56px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--ink-muted);">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+              </div>
+              <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--ink); margin: 0;">Meetings Workspace</h3>
+              <p style="font-size: 0.85rem; color: var(--ink-muted); margin: 0; line-height: 1.45;">
+                Client discovery calls, scoping sessions, and presentation schedules will be tracked here.
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Hidden Printable Area for PDF exports -->
+      <div style="display: none;">
+        <div class="devis-sheet" id="devis-printable-area">
+          <div class="devis-header">
+            <div class="devis-brand">
+              <div>
+                <h2 style="margin: 0; line-height: 1; letter-spacing: -0.03em;">VISION</h2>
+                <small style="color: var(--ink-muted); font-size: 0.8rem; font-weight: 600;" id="devis-brand-tagline">Digital Development Agency · Algeria</small>
+              </div>
+            </div>
+            <div class="devis-meta">
+              <span class="devis-number" id="devis-view-number">DEVIS N° DEV-2026-001</span>
+              <div style="font-size: 0.82rem; color: var(--ink-muted); margin-top: 4px;"><span id="devis-label-date">Date:</span> <strong id="devis-view-date">08/11/2026</strong></div>
+              <div style="font-size: 0.82rem; color: var(--ink-muted);"><span id="devis-label-validity">Validity:</span> <strong id="devis-view-validity-val">15 days</strong></div>
+              <div style="font-size: 0.82rem; color: var(--ink-muted); margin-top: 2px;"><span id="devis-label-deadline">Target Delivery:</span> <strong id="devis-view-deadline-val">-</strong></div>
+            </div>
+          </div>
+          <div class="devis-client-box">
+            <div>
+              <small style="text-transform: uppercase; font-size: 0.7rem; font-weight: 700; color: var(--ink-muted);" id="devis-label-issuer">ISSUER</small>
+              <div style="font-weight: 700; color: var(--ink); margin-top: 2px;">VISION DIGITAL AGENCY</div>
+              <div style="font-size: 0.82rem; color: var(--ink-muted);" id="devis-label-founder">Founder: Yasser Latreche</div>
+              <div style="font-size: 0.82rem; color: var(--ink-muted);">contact@visiondz.com · Algeria</div>
+            </div>
+            <div>
+              <small style="text-transform: uppercase; font-size: 0.7rem; font-weight: 700; color: var(--ink-muted);" id="devis-label-client">CLIENT</small>
+              <div style="font-weight: 800; color: var(--ink); margin-top: 2px;" id="devis-view-client-name">ClinicFlow DZ</div>
+              <div style="font-size: 0.82rem; color: var(--ink-muted);" id="devis-view-client-contact">Algiers · contact@clinicflow.dz</div>
+              <div style="font-size: 0.82rem; color: var(--cyan-dark); font-weight: 600; margin-top: 4px;" id="devis-view-project-title">Medical Management SaaS</div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 16px; margin-bottom: 20px; font-size: 0.85rem;">
+            <div id="devis-view-domain" style="font-weight: 600; color: #059669;">Domain name included</div>
+            <div id="devis-view-hosting" style="font-weight: 600; color: #059669;">Hosting & SSL included</div>
+          </div>
+          <table class="devis-table" style="margin-bottom: 24px;">
+            <thead>
+              <tr>
+                <th style="padding: 10px 14px;" id="devis-th-desc">Description</th>
+                <th style="padding: 10px 14px; text-align: right; width: 160px;" id="devis-th-amount">Amount (DZD)</th>
+              </tr>
+            </thead>
+            <tbody id="devis-view-items-tbody"></tbody>
+          </table>
+          <div class="devis-total-box">
+            <div class="devis-total-line">
+              <span id="devis-label-total">TOTAL:</span>
+              <span style="color: var(--cyan-dark); font-size: 1.4rem;" id="devis-view-total">0 DZD</span>
+            </div>
+          </div>
+          <div class="devis-milestones-box">
+            <div style="font-weight: 800; font-size: 0.95rem; margin-bottom: 8px; color: #166534;" id="devis-schedule-title">PAYMENT SCHEDULE (50% / 20% / 30%):</div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; font-size: 0.82rem;">
+              <div style="background: #fff; padding: 10px; border-radius: var(--radius-sm); border: 1px solid #BBF7D0;">
+                <strong style="color: var(--ink);" id="devis-m1-title">1. Deposit (M1 - 50%)</strong>
+                <div style="color: #059669; font-size: 1.1rem; font-weight: 800; margin-top: 4px;" id="devis-view-m1">0 DZD</div>
+                <small style="color: var(--ink-muted);" id="devis-m1-sub">Project kickoff</small>
+              </div>
+              <div style="background: #fff; padding: 10px; border-radius: var(--radius-sm); border: 1px solid #BBF7D0;">
+                <strong style="color: var(--ink);" id="devis-m2-title">2. Design (M2 - 20%)</strong>
+                <div style="color: #0284C7; font-size: 1.1rem; font-weight: 800; margin-top: 4px;" id="devis-view-m2">0 DZD</div>
+                <small style="color: var(--ink-muted);" id="devis-m2-sub">Design sign-off</small>
+              </div>
+              <div style="background: #fff; padding: 10px; border-radius: var(--radius-sm); border: 1px solid #BBF7D0;">
+                <strong style="color: var(--ink);" id="devis-m3-title">3. Final (M3 - 30%)</strong>
+                <div style="color: #7C3AED; font-size: 1.1rem; font-weight: 800; margin-top: 4px;" id="devis-view-m3">0 DZD</div>
+                <small style="color: var(--ink-muted);" id="devis-m3-sub">Delivery & handover</small>
+              </div>
+            </div>
+          </div>
+          <div class="devis-rip-box">
+            <div style="font-weight: 700; margin-bottom: 4px; color: var(--ink);" id="devis-payment-heading">BARIDIMOB DETAILS:</div>
+            <div><span id="devis-label-beneficiary">Beneficiary:</span> <strong>LATRECHE YASSER</strong></div>
+            <div>RIP BaridiMob: <strong style="letter-spacing: 0.08em; color: var(--ink);">007 99999 0000000000 00</strong></div>
+            <small style="color: var(--ink-muted); display: block; margin-top: 4px;" id="devis-receipt-instruction">
+              Please send receipt screenshot via email to contact@visiondz.com for immediate validation.
+            </small>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+</div>
+
+<!-- MODALS -->
+
+<!-- Upload Receipt Modal -->
+<div class="modal-overlay" id="upload-receipt-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Upload Receipt</h3>
+      <button class="modal-close" onclick="closeModal('upload-receipt-modal')">&times;</button>
+    </div>
+    <form id="upload-receipt-form" onsubmit="handleReceiptUpload(event)">
+      <div class="modal-body">
+        <input type="hidden" id="receipt-project-id">
+        
+        <div class="form-group">
+          <label>Project</label>
+          <input type="text" id="receipt-project-title" readonly style="background: var(--paper); color: var(--ink-muted);">
+        </div>
+
+        <div class="form-group">
+          <label>Milestone</label>
+          <select id="receipt-milestone" required>
+            <option value="m1">Deposit (50%)</option>
+            <option value="m2">Design (20%)</option>
+            <option value="m3">Delivery (30%)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Receipt Screenshot</label>
+          <input type="file" id="receipt-file" accept="image/*" required style="padding: 8px;">
+          <small style="color: var(--ink-muted); font-size: 0.78rem;">JPG, PNG, WEBP (Max 15 MB)</small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('upload-receipt-modal')">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="btn-submit-receipt">
+          <span>Upload Receipt</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Read-Only Project Details Modal -->
+<div class="modal-overlay" id="project-details-modal">
+  <div class="modal-content" style="max-width: 760px;">
+    <div class="modal-header">
+      <div>
+        <h3 class="modal-title" id="pd-title">Project Details</h3>
+        <p id="pd-subtitle" style="font-size: 0.8rem; color: var(--ink-muted); margin-top: 4px;">Comprehensive project summary</p>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span id="pd-stage-badge"></span>
+        <button class="modal-close" onclick="closeModal('project-details-modal')">&times;</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <!-- Client & Project Metadata Grid -->
+      <div class="project-details-grid">
+        <div class="detail-item">
+          <span class="detail-label">Client / Company</span>
+          <span class="detail-value" id="pd-client-company">-</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Contact Person</span>
+          <span class="detail-value" id="pd-client-contact">-</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Wilaya / Location</span>
+          <span class="detail-value" id="pd-client-wilaya">-</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Phone Number</span>
+          <span class="detail-value" id="pd-client-phone">-</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Project Type</span>
+          <span class="detail-value" id="pd-type">-</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Start Date & Time</span>
+          <span class="detail-value" id="pd-date">-</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Delivery Deadline</span>
+          <span class="detail-value" id="pd-delivery-deadline">-</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Deadline Status</span>
+          <span class="detail-value" id="pd-deadline-status">-</span>
+        </div>
+      </div>
+
+      <!-- Financial Overview -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; padding: 4px 2px;">
+        <div>
+          <span class="detail-label">Total Contracted Budget</span>
+          <div class="detail-value highlight" style="font-size: 1.4rem; color: var(--ink); margin-top: 2px;">
+            <span id="pd-total-budget">0</span> <span style="font-size: 0.95rem; font-weight: 600; color: var(--ink-muted);">DZD</span>
+          </div>
+        </div>
+        <div style="text-align: right;">
+          <span class="detail-label">Payment Progress</span>
+          <div id="pd-payment-ratio" style="font-size: 0.92rem; font-weight: 700; color: #059669; margin-top: 2px;">0 / 0 DZD (0%)</div>
+        </div>
+      </div>
+
+      <!-- Progress Track Bar -->
+      <div class="milestone-progress" style="width: 100%;">
+        <div class="progress-track" style="height: 10px;">
+          <div class="progress-segment seg-50" id="pd-bar-m1"></div>
+          <div class="progress-segment seg-20" id="pd-bar-m2"></div>
+          <div class="progress-segment seg-30" id="pd-bar-m3"></div>
+        </div>
+        <div class="milestone-labels" style="margin-top: 4px;">
+          <span>Deposit (50%)</span>
+          <span>Design Approval (20%)</span>
+          <span>Final Delivery (30%)</span>
+        </div>
+      </div>
+
+      <!-- Milestone Cards (50% / 20% / 30%) -->
+      <div class="milestones-breakdown-container">
+        <span class="detail-label">Milestone Payment Breakdown</span>
+        <div class="milestones-cards-grid">
+          <!-- M1 Card -->
+          <div class="milestone-detail-card" id="pd-card-m1">
+            <div class="milestone-detail-header">
+              <span class="milestone-detail-title">M1 - 50% Deposit</span>
+              <span id="pd-badge-m1" class="badge"></span>
+            </div>
+            <div class="milestone-detail-amount"><span id="pd-amount-m1">0</span> DZD</div>
+            <div id="pd-receipt-m1" style="font-size: 0.78rem; color: var(--ink-muted);"></div>
+          </div>
+
+          <!-- M2 Card -->
+          <div class="milestone-detail-card" id="pd-card-m2">
+            <div class="milestone-detail-header">
+              <span class="milestone-detail-title">M2 - 20% Design</span>
+              <span id="pd-badge-m2" class="badge"></span>
+            </div>
+            <div class="milestone-detail-amount"><span id="pd-amount-m2">0</span> DZD</div>
+            <div id="pd-receipt-m2" style="font-size: 0.78rem; color: var(--ink-muted);"></div>
+          </div>
+
+          <!-- M3 Card -->
+          <div class="milestone-detail-card" id="pd-card-m3">
+            <div class="milestone-detail-header">
+              <span class="milestone-detail-title">M3 - 30% Delivery</span>
+              <span id="pd-badge-m3" class="badge"></span>
+            </div>
+            <div class="milestone-detail-amount"><span id="pd-amount-m3">0</span> DZD</div>
+            <div id="pd-receipt-m3" style="font-size: 0.78rem; color: var(--ink-muted);"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Technical Scope & Deliverable Notes -->
+      <div class="form-group">
+        <span class="detail-label">Scope Description & Deliverable Notes</span>
+        <div class="scope-notes-box" id="pd-notes">-</div>
+      </div>
+
+      <!-- Inclusions -->
+      <div style="display: flex; gap: 16px;">
+        <div class="detail-item" style="flex: 1; background: var(--paper); padding: 10px 14px; border-radius: var(--radius-md); border: 1px solid var(--border);">
+          <span class="detail-label">Domain Name</span>
+          <span class="detail-value" id="pd-domain-status">-</span>
+        </div>
+        <div class="detail-item" style="flex: 1; background: var(--paper); padding: 10px 14px; border-radius: var(--radius-md); border: 1px solid var(--border);">
+          <span class="detail-label">Cloud Hosting</span>
+          <span class="detail-value" id="pd-hosting-status">-</span>
+        </div>
+      </div>
+
+      <!-- Project Design & Inspiration References -->
+      <div style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div>
+            <span class="detail-label" style="font-weight: 700; color: var(--ink); text-transform: uppercase; font-size: 0.78rem;">Project References</span>
+            <div id="pd-references-counter" style="font-size: 0.78rem; color: var(--ink-muted); margin-top: 2px;">0 reference links bookmarked</div>
+          </div>
+        </div>
+
+        <!-- Add Reference Row -->
+        <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
+          <input type="text" id="pd-new-ref-title" placeholder="Reference title (e.g. Nike Checkout, Stripe Hero...)" 
+                 style="flex: 1.2; min-width: 170px; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.85rem;"
+                 onkeydown="if(event.key === 'Enter'){ addProjectReference(); }">
+          <input type="url" id="pd-new-ref-url" placeholder="https://example.com" 
+                 style="flex: 1.8; min-width: 200px; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.85rem;"
+                 onkeydown="if(event.key === 'Enter'){ addProjectReference(); }">
+          <button type="button" class="btn btn-primary btn-sm" style="white-space: nowrap; padding: 8px 14px;" onclick="addProjectReference()">Add Reference</button>
+        </div>
+
+        <!-- Scrollable Reference Links List -->
+        <div id="pd-references-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 180px; overflow-y: auto; padding-right: 4px;">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Project Action Items & Interactive To-Do Checklist -->
+      <div style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div>
+            <span class="detail-label" style="font-weight: 700; color: var(--ink); text-transform: uppercase; font-size: 0.78rem;">Project Action Items (To-Do)</span>
+            <div id="pd-todo-counter" style="font-size: 0.78rem; color: var(--ink-muted); margin-top: 2px;">0 of 0 deliverables completed</div>
+          </div>
+          <span id="pd-todo-progress-badge" class="badge badge-gray">0%</span>
+        </div>
+
+        <!-- Add Task Input Row -->
+        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+          <input type="text" id="pd-new-task-input" placeholder="Add deliverable or task (e.g. Design homepage hero, Configure BaridiMob API...)" 
+                 style="flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.85rem;"
+                 onkeydown="if(event.key === 'Enter'){ addProjectTask(); }">
+          <button type="button" class="btn btn-primary btn-sm" style="white-space: nowrap; padding: 8px 14px;" onclick="addProjectTask()">Add Task</button>
+        </div>
+
+        <!-- Scrollable Task List -->
+        <div id="pd-tasks-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; padding-right: 4px;">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+      <div id="pd-cancel-action-wrap"></div>
+      <button type="button" class="btn btn-secondary" onclick="closeModal('project-details-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- View Receipt Modal -->
+<div class="modal-overlay" id="view-receipt-modal">
+  <div class="modal-content" style="max-width: 720px;">
+    <div class="modal-header">
+      <h3 class="modal-title" id="view-receipt-title">Payment Receipt</h3>
+      <button class="modal-close" onclick="closeModal('view-receipt-modal')">&times;</button>
+    </div>
+    <div class="modal-body" style="text-align: center;">
+      <img id="view-receipt-img" src="" alt="Receipt" style="max-width: 100%; max-height: 70vh; border-radius: var(--radius-md); box-shadow: var(--shadow-md);">
+      <div style="margin-top: 12px; display: flex; justify-content: flex-end;">
+        <a id="view-receipt-open-btn" href="#" target="_blank" class="btn btn-secondary btn-sm">Open Full Image</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- New Project Modal -->
+<div class="modal-overlay" id="new-project-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Create Project</h3>
+      <button class="modal-close" onclick="closeModal('new-project-modal')">&times;</button>
+    </div>
+    <form id="new-project-form" onsubmit="handleNewProject(event)">
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Client</label>
+          <select id="proj-client-id" required>
+            <option value="">-- Select Client --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Project Title</label>
+          <input type="text" id="proj-title" placeholder="Ex: Boutique Asel E-Commerce" required>
+        </div>
+        <div class="form-group">
+          <label>Type</label>
+          <select id="proj-type" required>
+            <option value="ecommerce">E-Commerce</option>
+            <option value="saas">SaaS / Web App</option>
+            <option value="landing">Landing Page</option>
+            <option value="custom_software">Custom Desktop</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Estimated Price (DZD) <small style="color: var(--ink-muted); font-weight: normal;">(Optional for Scoping)</small></label>
+          <input type="number" id="proj-price" placeholder="To be defined in Quote (or enter estimate)" oninput="calcProjectSplitPreview()">
+          <small id="proj-split-preview" style="color: var(--cyan-dark); font-weight: 600; font-size: 0.8rem; margin-top: 4px;">
+            50% = 0 DZD | 20% = 0 DZD | 30% = 0 DZD
+          </small>
+        </div>
+        <div class="form-group">
+          <label>Target Delivery Deadline <small style="color: var(--ink-muted); font-weight: normal;">(Optional)</small></label>
+          <input type="date" id="proj-deadline">
+        </div>
+        <div style="display: flex; gap: 12px;">
+          <label class="form-checkbox" style="flex: 1;">
+            <input type="checkbox" id="proj-domain" checked>
+            <span style="font-size: 0.82rem;">Domain Included</span>
+          </label>
+          <label class="form-checkbox" style="flex: 1;">
+            <input type="checkbox" id="proj-hosting" checked>
+            <span style="font-size: 0.82rem;">Hosting Included</span>
+          </label>
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <textarea id="proj-notes" rows="2" placeholder="Project scope..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('new-project-modal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Create Project</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- New Client Modal -->
+<div class="modal-overlay" id="new-client-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Add Client</h3>
+      <button class="modal-close" onclick="closeModal('new-client-modal')">&times;</button>
+    </div>
+    <form id="new-client-form" onsubmit="handleNewClient(event)">
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Company / Brand Name</label>
+          <input type="text" id="client-company" placeholder="Ex: Pyjama DZ" required>
+        </div>
+        <div class="form-group">
+          <label>Contact Name</label>
+          <input type="text" id="client-contact" placeholder="Ex: Mohamed Benali" required>
+        </div>
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input type="text" id="client-phone" placeholder="Ex: 0550 12 34 56" required>
+        </div>
+        <div class="form-group">
+          <label>Industry</label>
+          <input type="text" id="client-industry" placeholder="Ex: Retail, Healthcare...">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('new-client-modal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Client</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Design Review Modal -->
+<div class="modal-overlay" id="design-review-modal">
+  <div class="modal-content" style="max-width: 480px;">
+    <div class="modal-header">
+      <h3 class="modal-title">Design Review & Client Sign-Off</h3>
+      <button class="modal-close" onclick="closeModal('design-review-modal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="design-review-project-id">
+      <p id="design-review-project-name" style="font-weight: 700; font-size: 1rem; color: var(--ink); margin-bottom: 6px;"></p>
+      <p style="font-size: 0.85rem; color: var(--ink-muted); margin-bottom: 16px;">
+        Did the client approve the UI/UX mockups and prototype during the review meeting?
+      </p>
+      <div id="design-review-notes-wrap" style="display: none; margin-bottom: 14px;">
+        <label style="font-size: 0.8rem; font-weight: 600; color: var(--ink);">Revision Notes / Feedback</label>
+        <textarea id="design-review-notes" rows="2" placeholder="What needs to be changed..." style="width: 100%; margin-top: 4px; padding: 8px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.82rem;"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
+      <button type="button" class="btn btn-secondary" onclick="handleDesignReviewDecision(false)">
+        Changes Requested
+      </button>
+      <button type="button" class="btn btn-primary" style="background: #059669; border-color: #059669;" onclick="handleDesignReviewDecision(true)">
+        Approve Design
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Quote Gate Modal -->
+<div class="modal-overlay" id="quote-gate-modal">
+  <div class="modal-content" style="max-width: 480px;">
+    <div class="modal-header">
+      <h3 class="modal-title">Quote Approval Required</h3>
+      <button class="modal-close" onclick="closeModal('quote-gate-modal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="quote-gate-project-id">
+      <p id="quote-gate-project-name" style="font-weight: 700; font-size: 1rem; color: var(--ink); margin-bottom: 6px;"></p>
+      <p style="font-size: 0.85rem; color: var(--ink-muted); margin-bottom: 16px;">
+        This project cannot advance to Deposit (50%) until a quote (devis) has been created and approved by the client.
+      </p>
+    </div>
+    <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
+      <button type="button" class="btn btn-secondary" onclick="handleQuoteGateEdit()">
+        Open Quote Editor
+      </button>
+      <button type="button" class="btn btn-primary" style="background: #059669; border-color: #059669;" onclick="handleQuoteGateApprove()">
+        Confirm Client Approval
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- In-Context Project Quote (Devis) Modal -->
+<div class="modal-overlay" id="project-devis-modal">
+  <div class="modal-content" style="max-width: 680px;">
+    <div class="modal-header">
+      <div>
+        <h3 class="modal-title">Create Quote (Devis)</h3>
+        <p style="font-size: 0.8rem; color: var(--ink-muted); margin-top: 2px;">Configure scope items, deliverables, and milestone pricing</p>
+      </div>
+      <button class="modal-close" onclick="closeModal('project-devis-modal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="modal-devis-project-id">
+      <input type="hidden" id="modal-devis-client-id">
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+        <div class="form-group">
+          <label>Client</label>
+          <input type="text" id="modal-devis-client-name" readonly style="background: var(--paper); font-weight: 700; color: var(--ink);">
+        </div>
+        <div class="form-group">
+          <label>Project Title</label>
+          <input type="text" id="modal-devis-project-title" style="font-weight: 600;">
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
+        <div class="form-group">
+          <label>Target Delivery Deadline</label>
+          <input type="date" id="modal-devis-deadline" style="font-weight: 600;">
+        </div>
+        <div class="form-group">
+          <label>Included Infrastructure</label>
+          <div style="display: flex; gap: 16px; align-items: center; padding-top: 6px;">
+            <label class="form-checkbox" style="margin: 0;">
+              <input type="checkbox" id="modal-devis-domain-check" checked>
+              <span style="font-size: 0.82rem; font-weight: 600;">Domain Included</span>
+            </label>
+            <label class="form-checkbox" style="margin: 0;">
+              <input type="checkbox" id="modal-devis-hosting-check" checked>
+              <span style="font-size: 0.82rem; font-weight: 600;">Hosting Included</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Line Items Section -->
+      <div style="border-top: 1px solid var(--border); padding-top: 14px; margin-bottom: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <label style="font-size: 0.82rem; font-weight: 700; color: var(--ink);">Scope Deliverables & Pricing (DZD)</label>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="addModalDevisItemRow()">+ Add Item</button>
+        </div>
+        <div id="modal-devis-items-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto;">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- Live Split Preview Box -->
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 14px; margin-bottom: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <span style="font-size: 0.85rem; font-weight: 700; color: var(--ink);">Agreed Total Budget:</span>
+          <strong id="modal-devis-total-price" style="font-size: 1.15rem; color: var(--ink);">0 DZD</strong>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding-top: 8px; border-top: 1px dashed var(--border);">
+          <div style="background: #fff; padding: 6px 10px; border-radius: 4px; border: 1px solid var(--border);">
+            <div style="font-size: 0.68rem; color: var(--ink-muted); font-weight: 700; text-transform: uppercase;">M1 · Deposit (50%)</div>
+            <strong id="modal-devis-m1" style="font-size: 0.88rem; color: #D97706;">0 DZD</strong>
+          </div>
+          <div style="background: #fff; padding: 6px 10px; border-radius: 4px; border: 1px solid var(--border);">
+            <div style="font-size: 0.68rem; color: var(--ink-muted); font-weight: 700; text-transform: uppercase;">M2 · Design (20%)</div>
+            <strong id="modal-devis-m2" style="font-size: 0.88rem; color: #8B5CF6;">0 DZD</strong>
+          </div>
+          <div style="background: #fff; padding: 6px 10px; border-radius: 4px; border: 1px solid var(--border);">
+            <div style="font-size: 0.68rem; color: var(--ink-muted); font-weight: 700; text-transform: uppercase;">M3 · Delivery (30%)</div>
+            <strong id="modal-devis-m3" style="font-size: 0.88rem; color: #059669;">0 DZD</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Notes / Requirements</label>
+        <textarea id="modal-devis-notes" rows="2" placeholder="Specific technical requirements or notes..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;">
+      <button type="button" class="btn btn-secondary" onclick="closeModal('project-devis-modal')">Cancel</button>
+      <button type="button" class="btn btn-secondary" onclick="exportModalDevisPdf()">Save PDF</button>
+      <button type="button" class="btn btn-secondary" onclick="saveModalDevis(false)">Save Draft</button>
+      <button type="button" class="btn btn-primary" style="background: #059669; border-color: #059669;" onclick="saveModalDevis(true)">Save & Approve Quote</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+<script src="html2pdf.bundle.min.js"></script>
+<script src="admin.js?v=34"></script>
+</body>
+</html>

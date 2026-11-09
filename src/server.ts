@@ -11,6 +11,8 @@ import * as schema from './db/schema.js';
 import { uploadToR2, getR2PublicUrl } from './services/storage.js';
 
 dotenv.config({ path: '.env.local' });
+dotenv.config({ path: '.env' });
+dotenv.config();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');

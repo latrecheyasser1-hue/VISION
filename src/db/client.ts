@@ -4,13 +4,12 @@ import * as dotenv from 'dotenv';
 import * as schema from './schema.js';
 
 dotenv.config({ path: '.env.local' });
+dotenv.config({ path: '.env' });
+dotenv.config();
 
-const connectionString = process.env.DATABASE_URL || '';
+const DEFAULT_DB_URL = "postgresql://neondb_owner:npg_cPiFTD7Bf6rl@ep-shiny-silence-bakg5l1v-pooler.c-8.eu-central-1.aws.neon.tech/neondb?channel_binding=require&sslmode=require";
+const connectionString = process.env.DATABASE_URL || DEFAULT_DB_URL;
 
-if (!connectionString) {
-  console.warn('WARNING: DATABASE_URL is not set in environment variables.');
-}
-
-const sql = neon(connectionString || 'postgresql://neondb_owner:dummy@ep-dummy.neon.tech/neondb');
+const sql = neon(connectionString);
 export const db = drizzle(sql, { schema });
 export { sql };

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "node build.mjs",
     "build:deploy": "node website/build-deploy.mjs",
     "start": "node dist/src/server.js",
     "dev": "tsx src/server.ts",
