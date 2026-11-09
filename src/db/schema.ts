@@ -132,3 +132,25 @@ export const invoices = pgTable('invoices', {
   notes: text('notes'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
+
+// 5. Meetings (Client Discovery, Scoping, Design Review, Delivery Demos)
+export const meetings = pgTable('meetings', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  title: varchar('title', { length: 200 }).notNull(),
+  clientId: uuid('client_id').references(() => clients.id),
+  projectId: uuid('project_id').references(() => projects.id),
+  leadId: uuid('lead_id').references(() => leads.id),
+  type: varchar('type', { length: 50 }).default('discovery').notNull(), // 'discovery', 'scoping', 'design_review', 'demo_delivery', 'followup', 'work_session'
+  meetingDate: varchar('meeting_date', { length: 20 }).notNull(), // 'YYYY-MM-DD'
+  startTime: varchar('start_time', { length: 10 }).notNull(), // 'HH:MM'
+  endTime: varchar('end_time', { length: 10 }), // 'HH:MM'
+  platform: varchar('platform', { length: 50 }).default('google_meet'), // 'google_meet', 'whatsapp_call', 'phone_call', 'in_person', 'other'
+  link: text('link'),
+  location: varchar('location', { length: 200 }),
+  agenda: text('agenda'),
+  notes: text('notes'),
+  status: varchar('status', { length: 30 }).default('scheduled').notNull(), // 'scheduled', 'completed', 'cancelled', 'rescheduled'
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+

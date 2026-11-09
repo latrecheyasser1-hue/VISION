@@ -10,6 +10,13 @@ let state = {
   clients: [],
   leads: [],
   invoices: [],
+  meetings: [],
+  currentMeetingId: null,
+  meetingView: 'calendar',
+  calendarYear: new Date().getFullYear(),
+  calendarMonth: new Date().getMonth(),
+  meetingsFilterStatus: 'all',
+  meetingsFilterType: 'all',
   stats: null,
   activeTab: 'overview',
   historyCategory: 'projects',
@@ -416,6 +423,7 @@ async function fetchAllData() {
     fetchProjects(),
     fetchLeads(),
     fetchInvoices(),
+    fetchMeetings(),
   ]);
 }
 
@@ -445,8 +453,8 @@ const TAB_TITLES = {
   clients: { title: "Clients", sub: "Client directory and project history" },
   leads: { title: "Leads", sub: "Incoming project inquiries from website" },
   history: { title: "History", sub: "Comprehensive historical logs for projects and milestones" },
-  meetings: { title: "Meetings", sub: "Client discovery calls and review sessions" },
-  todo: { title: "Meetings", sub: "Client discovery calls and review sessions" },
+  meetings: { title: "Meetings & Calendar", sub: "Coordinate client discovery calls, scoping sessions, and delivery deadlines" },
+  todo: { title: "Meetings & Calendar", sub: "Coordinate client discovery calls, scoping sessions, and delivery deadlines" },
   devis: { title: "History", sub: "Comprehensive historical logs for projects and milestones" },
   storage: { title: "History", sub: "Comprehensive historical logs for projects and milestones" },
 };
@@ -493,6 +501,11 @@ function switchTab(tabId) {
   if (tabId === 'history') {
     renderHistoryView();
     fetchInvoices();
+  }
+
+  if (tabId === 'meetings') {
+    renderMeetingsView();
+    fetchMeetings();
   }
 }
 
@@ -3437,6 +3450,18 @@ function setupRealtimeEvents() {
       fetchStats();
     });
 
+    es.addEventListener('meeting_created', (e) => {
+      fetchMeetings();
+    });
+
+    es.addEventListener('meeting_updated', (e) => {
+      fetchMeetings();
+    });
+
+    es.addEventListener('meeting_deleted', (e) => {
+      fetchMeetings();
+    });
+
     es.onerror = () => {
       // EventSource automatically retries
     };
@@ -3448,4 +3473,670 @@ function setupRealtimeEvents() {
   setInterval(() => {
     fetchLeads();
   }, 15000);
+}
+
+// ==========================================
+// MEETINGS & FOUNDER CALENDAR SYSTEM
+// ==========================================
+
+async function fetchMeetings() {
+  try {
+    const res = await fetch('/api/meetings');
+    if (!res.ok) throw new Error('Failed to fetch meetings');
+    const data = await res.json();
+    state.meetings = Array.isArray(data) ? data : [];
+    updateMeetingsBadge();
+    if (state.activeTab === 'meetings') {
+      renderMeetingsView();
+    }
+  } catch (err) {
+    console.error('Meetings fetch error:', err);
+  }
+}
+
+function updateMeetingsBadge() {
+  const badgeEl = document.getElementById('nav-meetings-count');
+  if (!badgeEl) return;
+  const todayStr = getTodayDateString();
+  const upcomingCount = state.meetings.filter(m => m.status === 'scheduled' && m.meetingDate >= todayStr).length;
+  if (upcomingCount > 0) {
+    badgeEl.textContent = upcomingCount;
+    badgeEl.style.display = 'inline-block';
+  } else {
+    badgeEl.style.display = 'none';
+  }
+}
+
+function getTodayDateString() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function renderMeetingsView() {
+  if (state.meetingView === 'list') {
+    const calEl = document.getElementById('meetings-calendar-view');
+    const listEl = document.getElementById('meetings-list-view');
+    if (calEl) calEl.style.display = 'none';
+    if (listEl) listEl.style.display = 'block';
+
+    const calBtn = document.getElementById('btn-view-cal');
+    const listBtn = document.getElementById('btn-view-list');
+    if (calBtn && listBtn) {
+      calBtn.className = 'btn btn-secondary btn-sm';
+      calBtn.style.background = 'transparent';
+      calBtn.style.border = 'none';
+      listBtn.className = 'btn btn-primary btn-sm';
+      listBtn.style.background = '';
+      listBtn.style.border = '';
+    }
+    renderAgendaListView();
+  } else {
+    const calEl = document.getElementById('meetings-calendar-view');
+    const listEl = document.getElementById('meetings-list-view');
+    if (calEl) calEl.style.display = 'block';
+    if (listEl) listEl.style.display = 'none';
+
+    const calBtn = document.getElementById('btn-view-cal');
+    const listBtn = document.getElementById('btn-view-list');
+    if (calBtn && listBtn) {
+      calBtn.className = 'btn btn-primary btn-sm';
+      calBtn.style.background = '';
+      calBtn.style.border = '';
+      listBtn.className = 'btn btn-secondary btn-sm';
+      listBtn.style.background = 'transparent';
+      listBtn.style.border = 'none';
+    }
+    renderCalendarView();
+  }
+}
+
+function setMeetingView(view) {
+  state.meetingView = view;
+  renderMeetingsView();
+}
+
+function handleMeetingsFilterChange() {
+  const typeSelect = document.getElementById('meetings-filter-type');
+  const statusSelect = document.getElementById('meetings-filter-status');
+  if (typeSelect) state.meetingsFilterType = typeSelect.value;
+  if (statusSelect) state.meetingsFilterStatus = statusSelect.value;
+  renderMeetingsView();
+}
+
+function changeCalendarMonth(delta) {
+  state.calendarMonth += delta;
+  if (state.calendarMonth < 0) {
+    state.calendarMonth = 11;
+    state.calendarYear -= 1;
+  } else if (state.calendarMonth > 11) {
+    state.calendarMonth = 0;
+    state.calendarYear += 1;
+  }
+  renderMeetingsView();
+}
+
+function resetCalendarToToday() {
+  const now = new Date();
+  state.calendarYear = now.getFullYear();
+  state.calendarMonth = now.getMonth();
+  renderMeetingsView();
+}
+
+function renderCalendarView() {
+  const container = document.getElementById('calendar-grid-cells');
+  const monthLabel = document.getElementById('calendar-month-label');
+  if (!container) return;
+
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+  if (monthLabel) {
+    monthLabel.textContent = `${monthNames[state.calendarMonth]} ${state.calendarYear}`;
+  }
+
+  const firstDay = new Date(state.calendarYear, state.calendarMonth, 1).getDay(); // 0 is Sun
+  const daysInMonth = new Date(state.calendarYear, state.calendarMonth + 1, 0).getDate();
+  const daysInPrevMonth = new Date(state.calendarYear, state.calendarMonth, 0).getDate();
+
+  const todayStr = getTodayDateString();
+
+  // Filter meetings
+  const filteredMeetings = (state.meetings || []).filter(m => {
+    if (state.meetingsFilterStatus !== 'all' && m.status !== state.meetingsFilterStatus) return false;
+    if (state.meetingsFilterType !== 'all' && m.type !== state.meetingsFilterType) return false;
+    return true;
+  });
+
+  // Project deadlines (for founder workload awareness: winta nakhedm w winta ndiir meeting)
+  const projectDeadlines = (state.projects || []).filter(p => {
+    return p.targetDeliveryDate && p.status !== 'cancelled' && p.stage !== 'delivered';
+  });
+
+  let cellsHtml = '';
+
+  // Previous month trailing days
+  for (let i = firstDay - 1; i >= 0; i--) {
+    const dayNum = daysInPrevMonth - i;
+    const prevMonthIdx = state.calendarMonth === 0 ? 11 : state.calendarMonth - 1;
+    const prevYear = state.calendarMonth === 0 ? state.calendarYear - 1 : state.calendarYear;
+    const dateStr = `${prevYear}-${String(prevMonthIdx + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+    cellsHtml += renderCalendarCell(dateStr, dayNum, true, todayStr, filteredMeetings, projectDeadlines);
+  }
+
+  // Current month days
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr = `${state.calendarYear}-${String(state.calendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    cellsHtml += renderCalendarCell(dateStr, day, false, todayStr, filteredMeetings, projectDeadlines);
+  }
+
+  // Next month leading days (fill up to total of 35 or 42 cells)
+  const totalCellsSoFar = firstDay + daysInMonth;
+  const remainingCells = totalCellsSoFar % 7 === 0 ? 0 : 7 - (totalCellsSoFar % 7);
+  for (let day = 1; day <= remainingCells; day++) {
+    const nextMonthIdx = state.calendarMonth === 11 ? 0 : state.calendarMonth + 1;
+    const nextYear = state.calendarMonth === 11 ? state.calendarYear + 1 : state.calendarYear;
+    const dateStr = `${nextYear}-${String(nextMonthIdx + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    cellsHtml += renderCalendarCell(dateStr, day, true, todayStr, filteredMeetings, projectDeadlines);
+  }
+
+  container.innerHTML = cellsHtml;
+}
+
+function renderCalendarCell(dateStr, dayNum, isOtherMonth, todayStr, meetings, deadlines) {
+  const isToday = dateStr === todayStr;
+  const dayMeetings = meetings.filter(m => m.meetingDate === dateStr);
+  const dayDeadlines = deadlines.filter(p => {
+    const d = new Date(p.targetDeliveryDate);
+    const pYear = d.getFullYear();
+    const pMonth = String(d.getMonth() + 1).padStart(2, '0');
+    const pDay = String(d.getDate()).padStart(2, '0');
+    return `${pYear}-${pMonth}-${pDay}` === dateStr;
+  });
+
+  const cellClasses = ['calendar-cell'];
+  if (isOtherMonth) cellClasses.push('other-month');
+  if (isToday) cellClasses.push('is-today');
+
+  let eventsHtml = '';
+
+  // Render project deadlines first as high-priority
+  dayDeadlines.forEach(p => {
+    eventsHtml += `
+      <div class="event-chip event-chip-deadline" onclick="event.stopPropagation(); openProjectDetailsModal('${p.id}')" title="Delivery Deadline: ${escapeHtml(p.title)}">
+        <span class="event-chip-time">DEADLINE</span>
+        <span class="event-chip-title">${escapeHtml(p.title)}</span>
+      </div>
+    `;
+  });
+
+  // Render meetings
+  dayMeetings.forEach(m => {
+    const isCompleted = m.status === 'completed';
+    const typeClass = `event-chip-${m.type || 'discovery'}`;
+    const clientName = m.client?.companyName || m.client?.contactName || '';
+    eventsHtml += `
+      <div class="event-chip ${typeClass} ${isCompleted ? 'is-completed' : ''}" onclick="event.stopPropagation(); openMeetingDetailsModal('${m.id}')" title="${escapeHtml(m.title)} (${m.startTime || ''})">
+        <span class="event-chip-time">${m.startTime || ''} ${clientName ? '· ' + escapeHtml(clientName) : ''}</span>
+        <span class="event-chip-title">${escapeHtml(m.title)}</span>
+      </div>
+    `;
+  });
+
+  return `
+    <div class="${cellClasses.join(' ')}" onclick="openNewMeetingModal('${dateStr}')">
+      <div class="calendar-cell-top">
+        <span class="calendar-cell-num">${dayNum}</span>
+        ${isToday ? '<span class="calendar-cell-today-pill">Today</span>' : ''}
+      </div>
+      <div class="calendar-events-wrap">
+        ${eventsHtml}
+      </div>
+    </div>
+  `;
+}
+
+function renderAgendaListView() {
+  const container = document.getElementById('agenda-groups-container');
+  if (!container) return;
+
+  const todayStr = getTodayDateString();
+  const filteredMeetings = (state.meetings || []).filter(m => {
+    if (state.meetingsFilterStatus !== 'all' && m.status !== state.meetingsFilterStatus) return false;
+    if (state.meetingsFilterType !== 'all' && m.type !== state.meetingsFilterType) return false;
+    return true;
+  });
+
+  if (filteredMeetings.length === 0) {
+    container.innerHTML = `
+      <div class="card" style="padding: 60px 20px; text-align: center;">
+        <div style="font-size: 1rem; font-weight: 700; color: var(--ink);">No meetings found</div>
+        <p style="font-size: 0.85rem; color: var(--ink-muted); margin-top: 6px;">Schedule client calls and milestone review sessions to organize your pipeline.</p>
+        <button type="button" class="btn btn-primary btn-sm" style="margin-top: 14px;" onclick="openNewMeetingModal()">+ Schedule Meeting</button>
+      </div>
+    `;
+    return;
+  }
+
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`;
+
+  const nextWeek = new Date();
+  nextWeek.setDate(nextWeek.getDate() + 7);
+  const nextWeekStr = `${nextWeek.getFullYear()}-${String(nextWeek.getMonth() + 1).padStart(2, '0')}-${String(nextWeek.getDate()).padStart(2, '0')}`;
+
+  const groups = {
+    today: { title: "Today's Schedule", meetings: [] },
+    tomorrow: { title: "Tomorrow", meetings: [] },
+    thisWeek: { title: "This Week", meetings: [] },
+    upcoming: { title: "Upcoming", meetings: [] },
+    past: { title: "Past & Completed", meetings: [] },
+  };
+
+  filteredMeetings.forEach(m => {
+    if (m.meetingDate === todayStr) {
+      groups.today.meetings.push(m);
+    } else if (m.meetingDate === tomorrowStr) {
+      groups.tomorrow.meetings.push(m);
+    } else if (m.meetingDate > tomorrowStr && m.meetingDate <= nextWeekStr) {
+      groups.thisWeek.meetings.push(m);
+    } else if (m.meetingDate > nextWeekStr) {
+      groups.upcoming.meetings.push(m);
+    } else {
+      groups.past.meetings.push(m);
+    }
+  });
+
+  let html = '';
+  for (const [key, group] of Object.entries(groups)) {
+    if (group.meetings.length === 0) continue;
+    html += `
+      <div class="agenda-day-group">
+        <div class="agenda-day-title">
+          <span>${group.title}</span>
+          <span class="agenda-day-badge">${group.meetings.length} ${group.meetings.length === 1 ? 'meeting' : 'meetings'}</span>
+        </div>
+        <div>
+          ${group.meetings.map(m => renderAgendaMeetingCard(m)).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  container.innerHTML = html;
+}
+
+function renderAgendaMeetingCard(m) {
+  const isCompleted = m.status === 'completed';
+  const typeLabels = {
+    discovery: 'Discovery Call',
+    scoping: 'Scoping Session',
+    design_review: 'Design Review',
+    demo_delivery: 'Demo & Delivery',
+    followup: 'Follow-up Call',
+    work_session: 'Work Session',
+  };
+  const typeText = typeLabels[m.type] || m.type || 'Meeting';
+  const clientName = m.client?.companyName || m.client?.contactName || 'No Client';
+  const projectTitle = m.project?.title || '';
+
+  const joinBtn = m.link
+    ? `<a href="${m.link}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm" style="font-weight: 600;">Join Link</a>`
+    : (m.client?.phone ? `<a href="${formatWhatsAppUrl(m.client.phone)}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm" style="color: #059669; font-weight: 600;">WhatsApp Call</a>` : '');
+
+  return `
+    <div class="agenda-card">
+      <div class="agenda-card-left">
+        <div class="agenda-time-pill">
+          <span class="agenda-time-val">${m.startTime || '--:--'}</span>
+          <span class="agenda-time-dur">${m.endTime ? 'Until ' + m.endTime : formatDateShort(m.meetingDate)}</span>
+        </div>
+        <div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <strong style="font-size: 0.95rem; color: var(--ink); ${isCompleted ? 'text-decoration: line-through; opacity: 0.7;' : ''}">${escapeHtml(m.title)}</strong>
+            <span class="badge" style="font-size: 0.70rem;">${typeText}</span>
+          </div>
+          <div style="font-size: 0.80rem; color: var(--ink-muted); margin-top: 3px;">
+            ${clientName ? 'Client: <strong style="color: var(--ink);">' + escapeHtml(clientName) + '</strong>' : ''}
+            ${projectTitle ? ' · Project: ' + escapeHtml(projectTitle) : ''}
+          </div>
+          ${m.agenda ? `<div style="font-size: 0.75rem; color: var(--ink-muted); margin-top: 4px; max-width: 500px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Agenda: ${escapeHtml(m.agenda)}</div>` : ''}
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="badge ${isCompleted ? 'badge-green' : 'badge-yellow'}">${isCompleted ? 'Completed' : 'Scheduled'}</span>
+        ${joinBtn}
+        <button type="button" class="btn btn-secondary btn-sm" onclick="openMeetingDetailsModal('${m.id}')">Details</button>
+      </div>
+    </div>
+  `;
+}
+
+function openNewMeetingModal(prefilledDate) {
+  state.currentMeetingId = null;
+  const idInput = document.getElementById('meeting-form-id');
+  if (idInput) idInput.value = '';
+  const titleEl = document.getElementById('meeting-modal-title');
+  if (titleEl) titleEl.textContent = 'Schedule Meeting';
+  const saveBtn = document.getElementById('btn-save-meeting');
+  if (saveBtn) saveBtn.textContent = 'Schedule Meeting';
+
+  // Populate client select
+  const clientSelect = document.getElementById('meeting-form-client');
+  if (clientSelect) {
+    clientSelect.innerHTML = '<option value="">Select a Client...</option>' + (state.clients || []).map(c => `
+      <option value="${c.id}">${escapeHtml(c.companyName || c.contactName)}</option>
+    `).join('');
+  }
+
+  // Populate project select
+  const projectSelect = document.getElementById('meeting-form-project');
+  if (projectSelect) {
+    projectSelect.innerHTML = '<option value="">No Project (General Meeting)</option>' + (state.projects || []).map(p => `
+      <option value="${p.id}">${escapeHtml(p.title)} (${escapeHtml(p.client?.companyName || 'VISION')})</option>
+    `).join('');
+  }
+
+  // Date
+  const dateInput = document.getElementById('meeting-form-date');
+  if (dateInput) {
+    dateInput.value = prefilledDate || getTodayDateString();
+  }
+
+  // Times
+  const startInput = document.getElementById('meeting-form-start-time');
+  const endInput = document.getElementById('meeting-form-end-time');
+  if (startInput) startInput.value = '14:00';
+  if (endInput) endInput.value = '15:00';
+
+  // Fields
+  document.getElementById('meeting-form-title').value = '';
+  document.getElementById('meeting-form-type').value = 'discovery';
+  document.getElementById('meeting-form-platform').value = 'google_meet';
+  document.getElementById('meeting-form-link').value = '';
+  document.getElementById('meeting-form-agenda').value = '';
+  document.getElementById('meeting-form-notes').value = '';
+
+  openModal('new-meeting-modal');
+}
+
+function handleMeetingClientSelectChange() {
+  const clientId = document.getElementById('meeting-form-client').value;
+  const projectSelect = document.getElementById('meeting-form-project');
+  const titleInput = document.getElementById('meeting-form-title');
+
+  if (projectSelect) {
+    if (clientId) {
+      const clientProjects = (state.projects || []).filter(p => p.clientId === clientId);
+      projectSelect.innerHTML = '<option value="">No Project (General Meeting)</option>' + clientProjects.map(p => `
+        <option value="${p.id}">${escapeHtml(p.title)}</option>
+      `).join('');
+      if (clientProjects.length === 1) {
+        projectSelect.value = clientProjects[0].id;
+      }
+    } else {
+      projectSelect.innerHTML = '<option value="">No Project (General Meeting)</option>' + (state.projects || []).map(p => `
+        <option value="${p.id}">${escapeHtml(p.title)} (${escapeHtml(p.client?.companyName || 'VISION')})</option>
+      `).join('');
+    }
+  }
+
+  if (clientId && titleInput && !titleInput.value) {
+    const client = (state.clients || []).find(c => c.id === clientId);
+    if (client) {
+      titleInput.value = `Scoping Session - ${client.companyName || client.contactName}`;
+    }
+  }
+}
+
+function handleMeetingPlatformChange() {
+  const platform = document.getElementById('meeting-form-platform').value;
+  const linkInput = document.getElementById('meeting-form-link');
+  if (!linkInput) return;
+  if (platform === 'whatsapp_call') {
+    const clientId = document.getElementById('meeting-form-client')?.value;
+    const client = (state.clients || []).find(c => c.id === clientId);
+    if (client && client.phone) {
+      linkInput.value = formatWhatsAppUrl(client.phone);
+    }
+  }
+}
+
+async function handleMeetingSubmit(e) {
+  e.preventDefault();
+  const id = document.getElementById('meeting-form-id').value;
+  const clientId = document.getElementById('meeting-form-client').value || null;
+  const projectId = document.getElementById('meeting-form-project').value || null;
+  const title = document.getElementById('meeting-form-title').value.trim();
+  const type = document.getElementById('meeting-form-type').value;
+  const meetingDate = document.getElementById('meeting-form-date').value;
+  const startTime = document.getElementById('meeting-form-start-time').value;
+  const endTime = document.getElementById('meeting-form-end-time').value || null;
+  const platform = document.getElementById('meeting-form-platform').value;
+  const link = document.getElementById('meeting-form-link').value.trim() || null;
+  const agenda = document.getElementById('meeting-form-agenda').value.trim() || null;
+  const notes = document.getElementById('meeting-form-notes').value.trim() || null;
+
+  const payload = {
+    title,
+    clientId,
+    projectId,
+    type,
+    meetingDate,
+    startTime,
+    endTime,
+    platform,
+    link,
+    agenda,
+    notes,
+  };
+
+  try {
+    let res;
+    if (id) {
+      res = await fetch(`/api/meetings/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+    } else {
+      payload.status = 'scheduled';
+      res = await fetch('/api/meetings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+    }
+
+    if (!res.ok) {
+      const errData = await res.json();
+      throw new Error(errData.error || 'Failed to save meeting');
+    }
+
+    showToast(id ? 'Meeting updated successfully.' : 'Meeting scheduled successfully.');
+    closeModal('new-meeting-modal');
+    await fetchMeetings();
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+function openMeetingDetailsModal(meetingId) {
+  const m = (state.meetings || []).find(x => x.id === meetingId);
+  if (!m) {
+    showToast('Meeting not found', 'error');
+    return;
+  }
+  state.currentMeetingId = meetingId;
+
+  const typeLabels = {
+    discovery: 'Discovery Call',
+    scoping: 'Scoping Session',
+    design_review: 'Design Review',
+    demo_delivery: 'Demo & Delivery',
+    followup: 'Follow-up Call',
+    work_session: 'Work Session',
+  };
+
+  document.getElementById('md-title').textContent = m.title || 'Meeting Details';
+  document.getElementById('md-subtitle').textContent = `Scheduled on ${m.meetingDate || '-'}`;
+
+  const typeBadgeEl = document.getElementById('md-type-badge');
+  if (typeBadgeEl) {
+    typeBadgeEl.className = 'badge';
+    typeBadgeEl.textContent = typeLabels[m.type] || m.type || 'Meeting';
+  }
+
+  const statusBadgeEl = document.getElementById('md-status-badge');
+  if (statusBadgeEl) {
+    const isCompleted = m.status === 'completed';
+    statusBadgeEl.className = `badge ${isCompleted ? 'badge-green' : 'badge-yellow'}`;
+    statusBadgeEl.textContent = isCompleted ? 'Completed' : 'Scheduled';
+  }
+
+  // Toggle complete button
+  const toggleBtn = document.getElementById('btn-toggle-meeting-complete');
+  if (toggleBtn) {
+    toggleBtn.textContent = m.status === 'completed' ? 'Re-open Meeting' : 'Mark as Completed';
+  }
+
+  // Date & Time
+  const dateObj = new Date(`${m.meetingDate}T${m.startTime || '00:00'}`);
+  const dateFormatted = !isNaN(dateObj.getTime())
+    ? dateObj.toLocaleDateString('en-GB', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })
+    : m.meetingDate;
+  document.getElementById('md-date-time').textContent = `${dateFormatted} at ${m.startTime || '--:--'}`;
+  document.getElementById('md-duration').textContent = m.endTime ? `Duration: ${m.startTime} - ${m.endTime}` : 'Duration: Open';
+
+  // Platform & Join Action
+  const platformAction = document.getElementById('md-platform-action');
+  if (platformAction) {
+    if (m.link) {
+      platformAction.innerHTML = `
+        <a href="${m.link}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm" style="font-weight: 700; padding: 8px 16px;">
+          Join Meeting
+        </a>
+      `;
+    } else if (m.client?.phone) {
+      platformAction.innerHTML = `
+        <a href="${formatWhatsAppUrl(m.client.phone)}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm" style="font-weight: 700; background: #059669; border-color: #059669; padding: 8px 16px;">
+          Call via WhatsApp
+        </a>
+      `;
+    } else {
+      platformAction.innerHTML = `
+        <span class="badge badge-gray">${escapeHtml(m.platform || 'Direct Meeting')}</span>
+      `;
+    }
+  }
+
+  // Client Details
+  const client = m.client || {};
+  document.getElementById('md-client-company').textContent = client.companyName || client.contactName || 'No Client Linked';
+  document.getElementById('md-client-contact').textContent = client.contactName ? `Contact: ${client.contactName}` : '';
+  if (client.phone) {
+    document.getElementById('md-client-phone').innerHTML = `
+      <a href="${formatWhatsAppUrl(client.phone)}" target="_blank" rel="noopener noreferrer" class="phone-link">
+        ${escapeHtml(client.phone)} (WhatsApp)
+      </a>
+    `;
+  } else {
+    document.getElementById('md-client-phone').textContent = 'No phone recorded';
+  }
+  document.getElementById('md-client-wilaya').textContent = client.wilaya ? `Wilaya: ${client.wilaya}` : '';
+
+  // Project Details
+  const project = m.project || {};
+  document.getElementById('md-project-title').textContent = project.title || 'No Project Linked';
+  document.getElementById('md-project-stage').innerHTML = project.stage ? getStageBadge(project.stage) : '';
+  document.getElementById('md-project-budget').textContent = project.priceTotalDzd ? `Agreed Total: ${formatDzd(project.priceTotalDzd)} DZD` : '';
+  
+  const projectLinkWrap = document.getElementById('md-project-link-wrap');
+  if (projectLinkWrap) {
+    if (project.id) {
+      projectLinkWrap.innerHTML = `
+        <button type="button" class="btn btn-secondary btn-sm" style="padding: 3px 8px; font-size: 0.74rem;" onclick="closeModal('meeting-details-modal'); openProjectDetailsModal('${project.id}')">
+          Open Project Details
+        </button>
+      `;
+    } else {
+      projectLinkWrap.innerHTML = '';
+    }
+  }
+
+  // Agenda & Notes
+  document.getElementById('md-agenda').textContent = m.agenda || 'No agenda recorded for this meeting.';
+  document.getElementById('md-notes').textContent = m.notes || 'No outcome notes recorded yet.';
+
+  openModal('meeting-details-modal');
+}
+
+async function toggleCurrentMeetingStatus() {
+  if (!state.currentMeetingId) return;
+  const m = (state.meetings || []).find(x => x.id === state.currentMeetingId);
+  if (!m) return;
+  const newStatus = m.status === 'completed' ? 'scheduled' : 'completed';
+
+  try {
+    const res = await fetch(`/api/meetings/${m.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus }),
+    });
+    if (!res.ok) throw new Error('Failed to update status');
+    showToast(newStatus === 'completed' ? 'Meeting marked as completed.' : 'Meeting marked as scheduled.');
+    await fetchMeetings();
+    openMeetingDetailsModal(m.id);
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+function editCurrentMeeting() {
+  if (!state.currentMeetingId) return;
+  const m = (state.meetings || []).find(x => x.id === state.currentMeetingId);
+  if (!m) return;
+
+  closeModal('meeting-details-modal');
+  openNewMeetingModal(m.meetingDate);
+
+  state.currentMeetingId = m.id;
+  document.getElementById('meeting-form-id').value = m.id;
+  document.getElementById('meeting-modal-title').textContent = 'Edit Meeting';
+  document.getElementById('btn-save-meeting').textContent = 'Save Changes';
+
+  document.getElementById('meeting-form-client').value = m.clientId || '';
+  handleMeetingClientSelectChange();
+  document.getElementById('meeting-form-project').value = m.projectId || '';
+  document.getElementById('meeting-form-title').value = m.title || '';
+  document.getElementById('meeting-form-type').value = m.type || 'discovery';
+  document.getElementById('meeting-form-date').value = m.meetingDate || '';
+  document.getElementById('meeting-form-start-time').value = m.startTime || '';
+  document.getElementById('meeting-form-end-time').value = m.endTime || '';
+  document.getElementById('meeting-form-platform').value = m.platform || 'google_meet';
+  document.getElementById('meeting-form-link').value = m.link || '';
+  document.getElementById('meeting-form-agenda').value = m.agenda || '';
+  document.getElementById('meeting-form-notes').value = m.notes || '';
+}
+
+async function deleteCurrentMeeting() {
+  if (!state.currentMeetingId) return;
+  if (!confirm('Are you sure you want to delete this meeting?')) return;
+
+  try {
+    const res = await fetch(`/api/meetings/${state.currentMeetingId}`, {
+      method: 'DELETE',
+    });
+    if (!res.ok) throw new Error('Failed to delete meeting');
+    showToast('Meeting deleted.');
+    closeModal('meeting-details-modal');
+    state.currentMeetingId = null;
+    await fetchMeetings();
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
 }

@@ -58,6 +58,29 @@ async function migrate() {
     WHERE stage = 'delivered' AND m1_amount_dzd = 0;
   `;
 
+  // Create meetings table
+  await sql`
+    CREATE TABLE IF NOT EXISTS meetings (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      title VARCHAR(200) NOT NULL,
+      client_id UUID REFERENCES clients(id) ON DELETE SET NULL,
+      project_id UUID REFERENCES projects(id) ON DELETE SET NULL,
+      lead_id UUID REFERENCES leads(id) ON DELETE SET NULL,
+      type VARCHAR(50) NOT NULL DEFAULT 'discovery',
+      meeting_date VARCHAR(20) NOT NULL,
+      start_time VARCHAR(10) NOT NULL,
+      end_time VARCHAR(10),
+      platform VARCHAR(50) DEFAULT 'google_meet',
+      link TEXT,
+      location VARCHAR(200),
+      agenda TEXT,
+      notes TEXT,
+      status VARCHAR(30) DEFAULT 'scheduled' NOT NULL,
+      created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+      updated_at TIMESTAMP DEFAULT NOW() NOT NULL
+    );
+  `;
+
   console.log('✓ Migration completed successfully!');
 }
 

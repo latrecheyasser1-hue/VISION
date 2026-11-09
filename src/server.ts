@@ -6,7 +6,7 @@ import path from 'node:path';
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import * as dotenv from 'dotenv';
-import { eq, desc, sql as dSql } from 'drizzle-orm';
+import { eq, desc, asc, sql as dSql } from 'drizzle-orm';
 import { db } from './db/client.js';
 import * as schema from './db/schema.js';
 import { uploadToR2, getR2PublicUrl } from './services/storage.js';
@@ -818,6 +818,158 @@ app.post('/api/invoices', requireAdminAuth, async (req, res) => {
 
     res.status(200).json(resultInvoice);
   } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ==========================================
+// 7. MEETINGS & SCHEDULE CALENDAR
+// ==========================================
+app.get('/api/meetings', requireAdminAuth, async (req, res) => {
+  try {
+    const list = await db
+      .select({
+        meeting: schema.meetings,
+        client: schema.clients,
+        project: schema.projects,
+        lead: schema.leads,
+      })
+      .from(schema.meetings)
+      .leftJoin(schema.clients, eq(schema.meetings.clientId, schema.clients.id))
+      .leftJoin(schema.projects, eq(schema.meetings.projectId, schema.projects.id))
+      .leftJoin(schema.leads, eq(schema.meetings.leadId, schema.leads.id))
+      .orderBy(asc(schema.meetings.meetingDate), asc(schema.meetings.startTime));
+
+    const formatted = list.map(r => ({
+      ...r.meeting,
+      client: r.client,
+      project: r.project,
+      lead: r.lead,
+    }));
+
+    res.json(formatted);
+  } catch (err: any) {
+    console.error('Fetch meetings error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/meetings', requireAdminAuth, async (req, res) => {
+  try {
+    const {
+      title,
+      clientId,
+      projectId,
+      leadId,
+      type,
+      meetingDate,
+      startTime,
+      endTime,
+      platform,
+      link,
+      location,
+      agenda,
+      notes,
+      status,
+    } = req.body;
+
+    if (!title || !meetingDate || !startTime) {
+      return res.status(400).json({ error: 'Title, meetingDate, and startTime are required.' });
+    }
+
+    const [inserted] = await db
+      .insert(schema.meetings)
+      .values({
+        title: String(title).trim(),
+        clientId: clientId || null,
+        projectId: projectId || null,
+        leadId: leadId || null,
+        type: type || 'discovery',
+        meetingDate: String(meetingDate).trim(),
+        startTime: String(startTime).trim(),
+        endTime: endTime ? String(endTime).trim() : null,
+        platform: platform || 'google_meet',
+        link: link ? String(link).trim() : null,
+        location: location ? String(location).trim() : null,
+        agenda: agenda ? String(agenda).trim() : null,
+        notes: notes ? String(notes).trim() : null,
+        status: status || 'scheduled',
+      })
+      .returning();
+
+    if (leadId) {
+      await db.update(schema.leads).set({ status: 'meeting_scheduled' }).where(eq(schema.leads.id, leadId));
+    }
+
+    broadcastEvent('meeting_created', inserted);
+    res.status(201).json(inserted);
+  } catch (err: any) {
+    console.error('Create meeting error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.patch('/api/meetings/:id', requireAdminAuth, async (req, res) => {
+  try {
+    const id = String(req.params.id);
+    const updateData: any = { updatedAt: new Date() };
+    const allowed = [
+      'title',
+      'clientId',
+      'projectId',
+      'leadId',
+      'type',
+      'meetingDate',
+      'startTime',
+      'endTime',
+      'platform',
+      'link',
+      'location',
+      'agenda',
+      'notes',
+      'status',
+    ];
+
+    for (const key of allowed) {
+      if (req.body[key] !== undefined) {
+        updateData[key] = req.body[key];
+      }
+    }
+
+    const [updated] = await db
+      .update(schema.meetings)
+      .set(updateData)
+      .where(dSql`${schema.meetings.id} = ${id}`)
+      .returning();
+
+    if (!updated) {
+      return res.status(404).json({ error: 'Meeting not found' });
+    }
+
+    broadcastEvent('meeting_updated', updated);
+    res.json(updated);
+  } catch (err: any) {
+    console.error('Update meeting error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/meetings/:id', requireAdminAuth, async (req, res) => {
+  try {
+    const id = String(req.params.id);
+    const [deleted] = await db
+      .delete(schema.meetings)
+      .where(dSql`${schema.meetings.id} = ${id}`)
+      .returning();
+
+    if (!deleted) {
+      return res.status(404).json({ error: 'Meeting not found' });
+    }
+
+    broadcastEvent('meeting_deleted', { id });
+    res.json({ success: true, id });
+  } catch (err: any) {
+    console.error('Delete meeting error:', err);
     res.status(500).json({ error: err.message });
   }
 });
