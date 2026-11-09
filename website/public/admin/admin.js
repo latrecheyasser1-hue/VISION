@@ -1667,14 +1667,32 @@ async function handleKanbanDrop(e, targetStage) {
   const currentStage = normalizeKanbanStage(p.stage);
   if (currentStage === targetStage) return;
 
-  // RULE 0: Backward movement strictly forbidden (Projects can only move forward)
+  // RULE 0: Sequential step-by-step movement only (no skipping stages, no backward movement)
   const STAGE_ORDER = ['scoping', 'devis', 'deposit_50', 'design', 'design_approved_20', 'development', 'security_qa', 'delivered'];
   const currentIdx = STAGE_ORDER.indexOf(currentStage);
   const targetIdx = STAGE_ORDER.indexOf(targetStage);
 
-  if (targetIdx !== -1 && currentIdx !== -1 && targetIdx < currentIdx) {
-    showToast('Projects cannot be moved backward to a previous stage.', 'error');
-    return;
+  const STAGE_LABELS = {
+    scoping: '1. Scoping',
+    devis: '2. Devis',
+    deposit_50: '3. Deposit (50%)',
+    design: '4. Design UI/UX',
+    design_approved_20: '5. Design Approved',
+    development: '6. Development',
+    security_qa: '7. Security & QA',
+    delivered: '8. Delivered',
+  };
+
+  if (targetIdx !== -1 && currentIdx !== -1) {
+    if (targetIdx < currentIdx) {
+      showToast('Projects cannot be moved backward to a previous stage.', 'error');
+      return;
+    }
+    if (targetIdx > currentIdx + 1) {
+      const nextStageName = STAGE_LABELS[STAGE_ORDER[currentIdx + 1]] || 'the next stage';
+      showToast(`Cannot skip stages. Next step for this project is: ${nextStageName}.`, 'error');
+      return;
+    }
   }
 
   // RULE 1: Moving from scoping to devis -> Open Quote Creator
