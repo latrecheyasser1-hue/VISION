@@ -3,6 +3,7 @@ import cors from 'cors';
 import multer from 'multer';
 import crypto from 'node:crypto';
 import path from 'node:path';
+import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import * as dotenv from 'dotenv';
 import { eq, desc, sql as dSql } from 'drizzle-orm';
@@ -15,8 +16,17 @@ dotenv.config({ path: '.env' });
 dotenv.config();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const rootDir = path.resolve(__dirname, '..');
-const websitePublicDir = path.resolve(rootDir, 'website', 'public');
+const candidatePublicDirs = [
+  path.resolve(process.cwd(), 'public'),
+  path.resolve(process.cwd(), 'website', 'public'),
+  path.resolve(__dirname, '..', 'public'),
+  path.resolve(__dirname, '..', 'dist', 'public'),
+  path.resolve(__dirname, '..', 'website', 'public'),
+  path.resolve(__dirname, 'website', 'public'),
+  path.resolve(__dirname, '..', '..', 'public'),
+  path.resolve(__dirname, '..', '..', 'website', 'public'),
+];
+const websitePublicDir = candidatePublicDirs.find(dir => existsSync(dir) && existsSync(path.resolve(dir, 'index.html'))) || path.resolve(process.cwd(), 'public');
 
 const app = express();
 const port = process.env.PORT || 4190;
@@ -761,20 +771,40 @@ app.post('/api/invoices', requireAdminAuth, async (req, res) => {
 // ==========================================
 
 // Serve public website files
-app.use(express.static(websitePublicDir));
+if (existsSync(websitePublicDir)) {
+  app.use(express.static(websitePublicDir));
+}
+
+const adminHtmlPath = path.resolve(websitePublicDir, 'admin', 'index.html');
+const indexHtmlPath = path.resolve(websitePublicDir, 'index.html');
 
 // Fallback for /admin route to serve the admin dashboard
 app.get('/admin', (req, res) => {
-  res.sendFile(path.resolve(websitePublicDir, 'admin', 'index.html'));
+  if (existsSync(adminHtmlPath)) {
+    res.sendFile(adminHtmlPath);
+  } else {
+    res.redirect('/admin/index.html');
+  }
 });
 
 app.use('/admin', (req, res) => {
-  res.sendFile(path.resolve(websitePublicDir, 'admin', 'index.html'));
+  if (existsSync(adminHtmlPath)) {
+    res.sendFile(adminHtmlPath);
+  } else {
+    res.redirect('/admin/index.html');
+  }
 });
 
-// Fallback for root and client pages
-app.use((req, res) => {
-  res.sendFile(path.resolve(websitePublicDir, 'index.html'));
+// Fallback for root and client pages (excluding /api routes)
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api')) {
+    return next();
+  }
+  if (existsSync(indexHtmlPath)) {
+    res.sendFile(indexHtmlPath);
+  } else {
+    res.status(404).send('Not Found');
+  }
 });
 
 if (!process.env.VERCEL) {
