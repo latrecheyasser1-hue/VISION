@@ -1514,7 +1514,7 @@ function renderClientsTable(clients) {
   if (!tbody) return;
 
   if (clients.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--ink-muted); padding: 32px;">No clients registered.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--ink-muted); padding: 32px;">No clients registered.</td></tr>`;
     return;
   }
 
@@ -1533,7 +1533,6 @@ function renderClientsTable(clients) {
           </div>
         ` : ''}
       </td>
-      <td><small style="color: var(--ink-muted);">${escapeHtml(c.email || '-')}</small></td>
       <td>${escapeHtml(c.industry || '-')}</td>
       <td>
         <button class="btn btn-secondary btn-sm" onclick="openNewProjectForClient('${c.id}')">+ Project</button>
@@ -2567,15 +2566,13 @@ async function handleNewClient(e) {
   const companyName = document.getElementById('client-company').value.trim();
   const contactName = document.getElementById('client-contact').value.trim();
   const phone = document.getElementById('client-phone').value.trim();
-  const wilaya = document.getElementById('client-wilaya').value.trim();
-  const email = document.getElementById('client-email').value.trim();
-  const industry = document.getElementById('client-industry').value.trim();
+  const industry = document.getElementById('client-industry')?.value?.trim() || '';
 
   try {
     const res = await fetch('/api/clients', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ companyName, contactName, phone, wilaya, email, industry }),
+      body: JSON.stringify({ companyName, contactName, phone, industry }),
     });
 
     if (!res.ok) throw new Error('Error creating client');
@@ -2655,7 +2652,7 @@ function updateClientSelects() {
   const devisSelect = document.getElementById('devis-client-select');
 
   const optionsHtml = state.clients.map(c => 
-    `<option value="${c.id}">${escapeHtml(c.companyName)} (${escapeHtml(c.contactName)} - ${escapeHtml(c.wilaya || 'DZ')})</option>`
+    `<option value="${c.id}">${escapeHtml(c.companyName)} (${escapeHtml(c.contactName)})</option>`
   ).join('');
 
   if (projSelect) {
