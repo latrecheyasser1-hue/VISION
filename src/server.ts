@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
+import crypto from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as dotenv from 'dotenv';
@@ -59,11 +60,158 @@ function broadcastEvent(type: string, data: any) {
 }
 
 // ==========================================
+// ADMIN PORTAL PIN AUTHENTICATION & RATE LIMITING
+// ==========================================
+const ADMIN_PIN = (process.env.ADMIN_PIN || '765483').trim();
+const MAX_PIN_ATTEMPTS = 5;
+const PIN_LOCKOUT_MS = 15 * 60 * 1000; // 15 minutes
+
+interface PinRateLimit {
+  attempts: number;
+  lockedUntil: number | null;
+}
+
+const pinAttemptsMap = new Map<string, PinRateLimit>();
+const validAdminTokens = new Set<string>();
+
+function getClientIp(req: express.Request): string {
+  const forwarded = req.headers['x-forwarded-for'];
+  if (typeof forwarded === 'string') {
+    return forwarded.split(',')[0].trim();
+  }
+  return req.ip || req.socket.remoteAddress || 'unknown';
+}
+
+const requireAdminAuth: express.RequestHandler = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
+  if (!token || !validAdminTokens.has(token)) {
+    return res.status(401).json({ error: 'Unauthorized: Admin authentication required.' });
+  }
+  next();
+};
+
+// Check current lock status or attempts remaining
+app.get('/api/auth/status', (req, res) => {
+  const ip = getClientIp(req);
+  const now = Date.now();
+  const state = pinAttemptsMap.get(ip) || { attempts: 0, lockedUntil: null };
+
+  if (state.lockedUntil && now < state.lockedUntil) {
+    const remainingSeconds = Math.ceil((state.lockedUntil - now) / 1000);
+    return res.json({
+      locked: true,
+      remainingSeconds,
+      attemptsLeft: 0,
+    });
+  }
+
+  // If lockout expired, reset
+  if (state.lockedUntil && now >= state.lockedUntil) {
+    pinAttemptsMap.delete(ip);
+  }
+
+  const currentAttempts = pinAttemptsMap.get(ip)?.attempts || 0;
+  return res.json({
+    locked: false,
+    remainingSeconds: 0,
+    attemptsLeft: Math.max(0, MAX_PIN_ATTEMPTS - currentAttempts),
+  });
+});
+
+// Verify PIN code with strict 5-attempt rate limiter and 15-min lockout
+app.post('/api/auth/pin', (req, res) => {
+  const ip = getClientIp(req);
+  const now = Date.now();
+  let state = pinAttemptsMap.get(ip);
+  if (!state) {
+    state = { attempts: 0, lockedUntil: null };
+    pinAttemptsMap.set(ip, state);
+  }
+
+  // 1. Check if currently locked
+  if (state.lockedUntil && now < state.lockedUntil) {
+    const remainingSeconds = Math.ceil((state.lockedUntil - now) / 1000);
+    return res.status(429).json({
+      success: false,
+      locked: true,
+      remainingSeconds,
+      message: `Too many failed attempts. Access locked for ${Math.ceil(remainingSeconds / 60)} minutes.`,
+    });
+  }
+
+  // 2. If lockout expired, reset attempts
+  if (state.lockedUntil && now >= state.lockedUntil) {
+    state.attempts = 0;
+    state.lockedUntil = null;
+  }
+
+  // 3. Verify submitted PIN
+  const { pin } = req.body || {};
+  const submittedPin = typeof pin === 'string' ? pin.trim() : String(pin || '').trim();
+
+  if (submittedPin === ADMIN_PIN) {
+    // Correct PIN: reset rate limiter for this IP
+    pinAttemptsMap.delete(ip);
+    const token = crypto.randomBytes(32).toString('hex');
+    validAdminTokens.add(token);
+
+    return res.json({
+      success: true,
+      token,
+      message: 'Authentication successful.',
+    });
+  }
+
+  // 4. Incorrect PIN: increment attempts
+  state.attempts += 1;
+  if (state.attempts >= MAX_PIN_ATTEMPTS) {
+    state.lockedUntil = now + PIN_LOCKOUT_MS;
+    pinAttemptsMap.set(ip, state);
+    return res.status(429).json({
+      success: false,
+      locked: true,
+      remainingSeconds: Math.ceil(PIN_LOCKOUT_MS / 1000),
+      message: 'Too many failed attempts. Access locked for 15 minutes.',
+    });
+  }
+
+  pinAttemptsMap.set(ip, state);
+  const attemptsLeft = MAX_PIN_ATTEMPTS - state.attempts;
+  return res.status(401).json({
+    success: false,
+    locked: false,
+    attemptsLeft,
+    message: `Invalid PIN code. ${attemptsLeft} ${attemptsLeft === 1 ? 'attempt' : 'attempts'} remaining.`,
+  });
+});
+
+// Verify existing session token on refresh
+app.post('/api/auth/verify-token', (req, res) => {
+  const authHeader = req.headers.authorization;
+  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7).trim() : req.body?.token;
+  if (token && validAdminTokens.has(token)) {
+    return res.json({ valid: true });
+  }
+  return res.status(401).json({ valid: false, message: 'Invalid or expired session token.' });
+});
+
+// Logout / Lock session
+app.post('/api/auth/logout', (req, res) => {
+  const authHeader = req.headers.authorization;
+  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7).trim() : req.body?.token;
+  if (token) {
+    validAdminTokens.delete(token);
+  }
+  return res.json({ success: true });
+});
+
+// ==========================================
 // API ROUTES
 // ==========================================
 
 // 1. Stats & KPIs Overview
-app.get('/api/stats', async (req, res) => {
+app.get('/api/stats', requireAdminAuth, async (req, res) => {
   try {
     const allProjects = await db.select().from(schema.projects);
     const allClients = await db.select().from(schema.clients);
@@ -106,7 +254,7 @@ app.get('/api/stats', async (req, res) => {
 });
 
 // 2. Clients CRUD
-app.get('/api/clients', async (req, res) => {
+app.get('/api/clients', requireAdminAuth, async (req, res) => {
   try {
     const list = await db.select().from(schema.clients).orderBy(desc(schema.clients.createdAt));
     res.json(list);
@@ -115,7 +263,7 @@ app.get('/api/clients', async (req, res) => {
   }
 });
 
-app.post('/api/clients', async (req, res) => {
+app.post('/api/clients', requireAdminAuth, async (req, res) => {
   try {
     const { companyName, contactName, phone, email, wilaya, industry, notes } = req.body;
     if (!companyName || !contactName || !phone) {
@@ -136,9 +284,9 @@ app.post('/api/clients', async (req, res) => {
   }
 });
 
-app.delete('/api/clients/:id', async (req, res) => {
+app.delete('/api/clients/:id', requireAdminAuth, async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = String(req.params.id);
     const linkedProjects = await db.select().from(schema.projects).where(eq(schema.projects.clientId, id));
     if (linkedProjects.length > 0) {
       return res.status(400).json({ error: 'Cannot delete client with existing projects.' });
@@ -157,7 +305,7 @@ app.delete('/api/clients/:id', async (req, res) => {
 });
 
 // 3. Leads Ingestion & Management
-app.get('/api/leads', async (req, res) => {
+app.get('/api/leads', requireAdminAuth, async (req, res) => {
   try {
     const list = await db.select().from(schema.leads).orderBy(desc(schema.leads.createdAt));
     res.json(list);
@@ -214,9 +362,9 @@ app.post('/api/leads', async (req, res) => {
   }
 });
 
-app.post('/api/leads/:id/convert', async (req, res) => {
+app.post('/api/leads/:id/convert', requireAdminAuth, async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = String(req.params.id);
     const [lead] = await db.select().from(schema.leads).where(eq(schema.leads.id, id));
     if (!lead) {
       return res.status(404).json({ error: 'Lead not found' });
@@ -297,9 +445,9 @@ app.post('/api/leads/:id/convert', async (req, res) => {
   }
 });
 
-app.patch('/api/leads/:id', async (req, res) => {
+app.patch('/api/leads/:id', requireAdminAuth, async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = String(req.params.id);
     const { status } = req.body;
     const [updated] = await db.update(schema.leads)
       .set({ status })
@@ -311,9 +459,9 @@ app.patch('/api/leads/:id', async (req, res) => {
   }
 });
 
-app.delete('/api/leads/:id', async (req, res) => {
+app.delete('/api/leads/:id', requireAdminAuth, async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = String(req.params.id);
     const [deleted] = await db.delete(schema.leads)
       .where(eq(schema.leads.id, id))
       .returning();
@@ -329,7 +477,7 @@ app.delete('/api/leads/:id', async (req, res) => {
 });
 
 // 4. Projects CRUD & Milestones
-app.get('/api/projects', async (req, res) => {
+app.get('/api/projects', requireAdminAuth, async (req, res) => {
   try {
     const rows = await db
       .select({
@@ -351,7 +499,7 @@ app.get('/api/projects', async (req, res) => {
   }
 });
 
-app.post('/api/projects', async (req, res) => {
+app.post('/api/projects', requireAdminAuth, async (req, res) => {
   try {
     const { clientId, title, type, priceTotalDzd, domainIncluded, hostingIncluded, notes, targetDeliveryDate } = req.body;
     if (!clientId || !title || !type) {
@@ -389,9 +537,9 @@ app.post('/api/projects', async (req, res) => {
   }
 });
 
-app.patch('/api/projects/:id', async (req, res) => {
+app.patch('/api/projects/:id', requireAdminAuth, async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = String(req.params.id);
     const updateData: any = {};
     const allowed = ['title', 'stage', 'type', 'priceTotalDzd', 'domainIncluded', 'hostingIncluded', 'repoUrl', 'stagingUrl', 'productionUrl', 'isPublicPortfolio', 'notes', 'devisStatus', 'designStatus', 'status', 'm1Paid', 'm2Paid', 'm3Paid', 'targetDeliveryDate', 'deliverablesJson', 'referencesJson'];
 
@@ -471,9 +619,9 @@ app.patch('/api/projects/:id', async (req, res) => {
 });
 
 // 5. Upload BaridiMob Receipt to Cloudflare R2
-app.post('/api/projects/:id/receipt', upload.single('receipt'), async (req, res) => {
+app.post('/api/projects/:id/receipt', requireAdminAuth, upload.single('receipt'), async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = String(req.params.id);
     const { milestone } = req.body; // 'm1', 'm2', or 'm3'
 
     if (!['m1', 'm2', 'm3'].includes(milestone)) {
@@ -536,7 +684,7 @@ app.post('/api/projects/:id/receipt', upload.single('receipt'), async (req, res)
 });
 
 // 6. Invoices & Quotes (Devis)
-app.get('/api/invoices', async (req, res) => {
+app.get('/api/invoices', requireAdminAuth, async (req, res) => {
   try {
     const list = await db.select().from(schema.invoices).orderBy(desc(schema.invoices.createdAt));
     res.json(list);
@@ -545,7 +693,7 @@ app.get('/api/invoices', async (req, res) => {
   }
 });
 
-app.post('/api/invoices', async (req, res) => {
+app.post('/api/invoices', requireAdminAuth, async (req, res) => {
   try {
     const { projectId, clientId, items, domainIncluded, hostingIncluded, notes, dueDate, targetDeliveryDate } = req.body;
 

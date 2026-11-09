@@ -112,15 +112,286 @@ const DEVIS_I18N = {
 };
 
 // ==========================================
-// INITIALIZATION
+// AUTHENTICATION INTERCEPTOR & PIN SESSION LOGIC
 // ==========================================
-document.addEventListener('DOMContentLoaded', () => {
-  initSidebar();
-  initTabs();
-  initSearch();
-  initModals();
-  renderDevisRows();
-  renderDevisLive();
+const originalFetch = window.fetch;
+window.fetch = async function(url, options = {}) {
+  const token = localStorage.getItem('vision_admin_token');
+  if (token && typeof url === 'string' && url.startsWith('/api/')) {
+    options.headers = options.headers || {};
+    if (options.headers instanceof Headers) {
+      if (!options.headers.has('Authorization')) {
+        options.headers.set('Authorization', 'Bearer ' + token);
+      }
+    } else if (Array.isArray(options.headers)) {
+      options.headers.push(['Authorization', 'Bearer ' + token]);
+    } else {
+      if (!options.headers['Authorization']) {
+        options.headers['Authorization'] = 'Bearer ' + token;
+      }
+    }
+  }
+
+  const response = await originalFetch(url, options);
+
+  // If receiving 401 Unauthorized from protected API endpoint, lock dashboard
+  if (response.status === 401 && typeof url === 'string' && url.startsWith('/api/') && !url.includes('/api/auth/')) {
+    lockAdminDashboard('Session expired or unauthorized. Please re-enter PIN.');
+  }
+
+  return response;
+};
+
+let authLockoutTimer = null;
+let hasDashboardStarted = false;
+
+async function checkAdminAuth() {
+  const gate = document.getElementById('admin-auth-gate');
+  const pinInput = document.getElementById('admin-pin-input');
+
+  // 1. Check server-side lockout status first
+  try {
+    const res = await originalFetch('/api/auth/status');
+    if (res.ok) {
+      const data = await res.json();
+      if (data.locked) {
+        showAuthGate();
+        startLockoutCountdown(data.remainingSeconds);
+        return false;
+      }
+    }
+  } catch (err) {
+    console.warn('Auth status check error:', err);
+  }
+
+  // 2. Check existing token in localStorage
+  const token = localStorage.getItem('vision_admin_token');
+  if (!token) {
+    showAuthGate();
+    return false;
+  }
+
+  // 3. Verify token with server
+  try {
+    const res = await originalFetch('/api/auth/verify-token', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (res.ok) {
+      hideAuthGate();
+      startAdminDashboard();
+      return true;
+    } else {
+      localStorage.removeItem('vision_admin_token');
+      showAuthGate();
+      return false;
+    }
+  } catch (err) {
+    console.error('Verify token error:', err);
+    showAuthGate();
+    return false;
+  }
+}
+
+function showAuthGate() {
+  const gate = document.getElementById('admin-auth-gate');
+  if (gate) {
+    gate.style.display = 'flex';
+    const pinInput = document.getElementById('admin-pin-input');
+    if (pinInput && !pinInput.disabled) {
+      setTimeout(() => pinInput.focus(), 100);
+    }
+  }
+}
+
+function hideAuthGate() {
+  const gate = document.getElementById('admin-auth-gate');
+  if (gate) {
+    gate.style.display = 'none';
+  }
+}
+
+async function handlePinSubmit(event) {
+  if (event) event.preventDefault();
+
+  const pinInput = document.getElementById('admin-pin-input');
+  const submitBtn = document.getElementById('admin-pin-submit-btn');
+  const alertBanner = document.getElementById('auth-alert-banner');
+  const alertTitle = document.getElementById('auth-alert-title');
+  const alertDetail = document.getElementById('auth-alert-detail');
+  const statusInfo = document.getElementById('auth-status-info');
+
+  if (!pinInput || !submitBtn) return;
+  const pin = (pinInput.value || '').trim();
+
+  if (!pin) {
+    showAlertBanner('PIN Required', 'Please enter your 6-digit security PIN to unlock.', '#FEF3C7', '#B45309', '#92400E');
+    pinInput.focus();
+    return;
+  }
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Verifying...';
+
+  try {
+    const res = await originalFetch('/api/auth/pin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pin })
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.success && data.token) {
+      // Success!
+      localStorage.setItem('vision_admin_token', data.token);
+      hideAuthGate();
+      pinInput.value = '';
+      if (alertBanner) alertBanner.style.display = 'none';
+      if (authLockoutTimer) {
+        clearInterval(authLockoutTimer);
+        authLockoutTimer = null;
+      }
+      showToast('Dashboard unlocked successfully.');
+      startAdminDashboard();
+      return;
+    }
+
+    if (res.status === 429 || data.locked) {
+      // 5 failed attempts reached -> 15 min lockout
+      startLockoutCountdown(data.remainingSeconds || 900);
+      return;
+    }
+
+    // 401: Invalid PIN
+    const attemptsLeft = data.attemptsLeft !== undefined ? data.attemptsLeft : 0;
+    showAlertBanner(
+      'Invalid PIN Code',
+      `${attemptsLeft} ${attemptsLeft === 1 ? 'attempt' : 'attempts'} remaining before 15-minute security lockout.`,
+      '#FEE2E2',
+      '#DC2626',
+      '#B91C1C'
+    );
+    if (statusInfo) {
+      statusInfo.textContent = `${attemptsLeft} ${attemptsLeft === 1 ? 'attempt' : 'attempts'} remaining before 15-minute security lockout.`;
+    }
+    pinInput.value = '';
+    pinInput.focus();
+  } catch (err) {
+    showAlertBanner('Connection Error', 'Unable to reach the security authentication service.', '#FEE2E2', '#DC2626', '#B91C1C');
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Unlock Dashboard';
+  }
+}
+
+function showAlertBanner(title, detail, bg, border, textColor) {
+  const alertBanner = document.getElementById('auth-alert-banner');
+  const alertTitle = document.getElementById('auth-alert-title');
+  const alertDetail = document.getElementById('auth-alert-detail');
+  if (!alertBanner || !alertTitle || !alertDetail) return;
+
+  alertBanner.style.background = bg;
+  alertBanner.style.border = `1px solid ${border}`;
+  alertBanner.style.color = textColor;
+  alertTitle.textContent = title;
+  alertDetail.textContent = detail;
+  alertBanner.style.display = 'block';
+}
+
+function startLockoutCountdown(seconds) {
+  const pinInput = document.getElementById('admin-pin-input');
+  const submitBtn = document.getElementById('admin-pin-submit-btn');
+  const statusInfo = document.getElementById('auth-status-info');
+
+  if (pinInput) {
+    pinInput.value = '';
+    pinInput.disabled = true;
+    pinInput.style.opacity = '0.5';
+    pinInput.style.cursor = 'not-allowed';
+  }
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.style.opacity = '0.5';
+    submitBtn.style.cursor = 'not-allowed';
+    submitBtn.textContent = 'Locked Out';
+  }
+
+  const endTimestamp = Date.now() + (seconds * 1000);
+  if (authLockoutTimer) clearInterval(authLockoutTimer);
+
+  function update() {
+    const now = Date.now();
+    const remainingMs = endTimestamp - now;
+    if (remainingMs <= 0) {
+      clearInterval(authLockoutTimer);
+      authLockoutTimer = null;
+      if (pinInput) {
+        pinInput.disabled = false;
+        pinInput.style.opacity = '1';
+        pinInput.style.cursor = 'text';
+      }
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = '1';
+        submitBtn.style.cursor = 'pointer';
+        submitBtn.textContent = 'Unlock Dashboard';
+      }
+      const alertBanner = document.getElementById('auth-alert-banner');
+      if (alertBanner) alertBanner.style.display = 'none';
+      if (statusInfo) {
+        statusInfo.textContent = 'Lockout expired. 5 attempts available.';
+      }
+      if (pinInput) pinInput.focus();
+      return;
+    }
+
+    const remSec = Math.ceil(remainingMs / 1000);
+    const mins = Math.floor(remSec / 60);
+    const secs = remSec % 60;
+    const timeStr = `${mins}m ${secs < 10 ? '0' : ''}${secs}s`;
+
+    showAlertBanner(
+      'Security Lockout Active',
+      `Too many failed attempts (5/5). Access locked for 15 minutes. Try again in ${timeStr}.`,
+      '#450A0A',
+      '#991B1B',
+      '#FCA5A5'
+    );
+    if (statusInfo) {
+      statusInfo.textContent = `Security lockout in effect. Wait: ${timeStr}.`;
+    }
+  }
+
+  update();
+  authLockoutTimer = setInterval(update, 1000);
+}
+
+async function lockAdminDashboard(reason) {
+  const token = localStorage.getItem('vision_admin_token');
+  if (token) {
+    try {
+      await originalFetch('/api/auth/logout', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+    } catch {}
+  }
+  localStorage.removeItem('vision_admin_token');
+  hasDashboardStarted = false;
+  showAuthGate();
+  const alertBanner = document.getElementById('auth-alert-banner');
+  if (reason) {
+    showAlertBanner('Session Locked', reason, '#FEF3C7', '#B45309', '#92400E');
+  } else if (alertBanner) {
+    alertBanner.style.display = 'none';
+  }
+  showToast(reason || 'Admin Dashboard locked.');
+}
+
+function startAdminDashboard() {
+  if (hasDashboardStarted) return;
+  hasDashboardStarted = true;
 
   fetchAllData();
   setupRealtimeEvents();
@@ -131,6 +402,20 @@ document.addEventListener('DOMContentLoaded', () => {
       switchTab(tab);
     }
   }
+}
+
+// ==========================================
+// INITIALIZATION
+// ==========================================
+document.addEventListener('DOMContentLoaded', async () => {
+  initSidebar();
+  initTabs();
+  initSearch();
+  initModals();
+  renderDevisRows();
+  renderDevisLive();
+
+  await checkAdminAuth();
 });
 
 function toggleSidebar() {

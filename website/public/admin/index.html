@@ -151,6 +151,64 @@
 </head>
 <body>
 
+<!-- ADMIN PIN AUTHENTICATION GATE (SIMPLE, NO KEYBOARD, 5 ATTEMPTS, 15-MIN LOCKOUT) -->
+<div id="admin-auth-gate" style="display: none; position: fixed; inset: 0; z-index: 999999; background: #0B0F19; align-items: center; justify-content: center; padding: 20px;">
+  <div style="width: 100%; max-width: 380px; background: #111827; border: 1px solid #1F2937; border-radius: 14px; padding: 34px 28px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); text-align: center; color: #F9FAFB;">
+    
+    <!-- Brand Header -->
+    <div style="margin-bottom: 24px;">
+      <div style="font-size: 1.6rem; font-weight: 800; letter-spacing: 0.12em; color: #FFFFFF; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">VISION</div>
+      <div style="font-size: 0.74rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #94A3B8; margin-top: 4px;">Admin Portal Access</div>
+    </div>
+
+    <!-- Alert / Lockout Banner -->
+    <div id="auth-alert-banner" style="display: none; margin-bottom: 20px; padding: 12px 14px; border-radius: 8px; font-size: 0.82rem; line-height: 1.4; text-align: left;">
+      <div id="auth-alert-title" style="font-weight: 700; margin-bottom: 2px;"></div>
+      <div id="auth-alert-detail" style="font-weight: 400;"></div>
+    </div>
+
+    <!-- PIN Form (Simple: Input + Unlock button, NO virtual keyboard) -->
+    <form id="admin-pin-form" onsubmit="handlePinSubmit(event)" style="display: flex; flex-direction: column; gap: 16px;">
+      <div>
+        <label for="admin-pin-input" style="display: block; font-size: 0.74rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #94A3B8; margin-bottom: 8px; text-align: left;">
+          Security PIN
+        </label>
+        <div style="position: relative;">
+          <input 
+            type="password" 
+            id="admin-pin-input" 
+            maxlength="6" 
+            inputmode="numeric" 
+            pattern="[0-9]*" 
+            placeholder="••••••" 
+            autocomplete="off" 
+            autofocus
+            style="width: 100%; box-sizing: border-box; text-align: center; font-size: 1.6rem; letter-spacing: 0.35em; font-family: monospace; font-weight: 700; padding: 12px 14px; background: #0B0F19; border: 1px solid #374151; border-radius: 8px; color: #F9FAFB; outline: none; transition: border-color 0.15s, box-shadow 0.15s;"
+            onfocus="this.style.borderColor='#0284C7'; this.style.boxShadow='0 0 0 2px rgba(2, 132, 199, 0.2)';"
+            onblur="this.style.borderColor='#374151'; this.style.boxShadow='none';"
+          >
+        </div>
+      </div>
+
+      <button 
+        type="submit" 
+        id="admin-pin-submit-btn" 
+        style="width: 100%; padding: 12px; background: #0284C7; color: #FFFFFF; border: none; border-radius: 8px; font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: background 0.15s; letter-spacing: 0.02em;"
+        onmouseover="if(!this.disabled) this.style.background='#0369A1';"
+        onmouseout="if(!this.disabled) this.style.background='#0284C7';"
+      >
+        Unlock Dashboard
+      </button>
+    </form>
+
+    <!-- Attempts Remaining / Status Info -->
+    <div id="auth-status-info" style="margin-top: 18px; font-size: 0.74rem; color: #64748B;">
+      5 attempts allowed before 15-minute security lockout.
+    </div>
+
+  </div>
+</div>
+
 <div class="app-container">
   
   <!-- SIDEBAR (Collapsible) -->
@@ -237,6 +295,9 @@
           <span class="user-role">Founder</span>
         </div>
       </div>
+      <button type="button" class="btn btn-secondary btn-sm" onclick="lockAdminDashboard()" style="margin-top: 10px; width: 100%; font-size: 0.75rem; padding: 5px 8px; border-color: var(--border); color: var(--ink-muted);" title="Lock Admin Dashboard">
+        Lock Dashboard
+      </button>
     </div>
   </aside>
 
@@ -1080,6 +1141,6 @@
 
 <div class="toast-container" id="toast-container"></div>
 <script src="html2pdf.bundle.min.js"></script>
-<script src="admin.js?v=33"></script>
+<script src="admin.js?v=34"></script>
 </body>
 </html>
