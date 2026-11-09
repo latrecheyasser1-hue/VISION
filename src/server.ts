@@ -775,12 +775,16 @@ app.use((req, res) => {
   res.sendFile(path.resolve(websitePublicDir, 'index.html'));
 });
 
-app.listen(port, () => {
-  console.log(`\n======================================================`);
-  console.log(`🚀 VISION Server live on: http://127.0.0.1:${port}`);
-  console.log(`🌐 Public Website:         http://127.0.0.1:${port}/`);
-  console.log(`⚡ Admin Dashboard:        http://127.0.0.1:${port}/admin`);
-  console.log(`📡 Cloudflare R2 Bucket:   vision`);
-  console.log(`🐘 Database:               Neon Serverless Postgres`);
-  console.log(`======================================================\n`);
-});
+if (!process.env.VERCEL) {
+  app.listen(port, () => {
+    console.log(`\n======================================================`);
+    console.log(`🚀 VISION Server live on: http://127.0.0.1:${port}`);
+    console.log(`🌐 Public Website:         http://127.0.0.1:${port}/`);
+    console.log(`⚡ Admin Dashboard:        http://127.0.0.1:${port}/admin`);
+    console.log(`📡 Cloudflare R2 Bucket:   vision`);
+    console.log(`🐘 Database:               Neon Serverless Postgres`);
+    console.log(`======================================================\n`);
+  });
+}
+
+export default app;
