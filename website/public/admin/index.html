@@ -1,7 +1,12 @@
 <!doctype html>
 <html lang="en" dir="ltr">
 <head>
-  <base href="/admin/">
+  <base href="/">
+  <script>
+    if (!window.location.hostname.startsWith('admin.') && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      window.location.replace('https://admin.digitalvisiondz.com/');
+    }
+  </script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>VISION - Founder Dashboard</title>
@@ -215,7 +220,7 @@
   <!-- SIDEBAR (Collapsible) -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
-      <a href="/admin" class="brand-link">
+      <a href="/" class="brand-link">
         <span>VISION</span>
       </a>
       <button class="sidebar-toggle-btn" id="sidebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar (Ctrl+B)">
@@ -1326,6 +1331,6 @@
 
 <div class="toast-container" id="toast-container"></div>
 <script src="/admin/html2pdf.bundle.min.js"></script>
-<script src="/admin/admin.js?v=97"></script>
+<script src="/admin/admin.js?v=98"></script>
 </body>
 </html>

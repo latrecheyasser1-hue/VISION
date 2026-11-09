@@ -982,6 +982,23 @@ app.delete('/api/meetings/:id', requireAdminAuth, async (req, res) => {
 // STATIC FRONTEND SERVING
 // ==========================================
 
+// Dedicated entry for admin subdomain root rewrite
+app.get('/api/admin-entry', (req, res) => {
+  const candidates = [
+    path.resolve(websitePublicDir, 'admin', 'index.html'),
+    path.resolve(__dirname, '..', 'public', 'admin', 'index.html'),
+    path.resolve(process.cwd(), 'public', 'admin', 'index.html'),
+    path.resolve(process.cwd(), 'website', 'public', 'admin', 'index.html'),
+  ];
+  for (const p of candidates) {
+    if (existsSync(p)) {
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      return res.sendFile(p);
+    }
+  }
+  res.status(404).send('Admin dashboard HTML not found');
+});
+
 // Serve public website files
 if (existsSync(websitePublicDir)) {
   app.use(express.static(websitePublicDir));
@@ -990,8 +1007,12 @@ if (existsSync(websitePublicDir)) {
 const adminHtmlPath = path.resolve(websitePublicDir, 'admin', 'index.html');
 const indexHtmlPath = path.resolve(websitePublicDir, 'index.html');
 
-// Fallback for /admin route to serve the admin dashboard
+// Fallback for /admin route to redirect to admin subdomain in production
 app.get('/admin', (req, res) => {
+  const host = req.headers.host || '';
+  if (host.includes('digitalvisiondz.com') && !host.startsWith('admin.')) {
+    return res.redirect(301, 'https://admin.digitalvisiondz.com');
+  }
   if (existsSync(adminHtmlPath)) {
     res.sendFile(adminHtmlPath);
   } else {
@@ -1000,6 +1021,10 @@ app.get('/admin', (req, res) => {
 });
 
 app.use('/admin', (req, res) => {
+  const host = req.headers.host || '';
+  if (host.includes('digitalvisiondz.com') && !host.startsWith('admin.')) {
+    return res.redirect(301, 'https://admin.digitalvisiondz.com');
+  }
   if (existsSync(adminHtmlPath)) {
     res.sendFile(adminHtmlPath);
   } else {
