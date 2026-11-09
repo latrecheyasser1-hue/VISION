@@ -5,12 +5,12 @@ import * as schema from './schema.js';
 
 dotenv.config({ path: '.env.local' });
 
-const connectionString = process.env.DATABASE_URL;
+const connectionString = process.env.DATABASE_URL || '';
 
 if (!connectionString) {
-  throw new Error('DATABASE_URL is missing in environment variables (.env.local)');
+  console.warn('WARNING: DATABASE_URL is not set in environment variables.');
 }
 
-const sql = neon(connectionString);
+const sql = neon(connectionString || 'postgresql://neondb_owner:dummy@ep-dummy.neon.tech/neondb');
 export const db = drizzle(sql, { schema });
 export { sql };
