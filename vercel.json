@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "cleanUrls": true,
   "redirects": [
     {
       "source": "/admin",
@@ -52,16 +51,6 @@
     },
     {
       "source": "/",
-      "has": [
-        {
-          "type": "host",
-          "value": "admin.digitalvisiondz.com"
-        }
-      ],
-      "destination": "/admin.html"
-    },
-    {
-      "source": "/index.html",
       "has": [
         {
           "type": "host",
