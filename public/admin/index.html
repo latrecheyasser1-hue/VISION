@@ -807,6 +807,20 @@
         </div>
       </div>
 
+      <!-- Dedicated Payment Receipts Gallery (BaridiMob) -->
+      <div style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div>
+            <span class="detail-label" style="font-weight: 700; color: var(--ink); text-transform: uppercase; font-size: 0.78rem;">Payment Receipts (BaridiMob)</span>
+            <div id="pd-receipts-counter" style="font-size: 0.78rem; color: var(--ink-muted); margin-top: 2px;">Verified transaction proofs stored in Cloudflare R2</div>
+          </div>
+        </div>
+        <div id="pd-receipts-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px;">
+          <!-- Dynamically populated receipts for M1, M2, M3 -->
+        </div>
+        <div id="pd-receipts-invoice-doc" style="margin-top: 10px;"></div>
+      </div>
+
       <!-- Technical Scope & Deliverable Notes -->
       <div class="form-group">
         <span class="detail-label">Scope Description & Deliverable Notes</span>
@@ -1141,6 +1155,6 @@
 
 <div class="toast-container" id="toast-container"></div>
 <script src="/admin/html2pdf.bundle.min.js"></script>
-<script src="/admin/admin.js?v=70"></script>
+<script src="/admin/admin.js?v=80"></script>
 </body>
 </html>

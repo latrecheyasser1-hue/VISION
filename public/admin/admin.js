@@ -800,6 +800,9 @@ function openProjectDetailsModal(projectId) {
     }
   }
 
+  // Visual Payment Receipts Gallery (BaridiMob)
+  renderProjectReceipts(p);
+
   // Project References
   const refTitleEl = document.getElementById('pd-new-ref-title');
   const refUrlEl = document.getElementById('pd-new-ref-url');
@@ -828,6 +831,140 @@ function openProjectDetailsModal(projectId) {
   }
 
   openModal('project-details-modal');
+}
+
+// ==========================================
+// PROJECT PAYMENT RECEIPTS (BARIDIMOB)
+// ==========================================
+function renderProjectReceipts(p) {
+  const container = document.getElementById('pd-receipts-grid');
+  const counterEl = document.getElementById('pd-receipts-counter');
+  const invoiceDocEl = document.getElementById('pd-receipts-invoice-doc');
+  if (!container) return;
+
+  const total = Number(p.priceTotalDzd) || 0;
+  const m1Amt = Number(p.m1AmountDzd) || Math.round(total * 0.5);
+  const m2Amt = Number(p.m2AmountDzd) || Math.round(total * 0.2);
+  const m3Amt = Number(p.m3AmountDzd) || (total - m1Amt - m2Amt);
+
+  const milestones = [
+    {
+      key: 'm1',
+      title: 'M1 - 50% Deposit',
+      amount: m1Amt,
+      paid: !!p.m1Paid,
+      receiptUrl: p.m1ReceiptUrl,
+      paidAt: p.m1PaidAt,
+    },
+    {
+      key: 'm2',
+      title: 'M2 - 20% Design',
+      amount: m2Amt,
+      paid: !!p.m2Paid,
+      receiptUrl: p.m2ReceiptUrl,
+      paidAt: p.m2PaidAt,
+    },
+    {
+      key: 'm3',
+      title: 'M3 - 30% Delivery',
+      amount: m3Amt,
+      paid: !!p.m3Paid,
+      receiptUrl: p.m3ReceiptUrl,
+      paidAt: p.m3PaidAt,
+    },
+  ];
+
+  const uploadedCount = milestones.filter(m => !!m.receiptUrl).length;
+  const paidCount = milestones.filter(m => m.paid).length;
+
+  if (counterEl) {
+    counterEl.textContent = `${uploadedCount} of 3 receipts attached (${paidCount} of 3 milestones verified)`;
+  }
+
+  container.innerHTML = milestones.map(m => {
+    if (m.receiptUrl) {
+      return `
+        <div style="background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 700; font-size: 0.8rem; color: var(--ink);">${escapeHtml(m.title)}</span>
+            <span class="badge badge-green">Verified</span>
+          </div>
+          <div style="font-size: 1rem; font-weight: 800; color: var(--ink);">${formatDzd(m.amount)} DZD</div>
+          <div style="position: relative; width: 100%; height: 130px; background: #0F172A; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border); cursor: pointer;" onclick="viewReceipt('${escapeHtml(p.title)} - ${escapeHtml(m.title)}', '${m.receiptUrl}')">
+            <img src="${m.receiptUrl}" alt="${escapeHtml(m.title)}" style="width: 100%; height: 100%; object-fit: cover;">
+            <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.75)); padding: 6px 8px; display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: #fff; font-size: 0.70rem; font-weight: 600;">Click to view full</span>
+              <span style="color: #6EE7B7; font-size: 0.68rem; font-weight: 700;">BaridiMob</span>
+            </div>
+          </div>
+          <div style="font-size: 0.72rem; color: var(--ink-muted);">
+            ${m.paidAt ? 'Paid: ' + formatFullDateTime(m.paidAt) : 'Verified via BaridiMob'}
+          </div>
+          <div style="display: flex; gap: 6px; margin-top: 4px;">
+            <button type="button" class="btn btn-secondary btn-sm" style="flex: 1; padding: 4px 8px; font-size: 0.74rem;" onclick="viewReceipt('${escapeHtml(p.title)} - ${escapeHtml(m.title)}', '${m.receiptUrl}')">View Full</button>
+            <button type="button" class="btn btn-secondary btn-sm" style="flex: 1; padding: 4px 8px; font-size: 0.74rem;" onclick="openUploadReceiptModal('${p.id}', '${escapeHtml(p.title)}', '${m.key}')">Replace</button>
+          </div>
+        </div>
+      `;
+    } else if (m.paid) {
+      return `
+        <div style="background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 700; font-size: 0.8rem; color: var(--ink);">${escapeHtml(m.title)}</span>
+            <span class="badge badge-green">Paid</span>
+          </div>
+          <div style="font-size: 1rem; font-weight: 800; color: var(--ink);">${formatDzd(m.amount)} DZD</div>
+          <div style="height: 130px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #ECFDF5; border: 1px dashed #10B981; border-radius: var(--radius-sm); text-align: center; padding: 12px;">
+            <div style="font-size: 0.82rem; font-weight: 700; color: #065F46;">Payment Confirmed</div>
+            <div style="font-size: 0.72rem; color: #047857; margin-top: 4px;">No screenshot attached</div>
+          </div>
+          <div style="font-size: 0.72rem; color: var(--ink-muted);">
+            ${m.paidAt ? 'Paid: ' + formatFullDateTime(m.paidAt) : 'Direct payment verified'}
+          </div>
+          <div style="margin-top: 4px;">
+            <button type="button" class="btn btn-secondary btn-sm" style="width: 100%; padding: 4px 8px; font-size: 0.74rem;" onclick="openUploadReceiptModal('${p.id}', '${escapeHtml(p.title)}', '${m.key}')">Attach Receipt</button>
+          </div>
+        </div>
+      `;
+    } else {
+      return `
+        <div style="background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 700; font-size: 0.8rem; color: var(--ink);">${escapeHtml(m.title)}</span>
+            <span class="badge badge-yellow">Pending</span>
+          </div>
+          <div style="font-size: 1rem; font-weight: 800; color: var(--ink);">${formatDzd(m.amount)} DZD</div>
+          <div style="height: 130px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #F9FAFB; border: 1px dashed var(--border); border-radius: var(--radius-sm); text-align: center; padding: 12px;">
+            <div style="font-size: 0.80rem; font-weight: 600; color: var(--ink-muted);">Awaiting Payment</div>
+            <div style="font-size: 0.70rem; color: var(--ink-muted); margin-top: 4px;">No BaridiMob receipt yet</div>
+          </div>
+          <div style="font-size: 0.72rem; color: var(--ink-muted);">
+            Pending client transfer
+          </div>
+          <div style="margin-top: 4px;">
+            <button type="button" class="btn btn-primary btn-sm" style="width: 100%; padding: 4px 8px; font-size: 0.74rem;" onclick="openUploadReceiptModal('${p.id}', '${escapeHtml(p.title)}', '${m.key}')">Upload Receipt</button>
+          </div>
+        </div>
+      `;
+    }
+  }).join('');
+
+  if (invoiceDocEl) {
+    const linkedInvoice = (state.invoices || []).find(inv => inv.projectId === p.id);
+    if (linkedInvoice && linkedInvoice.pdfUrl) {
+      invoiceDocEl.innerHTML = `
+        <div style="padding: 10px 14px; background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius-sm); display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <span style="font-weight: 700; font-size: 0.80rem; color: var(--ink);">Official Quote / Devis: ${escapeHtml(linkedInvoice.invoiceNumber || 'VISION-QUOTE')}</span>
+            <div style="font-size: 0.72rem; color: var(--ink-muted); margin-top: 2px;">Stored in Cloudflare R2</div>
+          </div>
+          <a href="${linkedInvoice.pdfUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm" style="padding: 4px 10px; font-size: 0.74rem;">Open PDF</a>
+        </div>
+      `;
+    } else {
+      invoiceDocEl.innerHTML = '';
+    }
+  }
 }
 
 // ==========================================
@@ -3032,6 +3169,12 @@ async function handleReceiptUpload(e) {
     await fetchProjects();
     await fetchStats();
     await fetchInvoices();
+    if (currentDetailsProjectId && document.getElementById('project-details-modal')?.classList.contains('active')) {
+      const refreshedProject = state.projects.find(x => x.id === currentDetailsProjectId);
+      if (refreshedProject) {
+        renderProjectReceipts(refreshedProject);
+      }
+    }
   } catch (err) {
     showToast(err.message, 'error');
   } finally {
