@@ -187,26 +187,7 @@ app.post('/api/leads', async (req, res) => {
       return cDigits === phoneDigits || (cDigits.length >= 8 && phoneDigits.endsWith(cDigits.slice(-8))) || (phoneDigits.length >= 8 && cDigits.endsWith(phoneDigits.slice(-8)));
     });
 
-    let linkedClientId: string | null = null;
-    let clientCreated = false;
-
-    if (existingClient) {
-      linkedClientId = existingClient.id;
-    } else {
-      // First-time contact: Automatically register as client
-      const [newClient] = await db.insert(schema.clients).values({
-        companyName: cleanName,
-        contactName: cleanName,
-        phone: cleanPhone,
-        industry: cleanActivity,
-        wilaya: 'Algeria',
-        status: 'active',
-        notes: `Registered via website brief: ${finalProblem.slice(0, 150)}`
-      }).returning();
-
-      linkedClientId = newClient.id;
-      clientCreated = true;
-    }
+    const linkedClientId: string | null = existingClient ? existingClient.id : null;
 
     const [inserted] = await db.insert(schema.leads).values({
       name: cleanName,
@@ -223,17 +204,94 @@ app.post('/api/leads', async (req, res) => {
     // Broadcast in real-time to all open admin dashboards via SSE
     broadcastEvent('new_lead', {
       lead: inserted,
-      clientCreated,
       clientId: linkedClientId,
     });
 
-    res.status(201).json({
-      ...inserted,
-      clientCreated,
-      clientId: linkedClientId,
-    });
+    res.status(201).json(inserted);
   } catch (err: any) {
     console.error('Lead submission error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/leads/:id/convert', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const [lead] = await db.select().from(schema.leads).where(eq(schema.leads.id, id));
+    if (!lead) {
+      return res.status(404).json({ error: 'Lead not found' });
+    }
+
+    // 1. Check or register Client
+    const phoneDigits = (lead.phone || '').replace(/[^\d]/g, '');
+    const allClients = await db.select().from(schema.clients);
+    let client = allClients.find(c => {
+      if (!c.phone) return false;
+      const cDigits = c.phone.replace(/[^\d]/g, '');
+      return cDigits === phoneDigits || (cDigits.length >= 8 && phoneDigits.endsWith(cDigits.slice(-8))) || (phoneDigits.length >= 8 && cDigits.endsWith(phoneDigits.slice(-8)));
+    });
+
+    if (!client) {
+      const [newClient] = await db.insert(schema.clients).values({
+        companyName: lead.name,
+        contactName: lead.name,
+        phone: lead.phone || '',
+        industry: lead.activity || '',
+        wilaya: 'Algeria',
+        status: 'active',
+        notes: lead.problemDescription || '',
+      }).returning();
+      client = newClient;
+    }
+
+    // 2. Determine project type from activity
+    const actLower = (lead.activity || '').toLowerCase();
+    let projectType = 'web_app';
+    if (/boutique|magasin|vetement|commerce|shop|store|vente/i.test(actLower)) {
+      projectType = 'ecommerce';
+    }
+
+    // 3. Create Project in SCOPING stage with lead info
+    const projectTitle = `${lead.name} — ${lead.activity}`;
+    const [project] = await db.insert(schema.projects).values({
+      clientId: client.id,
+      title: projectTitle,
+      type: projectType,
+      stage: 'scoping',
+      priceTotalDzd: '0',
+      domainIncluded: false,
+      hostingIncluded: false,
+      m1AmountDzd: '0',
+      m1Paid: false,
+      m2AmountDzd: '0',
+      m2Paid: false,
+      m3AmountDzd: '0',
+      m3Paid: false,
+      notes: lead.problemDescription || '',
+      deliverablesJson: [],
+    }).returning();
+
+    // 4. Update Lead to converted
+    const [updatedLead] = await db.update(schema.leads).set({
+      status: 'converted',
+      clientId: client.id,
+    }).where(eq(schema.leads.id, id)).returning();
+
+    // 5. Broadcast real-time SSE event
+    broadcastEvent('lead_converted', {
+      leadId: id,
+      client,
+      project,
+    });
+
+    res.json({
+      success: true,
+      client,
+      project,
+      lead: updatedLead,
+    });
+  } catch (err: any) {
+    console.error('Lead conversion error:', err);
     res.status(500).json({ error: err.message });
   }
 });

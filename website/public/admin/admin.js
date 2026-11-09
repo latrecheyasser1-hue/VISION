@@ -1592,9 +1592,13 @@ function renderLeadsTable(leads) {
         <td><small style="color: var(--ink-muted);">${dateStr}</small></td>
         <td>
           <div style="display: flex; gap: 6px; align-items: center;">
-            <button class="btn btn-secondary btn-sm" onclick="convertLeadToClient('${escapeHtml(l.name)}', '${escapeHtml(l.phone || '')}', '${escapeHtml(l.activity || '')}')">
-              Convert to Client
-            </button>
+            ${l.status === 'converted' ? `
+              <span class="badge badge-green" style="font-size: 0.72rem; padding: 4px 8px;">Converted</span>
+            ` : `
+              <button class="btn btn-primary btn-sm" onclick="convertLeadToClient('${l.id}')">
+                Convert to Client
+              </button>
+            `}
             <button class="btn btn-sm" style="background: transparent; color: #dc2626; border: 1px solid #fecaca; font-weight: 500;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='transparent'" onclick="deleteLead('${l.id}', '${escapeHtml(l.name)}')">
               Delete
             </button>
@@ -2677,12 +2681,23 @@ function openNewProjectForClient(clientId) {
   if (select) select.value = clientId;
 }
 
-function convertLeadToClient(name, phone, activity) {
-  openModal('new-client-modal');
-  document.getElementById('client-company').value = name;
-  document.getElementById('client-contact').value = name;
-  document.getElementById('client-phone').value = phone;
-  document.getElementById('client-industry').value = activity;
+async function convertLeadToClient(leadId) {
+  try {
+    const res = await fetch(`/api/leads/${leadId}/convert`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to convert lead');
+
+    showToast(`Lead converted! Client registered and project created in Scoping.`);
+    await fetchLeads();
+    await fetchClients();
+    await fetchProjects();
+    await fetchStats();
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
 }
 
 function updateClientSelects() {
@@ -2825,6 +2840,13 @@ function setupRealtimeEvents() {
 
     es.addEventListener('client_deleted', (e) => {
       fetchClients();
+      fetchStats();
+    });
+
+    es.addEventListener('lead_converted', (e) => {
+      fetchLeads();
+      fetchClients();
+      fetchProjects();
       fetchStats();
     });
 
