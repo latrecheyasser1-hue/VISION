@@ -1534,10 +1534,32 @@ function renderClientsTable(clients) {
       </td>
       <td>${escapeHtml(c.industry || '-')}</td>
       <td>
-        <button class="btn btn-secondary btn-sm" onclick="openNewProjectForClient('${c.id}')">+ Project</button>
+        <div style="display: flex; gap: 6px; align-items: center;">
+          <button class="btn btn-secondary btn-sm" onclick="openNewProjectForClient('${c.id}')">+ Project</button>
+          <button class="btn btn-sm" style="background: transparent; color: #dc2626; border: 1px solid #fecaca; font-weight: 500;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='transparent'" onclick="deleteClient('${c.id}', '${escapeHtml(c.companyName)}')">
+            Delete
+          </button>
+        </div>
       </td>
     </tr>
   `).join('');
+}
+
+async function deleteClient(id, name) {
+  if (!confirm(`Are you sure you want to delete client "${name}"?`)) return;
+
+  try {
+    const res = await fetch(`/api/clients/${id}`, {
+      method: 'DELETE',
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to delete client');
+    showToast(`Client "${name}" deleted.`);
+    await fetchClients();
+    await fetchStats();
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
 }
 
 // 4. Leads Table
@@ -2798,6 +2820,11 @@ function setupRealtimeEvents() {
 
     es.addEventListener('lead_deleted', (e) => {
       fetchLeads();
+      fetchStats();
+    });
+
+    es.addEventListener('client_deleted', (e) => {
+      fetchClients();
       fetchStats();
     });
 

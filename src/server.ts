@@ -136,6 +136,26 @@ app.post('/api/clients', async (req, res) => {
   }
 });
 
+app.delete('/api/clients/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const linkedProjects = await db.select().from(schema.projects).where(eq(schema.projects.clientId, id));
+    if (linkedProjects.length > 0) {
+      return res.status(400).json({ error: 'Cannot delete client with existing projects.' });
+    }
+    await db.update(schema.leads).set({ clientId: null }).where(eq(schema.leads.clientId, id));
+    const [deleted] = await db.delete(schema.clients).where(eq(schema.clients.id, id)).returning();
+    if (!deleted) {
+      return res.status(404).json({ error: 'Client not found' });
+    }
+    broadcastEvent('client_deleted', { id });
+    res.json({ success: true, deleted });
+  } catch (err: any) {
+    console.error('Delete client error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // 3. Leads Ingestion & Management
 app.get('/api/leads', async (req, res) => {
   try {
