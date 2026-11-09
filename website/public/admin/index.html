@@ -291,6 +291,14 @@
         <span class="nav-text">Meetings</span>
         <span class="badge" id="nav-meetings-count" style="display: none; background: #00BCEB; color: #fff;">0</span>
       </button>
+
+      <button class="nav-item" data-tab="expenses" title="Expenses">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="1" x2="12" y2="23"></line>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+        </svg>
+        <span class="nav-text">Expenses</span>
+      </button>
     </nav>
 
     <!-- Sidebar Footer -->
@@ -343,6 +351,12 @@
             <span class="stat-label">Active Projects</span>
             <div class="stat-value" style="color: var(--cyan-dark);"><span id="stat-active-projects">0</span></div>
             <span class="stat-desc">In progress</span>
+          </div>
+
+          <div class="stat-card accent-purple">
+            <span class="stat-label">Live Net Worth</span>
+            <div class="stat-value" style="color: #6366F1;"><span id="stat-networth">67,000</span><span class="stat-currency">DZD</span></div>
+            <span class="stat-desc">Real-time available cash</span>
           </div>
         </div>
 
@@ -578,6 +592,156 @@
         <div id="meetings-list-view" style="display: none;">
           <div id="agenda-groups-container">
             <!-- Dynamically grouped meetings -->
+          </div>
+        </div>
+
+      </section>
+
+      <!-- TAB 7: EXPENSES & CASH FLOW (IMMUTABLE BUSINESS LEDGER) -->
+      <section id="tab-expenses" class="tab-section">
+        
+        <!-- Header & Quick Financial Overview -->
+        <div class="card" style="margin-bottom: 24px;">
+          <div class="card-header" style="flex-wrap: wrap; gap: 14px;">
+            <div>
+              <div class="card-title" style="font-size: 1.15rem; font-weight: 800; color: var(--ink);">
+                Expenses & Cash Flow
+              </div>
+              <p style="font-size: 0.8rem; color: var(--ink-muted); margin-top: 2px;">
+                Permanent ledger for operational expenditures and real-time net worth tracking.
+              </p>
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <!-- Simple Time Filter -->
+              <div style="display: flex; align-items: center; gap: 6px; background: var(--paper); padding: 4px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+                <button type="button" class="btn btn-sm btn-filter active" id="filter-exp-all" onclick="setExpenseFilter('all')">All Time</button>
+                <button type="button" class="btn btn-sm btn-filter" id="filter-exp-7d" onclick="setExpenseFilter('7d')">Last 7 Days</button>
+                <button type="button" class="btn btn-sm btn-filter" id="filter-exp-30d" onclick="setExpenseFilter('30d')">Last 30 Days</button>
+                <button type="button" class="btn btn-sm btn-filter" id="filter-exp-60d" onclick="setExpenseFilter('60d')">Last 60 Days</button>
+              </div>
+
+              <!-- Export Excel Button -->
+              <button type="button" class="btn btn-secondary btn-sm" onclick="exportExpensesToExcel()" style="font-weight: 700; padding: 7px 14px;" title="Export structured Excel sheet">
+                Export Excel
+              </button>
+
+              <!-- Record Expense Button -->
+              <button type="button" class="btn btn-primary btn-sm" onclick="toggleExpenseForm()" style="font-weight: 700; padding: 7px 16px;">
+                + Record Expense
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Net Worth vs Expenses Bar -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; padding: 18px 24px; background: var(--paper); border-top: 1px solid var(--border);">
+            <div>
+              <span class="stat-label">Current Live Net Worth</span>
+              <div style="font-size: 1.45rem; font-weight: 800; color: #6366F1; margin-top: 4px;">
+                <span id="exp-networth-display">67,000</span> <span style="font-size: 0.85rem; font-weight: 600;">DZD</span>
+              </div>
+              <small style="color: var(--ink-muted); font-size: 0.75rem;">Base cash + collected deposits - expenses</small>
+            </div>
+
+            <div>
+              <span class="stat-label">Total Recorded Expenses</span>
+              <div style="font-size: 1.45rem; font-weight: 800; color: #DC2626; margin-top: 4px;">
+                <span id="exp-total-display">0</span> <span style="font-size: 0.85rem; font-weight: 600;">DZD</span>
+              </div>
+              <small style="color: var(--ink-muted); font-size: 0.75rem;">All-time cumulative business spending</small>
+            </div>
+
+            <div>
+              <span class="stat-label">Filtered Period Spending</span>
+              <div style="font-size: 1.45rem; font-weight: 800; color: #D97706; margin-top: 4px;">
+                <span id="exp-filtered-display">0</span> <span style="font-size: 0.85rem; font-weight: 600;">DZD</span>
+              </div>
+              <small id="exp-filter-label" style="color: var(--ink-muted); font-size: 0.75rem;">Showing all records</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add Expense Inline Drawer / Form (Clean, simple, no clutter) -->
+        <div id="expense-form-container" class="card" style="display: none; margin-bottom: 24px; border-left: 4px solid #6366F1;">
+          <div class="card-header">
+            <div>
+              <div class="card-title" style="font-size: 1rem; font-weight: 700;">Record New Expense</div>
+              <p style="font-size: 0.78rem; color: #DC2626; margin-top: 2px; font-weight: 600;">
+                Notice: Expenses are permanent and cannot be modified or deleted after saving.
+              </p>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="toggleExpenseForm()">Close</button>
+          </div>
+          <div style="padding: 20px 24px;">
+            <form id="record-expense-form" onsubmit="handleRecordExpense(event); return false;">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 0.8rem; font-weight: 700;">Item / Description</label>
+                  <input type="text" id="expense-title" placeholder="Ex: Cloud hosting renewal, Domain name, Equipment..." required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.85rem;">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 0.8rem; font-weight: 700;">Amount (DZD)</label>
+                  <input type="number" id="expense-amount" placeholder="Ex: 5000" min="1" step="1" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.85rem;">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 0.8rem; font-weight: 700;">Category</label>
+                  <select id="expense-category" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.85rem;">
+                    <option value="cloud_hosting">Cloud, Hosting & Domains</option>
+                    <option value="software_tools">Software, APIs & Tools</option>
+                    <option value="hardware_gear">Hardware & Equipment</option>
+                    <option value="marketing_ads">Marketing & Advertising</option>
+                    <option value="office_workspace">Office & Workspace</option>
+                    <option value="general">General Operations</option>
+                  </select>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 0.8rem; font-weight: 700;">Date</label>
+                  <input type="date" id="expense-date" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.85rem;">
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-top: 14px; margin-bottom: 16px;">
+                <label style="font-size: 0.8rem; font-weight: 700;">Notes <small style="color: var(--ink-muted); font-weight: normal;">(Optional)</small></label>
+                <input type="text" id="expense-notes" placeholder="Optional details or receipt reference..." style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.85rem;">
+              </div>
+
+              <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="toggleExpenseForm()">Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm" style="font-weight: 700; background: #6366F1; border-color: #6366F1; padding: 8px 20px;">
+                  Save Permanent Expense
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Expenses Table -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <span>Expenses History</span>
+            </div>
+            <span id="expenses-count-badge" class="badge badge-gray">0 records</span>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 130px;">Date</th>
+                  <th>Description</th>
+                  <th style="width: 180px;">Category</th>
+                  <th style="text-align: right; width: 150px;">Amount</th>
+                  <th style="text-align: right; width: 160px;">Net Worth Impact</th>
+                </tr>
+              </thead>
+              <tbody id="expenses-tbody">
+                <tr><td colspan="5" style="text-align: center; color: var(--ink-muted); padding: 30px;">Loading expenses...</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
@@ -1331,6 +1495,6 @@
 
 <div class="toast-container" id="toast-container"></div>
 <script src="/html2pdf.bundle.min.js"></script>
-<script src="/admin.js?v=105"></script>
+<script src="/admin.js?v=106"></script>
 </body>
 </html>

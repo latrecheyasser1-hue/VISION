@@ -481,6 +481,7 @@ function showToast(message, type = 'success') {
 // ==========================================
 const TAB_TITLES = {
   overview: { title: "Overview", sub: "Projects pipeline and payment milestones" },
+  expenses: { title: "Expenses & Cash Flow", sub: "Permanent ledger for operational expenditures and real-time net worth" },
   projects: { title: "Projects", sub: "Development progress and milestones tracking" },
   clients: { title: "Clients", sub: "Client directory and project history" },
   leads: { title: "Leads", sub: "Incoming project inquiries from website" },
@@ -539,6 +540,10 @@ function switchTab(tabId) {
     renderMeetingsView();
     fetchMeetings();
   }
+
+  if (tabId === 'expenses') {
+    fetchExpenses();
+  }
 }
 
 // ==========================================
@@ -555,6 +560,19 @@ async function fetchStats() {
     document.getElementById('stat-collected').textContent = formatDzd(data.totalCollectedDzd);
     document.getElementById('stat-pending').textContent = formatDzd(data.totalPendingDzd);
     document.getElementById('stat-active-projects').textContent = data.activeProjectsCount;
+
+    const netWorthEl = document.getElementById('stat-networth');
+    if (netWorthEl) {
+      netWorthEl.textContent = formatDzd(data.liveNetWorthDzd !== undefined ? data.liveNetWorthDzd : 67000);
+    }
+    const expNetWorthEl = document.getElementById('exp-networth-display');
+    if (expNetWorthEl) {
+      expNetWorthEl.textContent = formatDzd(data.liveNetWorthDzd !== undefined ? data.liveNetWorthDzd : 67000);
+    }
+    const expTotalEl = document.getElementById('exp-total-display');
+    if (expTotalEl) {
+      expTotalEl.textContent = formatDzd(data.totalExpensesDzd || 0);
+    }
     const navProjBadge = document.getElementById('nav-projects-count');
     if (navProjBadge && data.activeProjectsCount !== undefined) {
       navProjBadge.textContent = data.activeProjectsCount;
@@ -3099,7 +3117,7 @@ function renderModalDevisItems() {
       </div>
       <button type="button" class="btn btn-secondary btn-sm" 
               style="padding: 4px 8px; color: #DC2626; border-color: var(--border);" 
-              onclick="removeModalDevisItemRow(${idx})">✕</button>
+              onclick="removeModalDevisItemRow(${idx})">&times;</button>
     </div>
   `).join('');
 }
@@ -3574,6 +3592,13 @@ function setupRealtimeEvents() {
 
     es.addEventListener('meeting_deleted', (e) => {
       fetchMeetings();
+    });
+
+    es.addEventListener('new_expense', (e) => {
+      fetchStats();
+      if (state.activeTab === 'expenses') {
+        fetchExpenses();
+      }
     });
 
     es.onerror = () => {
@@ -4284,4 +4309,274 @@ async function deleteCurrentMeeting() {
   } catch (err) {
     showToast(err.message, 'error');
   }
+}
+
+
+// ==========================================
+// EXPENSES & CASH FLOW MODULE (IMMUTABLE)
+// ==========================================
+state.expenses = [];
+state.expenseFilter = 'all';
+
+function setExpenseFilter(period) {
+  state.expenseFilter = period;
+  fetchExpenses(period);
+}
+
+function toggleExpenseForm() {
+  const container = document.getElementById('expense-form-container');
+  if (!container) return;
+  const isHidden = container.style.display === 'none' || !container.style.display;
+  container.style.display = isHidden ? 'block' : 'none';
+  if (isHidden) {
+    const today = new Date().toISOString().split('T')[0];
+    const dateInput = document.getElementById('expense-date');
+    if (dateInput) dateInput.value = today;
+    const titleInput = document.getElementById('expense-title');
+    if (titleInput) {
+      titleInput.value = '';
+      titleInput.focus();
+    }
+    const amtInput = document.getElementById('expense-amount');
+    if (amtInput) amtInput.value = '';
+    const notesInput = document.getElementById('expense-notes');
+    if (notesInput) notesInput.value = '';
+  }
+}
+
+async function fetchExpenses(period = state.expenseFilter) {
+  state.expenseFilter = period;
+
+  ['all', '7d', '30d', '60d'].forEach(p => {
+    const btn = document.getElementById(`filter-exp-${p}`);
+    if (btn) {
+      if (p === period) {
+        btn.classList.add('active');
+        btn.style.background = '#6366F1';
+        btn.style.color = '#fff';
+      } else {
+        btn.classList.remove('active');
+        btn.style.background = 'transparent';
+        btn.style.color = 'var(--ink-muted)';
+      }
+    }
+  });
+
+  const filterLabels = {
+    all: 'Showing all historical records',
+    '7d': 'Showing expenses from last 7 days',
+    '30d': 'Showing expenses from last 30 days',
+    '60d': 'Showing expenses from last 60 days',
+  };
+  const labelEl = document.getElementById('exp-filter-label');
+  if (labelEl) labelEl.textContent = filterLabels[period] || 'Filtered records';
+
+  const tbody = document.getElementById('expenses-tbody');
+
+  try {
+    const res = await fetch(`/api/expenses?period=${encodeURIComponent(period)}`);
+    if (!res.ok) throw new Error('Failed to fetch expenses');
+    const data = await res.json();
+    state.expenses = data;
+
+    renderExpensesTable(data);
+  } catch (err) {
+    console.error('Expenses error:', err);
+    if (tbody) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #DC2626; padding: 20px;">Error loading expenses: ${escapeHtml(err.message)}</td></tr>`;
+    }
+  }
+}
+
+function renderExpensesTable(list) {
+  const tbody = document.getElementById('expenses-tbody');
+  if (!tbody) return;
+
+  const countBadge = document.getElementById('expenses-count-badge');
+  if (countBadge) {
+    countBadge.textContent = `${list.length} ${list.length === 1 ? 'record' : 'records'}`;
+  }
+
+  const periodSum = list.reduce((acc, item) => acc + (Number(item.amountDzd) || 0), 0);
+  const filteredEl = document.getElementById('exp-filtered-display');
+  if (filteredEl) filteredEl.textContent = formatDzd(periodSum);
+
+  if (!list || list.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" style="text-align: center; padding: 40px 20px; color: var(--ink-muted);">
+          <div style="font-size: 0.95rem; font-weight: 700; color: var(--ink); margin-bottom: 4px;">No Expenses Logged</div>
+          <p style="font-size: 0.82rem; margin: 0;">No spending recorded for this filter period. Click "+ Record Expense" to log your first expenditure.</p>
+        </td>
+      </tr>`;
+    return;
+  }
+
+  const categoryNames = {
+    cloud_hosting: 'Cloud & Hosting',
+    software_tools: 'Software & Tools',
+    hardware_gear: 'Hardware & Gear',
+    marketing_ads: 'Marketing & Ads',
+    office_workspace: 'Office & Workspace',
+    general: 'General Operations',
+  };
+
+  const categoryBadges = {
+    cloud_hosting: 'background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE;',
+    software_tools: 'background: #ECFEFF; color: #0E7490; border: 1px solid #A5F3FC;',
+    hardware_gear: 'background: #F5F3FF; color: #6D28D9; border: 1px solid #DDD6FE;',
+    marketing_ads: 'background: #FFFBEB; color: #B45309; border: 1px solid #FDE68A;',
+    office_workspace: 'background: #ECFDF5; color: #047857; border: 1px solid #A7F3D0;',
+    general: 'background: #F3F4F6; color: #374151; border: 1px solid #E5E7EB;',
+  };
+
+  tbody.innerHTML = list.map(item => {
+    const rawDate = item.date ? new Date(item.date) : new Date(item.createdAt);
+    const dateFormatted = !isNaN(rawDate.getTime()) ? rawDate.toISOString().split('T')[0] : String(item.date || '');
+    const catLabel = categoryNames[item.category] || item.category || 'General';
+    const catStyle = categoryBadges[item.category] || categoryBadges.general;
+    const notesHtml = item.notes ? `<div style="font-size: 0.78rem; color: var(--ink-muted); margin-top: 2px;">${escapeHtml(item.notes)}</div>` : '';
+
+    return `
+      <tr>
+        <td style="font-weight: 700; color: var(--ink); white-space: nowrap;">
+          ${dateFormatted}
+        </td>
+        <td>
+          <div style="font-weight: 700; color: var(--ink); font-size: 0.92rem;">${escapeHtml(item.title)}</div>
+          ${notesHtml}
+        </td>
+        <td>
+          <span style="display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; ${catStyle}">
+            ${catLabel}
+          </span>
+        </td>
+        <td style="text-align: right; font-weight: 800; color: #DC2626; font-size: 0.95rem; white-space: nowrap;">
+          -${formatDzd(item.amountDzd)} DZD
+        </td>
+        <td style="text-align: right; font-size: 0.78rem; color: #6366F1; font-weight: 600; white-space: nowrap;">
+          Deducted from Cash
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+async function handleRecordExpense(event) {
+  if (event) event.preventDefault();
+
+  const title = (document.getElementById('expense-title')?.value || '').trim();
+  const amountDzd = Number(document.getElementById('expense-amount')?.value);
+  const category = document.getElementById('expense-category')?.value || 'general';
+  const date = document.getElementById('expense-date')?.value || new Date().toISOString().split('T')[0];
+  const notes = (document.getElementById('expense-notes')?.value || '').trim();
+
+  if (!title) {
+    showToast('Please enter an expense title / item description.', 'error');
+    return;
+  }
+  if (!amountDzd || amountDzd <= 0) {
+    showToast('Please enter a valid amount greater than 0 DZD.', 'error');
+    return;
+  }
+
+  const submitBtn = event?.target?.querySelector('button[type="submit"]');
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving...';
+  }
+
+  try {
+    const res = await fetch('/api/expenses', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        title,
+        amountDzd,
+        category,
+        date,
+        notes,
+      }),
+    });
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error || 'Failed to record expense');
+    }
+
+    const saved = await res.json();
+    showToast(`Expense recorded: ${saved.title} (-${formatDzd(saved.amountDzd)} DZD)`, 'success');
+
+    toggleExpenseForm();
+    await fetchExpenses(state.expenseFilter);
+    await fetchStats();
+  } catch (err) {
+    console.error('Record expense error:', err);
+    showToast(err.message, 'error');
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Save Permanent Expense';
+    }
+  }
+}
+
+function exportExpensesToExcel() {
+  const list = state.expenses || [];
+  if (list.length === 0) {
+    showToast('No expenses to export.', 'error');
+    return;
+  }
+
+  const today = new Date().toISOString().split('T')[0];
+  const netWorth = state.stats?.liveNetWorthDzd !== undefined ? state.stats.liveNetWorthDzd : 67000;
+  const totalExpenses = state.stats?.totalExpensesDzd || 0;
+
+  let csv = '\uFEFF';
+  csv += '"VISION DIGITAL AGENCY - EXPENSES & CASH FLOW LEDGER"\n';
+  csv += `"Report Generated","${new Date().toLocaleString('en-GB')}"\n`;
+  csv += `"Filter Period","${state.expenseFilter.toUpperCase()}"\n`;
+  csv += `"Live Net Worth (DZD)","${netWorth}"\n`;
+  csv += `"Total Historical Expenses (DZD)","${totalExpenses}"\n\n`;
+
+  csv += '"Date","Description / Item","Category","Amount (DZD)","Net Worth Impact","Notes","Recorded At"\n';
+
+  const categoryNames = {
+    cloud_hosting: 'Cloud & Hosting',
+    software_tools: 'Software & Tools',
+    hardware_gear: 'Hardware & Gear',
+    marketing_ads: 'Marketing & Ads',
+    office_workspace: 'Office & Workspace',
+    general: 'General Operations',
+  };
+
+  let totalExportedSum = 0;
+  list.forEach(item => {
+    const rawDate = item.date ? new Date(item.date) : new Date(item.createdAt);
+    const dateFormatted = !isNaN(rawDate.getTime()) ? rawDate.toISOString().split('T')[0] : String(item.date || '');
+    const titleClean = String(item.title || '').replace(/"/g, '""');
+    const catLabel = categoryNames[item.category] || item.category || 'General';
+    const amt = Number(item.amountDzd) || 0;
+    totalExportedSum += amt;
+    const notesClean = String(item.notes || '').replace(/"/g, '""');
+    const createdClean = item.createdAt ? new Date(item.createdAt).toISOString() : '';
+
+    csv += `"${dateFormatted}","${titleClean}","${catLabel}","${amt}","Deducted from Cash","${notesClean}","${createdClean}"\n`;
+  });
+
+  csv += `\n"TOTAL FILTERED EXPENSES (DZD)","","","${totalExportedSum}","","",""\n`;
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', `vision_expenses_report_${today}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+
+  showToast('Excel report downloaded successfully.', 'success');
 }

@@ -338,10 +338,25 @@ app.get('/api/stats', requireAdminAuth, async (req, res) => {
     const allProjects = await db.select().from(schema.projects);
     const allClients = await db.select().from(schema.clients);
     const allLeads = await db.select().from(schema.leads);
+    const allExpenses = await db.select().from(schema.expenses);
 
     let totalRevenueDzd = 0;
     let totalCollectedDzd = 0;
     let totalPendingDzd = 0;
+    let collectedSinceBaseline = 0;
+
+    // Fetch baseline cash and timestamp
+    let baselineCash = 67000;
+    let baselineDate = new Date('2026-11-09T22:59:18.569Z');
+    try {
+      const settingsRows = await db.select().from(schema.financeSettings);
+      for (const s of settingsRows) {
+        if (s.key === 'baseline_cash') baselineCash = Number(s.value) || 67000;
+        if (s.key === 'baseline_date') baselineDate = new Date(s.value);
+      }
+    } catch {
+      // fallback to defaults
+    }
 
     for (const p of allProjects) {
       if ((p as any).status === 'cancelled') continue;
@@ -350,20 +365,47 @@ app.get('/api/stats', requireAdminAuth, async (req, res) => {
       totalRevenueDzd += total;
 
       let collected = 0;
-      if (p.m1Paid) collected += Number(p.m1AmountDzd) || 0;
-      if (p.m2Paid) collected += Number(p.m2AmountDzd) || 0;
-      if (p.m3Paid) collected += Number(p.m3AmountDzd) || 0;
+      if (p.m1Paid) {
+        const amt = Number(p.m1AmountDzd) || 0;
+        collected += amt;
+        if (p.m1PaidAt && new Date(p.m1PaidAt) > baselineDate) {
+          collectedSinceBaseline += amt;
+        }
+      }
+      if (p.m2Paid) {
+        const amt = Number(p.m2AmountDzd) || 0;
+        collected += amt;
+        if (p.m2PaidAt && new Date(p.m2PaidAt) > baselineDate) {
+          collectedSinceBaseline += amt;
+        }
+      }
+      if (p.m3Paid) {
+        const amt = Number(p.m3AmountDzd) || 0;
+        collected += amt;
+        if (p.m3PaidAt && new Date(p.m3PaidAt) > baselineDate) {
+          collectedSinceBaseline += amt;
+        }
+      }
 
       totalCollectedDzd += collected;
       totalPendingDzd += (total - collected);
     }
 
+    let totalExpensesDzd = 0;
+    for (const exp of allExpenses) {
+      totalExpensesDzd += Number(exp.amountDzd) || 0;
+    }
+
+    const liveNetWorthDzd = baselineCash + collectedSinceBaseline - totalExpensesDzd;
     const activeProjects = allProjects.filter(p => (p as any).status !== 'cancelled' && p.stage !== 'delivered');
 
     res.json({
       totalRevenueDzd,
       totalCollectedDzd,
       totalPendingDzd,
+      liveNetWorthDzd,
+      totalExpensesDzd,
+      baselineCashDzd: baselineCash,
       totalClients: allClients.length,
       totalProjects: allProjects.length,
       activeProjectsCount: activeProjects.length,
@@ -761,6 +803,16 @@ app.patch('/api/projects/:id', requireAdminAuth, async (req, res) => {
       updateData.m3AmountDzd = String(total - Math.round(total * 0.50) - Math.round(total * 0.20));
     }
 
+    if (updateData.m1Paid === true && !updateData.m1PaidAt) {
+      updateData.m1PaidAt = new Date();
+    }
+    if (updateData.m2Paid === true && !updateData.m2PaidAt) {
+      updateData.m2PaidAt = new Date();
+    }
+    if (updateData.m3Paid === true && !updateData.m3PaidAt) {
+      updateData.m3PaidAt = new Date();
+    }
+
     const [updated] = await db.update(schema.projects)
       .set(updateData)
       .where(eq(schema.projects.id, id))
@@ -1105,6 +1157,74 @@ app.delete('/api/meetings/:id', requireAdminAuth, async (req, res) => {
     console.error('Delete meeting error:', err);
     res.status(500).json({ error: 'Failed to delete meeting.' });
   }
+});
+
+// ==========================================
+// 8. Expenses & Cash Flow (Immutable Ledger)
+// ==========================================
+app.get('/api/expenses', requireAdminAuth, async (req, res) => {
+  try {
+    const period = String(req.query.period || 'all');
+    let cutoff: Date | null = null;
+    const now = new Date();
+
+    if (period === '7d') {
+      cutoff = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    } else if (period === '30d') {
+      cutoff = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    } else if (period === '60d') {
+      cutoff = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+    }
+
+    const all = await db.select().from(schema.expenses).orderBy(desc(schema.expenses.date), desc(schema.expenses.createdAt));
+    const filtered = cutoff ? all.filter(e => new Date(e.date) >= cutoff!) : all;
+    res.json(filtered);
+  } catch (err: any) {
+    console.error('Fetch expenses error:', err);
+    res.status(500).json({ error: 'Failed to fetch expenses.' });
+  }
+});
+
+app.post('/api/expenses', requireAdminAuth, async (req, res) => {
+  try {
+    const { title, category, amountDzd, date, notes } = req.body || {};
+    const cleanTitle = (title || '').trim();
+    const cleanCategory = (category || 'general').trim();
+    const numAmount = Number(amountDzd);
+
+    if (!cleanTitle) {
+      return res.status(400).json({ error: 'Expense description/title is required.' });
+    }
+    if (!numAmount || isNaN(numAmount) || numAmount <= 0) {
+      return res.status(400).json({ error: 'A valid amount greater than 0 DZD is required.' });
+    }
+
+    const expenseDate = date ? new Date(date) : new Date();
+
+    const [inserted] = await db.insert(schema.expenses).values({
+      title: cleanTitle,
+      category: cleanCategory,
+      amountDzd: String(numAmount),
+      date: expenseDate,
+      notes: notes ? String(notes).trim() : null,
+    }).returning();
+
+    broadcastEvent('new_expense', inserted);
+
+    res.status(201).json(inserted);
+  } catch (err: any) {
+    console.error('Record expense error:', err);
+    res.status(500).json({ error: 'Failed to record expense.' });
+  }
+});
+
+// Explicit immutability guards (Strict audit trail requirement)
+app.delete('/api/expenses/:id', requireAdminAuth, (req, res) => {
+  res.status(405).json({ error: 'Expenses are immutable and cannot be deleted once recorded.' });
+});
+
+app.patch('/api/expenses/:id', requireAdminAuth, (req, res) => {
+  res.status(405).json({ error: 'Expenses are immutable and cannot be modified once recorded.' });
 });
 
 // ==========================================

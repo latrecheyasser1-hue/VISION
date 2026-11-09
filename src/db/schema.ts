@@ -154,3 +154,21 @@ export const meetings = pgTable('meetings', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
+// 6. Expenses (Immutable business and operational expenditure log)
+export const expenses = pgTable('expenses', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  title: varchar('title', { length: 250 }).notNull(),
+  category: varchar('category', { length: 100 }).default('general').notNull(),
+  amountDzd: numeric('amount_dzd', { precision: 12, scale: 2 }).notNull(),
+  date: timestamp('date').defaultNow().notNull(),
+  notes: text('notes'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+// 7. Finance Settings (Base balances and thresholds)
+export const financeSettings = pgTable('finance_settings', {
+  key: varchar('key', { length: 100 }).primaryKey(),
+  value: text('value').notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+

@@ -448,6 +448,7 @@ body {
 .stat-card.accent-green::after { background: #10B981; }
 .stat-card.accent-orange::after { background: #F59E0B; }
 .stat-card.accent-dark::after { background: var(--ink); }
+.stat-card.accent-purple::after { background: #6366F1; }
 
 .stat-label {
   font-size: 0.85rem;
