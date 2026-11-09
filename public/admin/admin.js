@@ -3810,7 +3810,6 @@ function renderAgendaMeetingCard(m) {
             ${clientName ? 'Client: <strong style="color: var(--ink);">' + escapeHtml(clientName) + '</strong>' : ''}
             ${projectTitle ? ' · Project: ' + escapeHtml(projectTitle) : ''}
           </div>
-          ${m.agenda ? `<div style="font-size: 0.75rem; color: var(--ink-muted); margin-top: 4px; max-width: 500px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Agenda: ${escapeHtml(m.agenda)}</div>` : ''}
         </div>
       </div>
       <div style="display: flex; align-items: center; gap: 8px;">
@@ -3847,16 +3846,20 @@ function openNewMeetingModal(prefilledDate) {
     `).join('');
   }
 
-  // Date (Past dates strictly blocked)
+  // Date (Hidden input, automatically bound to clicked date or today)
   const todayStr = getTodayDateString();
+  const effectiveDate = (prefilledDate && prefilledDate >= todayStr) ? prefilledDate : todayStr;
   const dateInput = document.getElementById('meeting-form-date');
   if (dateInput) {
-    dateInput.min = todayStr;
-    if (prefilledDate && prefilledDate >= todayStr) {
-      dateInput.value = prefilledDate;
-    } else {
-      dateInput.value = todayStr;
-    }
+    dateInput.value = effectiveDate;
+  }
+  const dateDisplay = document.getElementById('meeting-modal-date-display');
+  if (dateDisplay) {
+    const dateObj = new Date(`${effectiveDate}T00:00:00`);
+    const formatted = !isNaN(dateObj.getTime())
+      ? dateObj.toLocaleDateString('en-GB', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })
+      : effectiveDate;
+    dateDisplay.textContent = formatted;
   }
 
   // Times
@@ -3870,8 +3873,8 @@ function openNewMeetingModal(prefilledDate) {
   document.getElementById('meeting-form-type').value = 'discovery';
   document.getElementById('meeting-form-platform').value = 'google_meet';
   document.getElementById('meeting-form-link').value = '';
-  document.getElementById('meeting-form-agenda').value = '';
-  document.getElementById('meeting-form-notes').value = '';
+  if (document.getElementById('meeting-form-agenda')) document.getElementById('meeting-form-agenda').value = '';
+  if (document.getElementById('meeting-form-notes')) document.getElementById('meeting-form-notes').value = '';
 
   openModal('new-meeting-modal');
 }
@@ -3930,8 +3933,8 @@ async function handleMeetingSubmit(e) {
   const endTime = document.getElementById('meeting-form-end-time').value || null;
   const platform = document.getElementById('meeting-form-platform').value;
   const link = document.getElementById('meeting-form-link').value.trim() || null;
-  const agenda = document.getElementById('meeting-form-agenda').value.trim() || null;
-  const notes = document.getElementById('meeting-form-notes').value.trim() || null;
+  const agenda = document.getElementById('meeting-form-agenda')?.value?.trim() || null;
+  const notes = document.getElementById('meeting-form-notes')?.value?.trim() || null;
 
   const payload = {
     title,
@@ -4086,9 +4089,11 @@ function openMeetingDetailsModal(meetingId) {
     }
   }
 
-  // Agenda & Notes
-  document.getElementById('md-agenda').textContent = m.agenda || 'No agenda recorded for this meeting.';
-  document.getElementById('md-notes').textContent = m.notes || 'No outcome notes recorded yet.';
+  // Agenda & Notes (Safely checked if present)
+  const agendaEl = document.getElementById('md-agenda');
+  if (agendaEl) agendaEl.textContent = m.agenda || 'No agenda recorded for this meeting.';
+  const notesEl = document.getElementById('md-notes');
+  if (notesEl) notesEl.textContent = m.notes || 'No outcome notes recorded yet.';
 
   openModal('meeting-details-modal');
 }
@@ -4133,12 +4138,20 @@ function editCurrentMeeting() {
   document.getElementById('meeting-form-title').value = m.title || '';
   document.getElementById('meeting-form-type').value = m.type || 'discovery';
   document.getElementById('meeting-form-date').value = m.meetingDate || '';
+  const dateDisplay = document.getElementById('meeting-modal-date-display');
+  if (dateDisplay && m.meetingDate) {
+    const dateObj = new Date(`${m.meetingDate}T00:00:00`);
+    const formatted = !isNaN(dateObj.getTime())
+      ? dateObj.toLocaleDateString('en-GB', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })
+      : m.meetingDate;
+    dateDisplay.textContent = formatted;
+  }
   document.getElementById('meeting-form-start-time').value = m.startTime || '';
   document.getElementById('meeting-form-end-time').value = m.endTime || '';
   document.getElementById('meeting-form-platform').value = m.platform || 'google_meet';
   document.getElementById('meeting-form-link').value = m.link || '';
-  document.getElementById('meeting-form-agenda').value = m.agenda || '';
-  document.getElementById('meeting-form-notes').value = m.notes || '';
+  if (document.getElementById('meeting-form-agenda')) document.getElementById('meeting-form-agenda').value = m.agenda || '';
+  if (document.getElementById('meeting-form-notes')) document.getElementById('meeting-form-notes').value = m.notes || '';
 }
 
 async function deleteCurrentMeeting() {

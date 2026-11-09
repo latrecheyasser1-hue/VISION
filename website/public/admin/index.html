@@ -930,7 +930,10 @@
 <div class="modal-overlay" id="new-meeting-modal">
   <div class="modal-content" style="max-width: 640px;">
     <div class="modal-header">
-      <h3 class="modal-title" id="meeting-modal-title">Schedule Meeting</h3>
+      <div>
+        <h3 class="modal-title" id="meeting-modal-title">Schedule Meeting</h3>
+        <p id="meeting-modal-date-display" style="margin: 4px 0 0 0; font-size: 0.82rem; color: var(--ink-muted); font-weight: 500;"></p>
+      </div>
       <button class="modal-close" onclick="closeModal('new-meeting-modal')">&times;</button>
     </div>
     <form id="new-meeting-form" onsubmit="handleMeetingSubmit(event)">
@@ -972,12 +975,10 @@
           </div>
         </div>
 
-        <!-- Date & Time Row -->
-        <div style="display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 14px; margin-bottom: 14px;">
-          <div class="form-group" style="margin: 0;">
-            <label>Date</label>
-            <input type="date" id="meeting-form-date" required>
-          </div>
+        <input type="hidden" id="meeting-form-date">
+
+        <!-- Time Row -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
           <div class="form-group" style="margin: 0;">
             <label>Start Time</label>
             <input type="time" id="meeting-form-start-time" required>
@@ -1004,18 +1005,6 @@
             <label>Meeting Link / URL</label>
             <input type="url" id="meeting-form-link" placeholder="https://meet.google.com/xyz-abc-def">
           </div>
-        </div>
-
-        <!-- Agenda & Things To Do -->
-        <div class="form-group" style="margin-bottom: 14px;">
-          <label>Meeting Agenda & Action Items</label>
-          <textarea id="meeting-form-agenda" rows="3" placeholder="Points to discuss, questions to ask, deliverables to demonstrate..."></textarea>
-        </div>
-
-        <!-- Internal Notes -->
-        <div class="form-group" style="margin-bottom: 0;">
-          <label>Outcome Notes & Client Decisions (Optional)</label>
-          <textarea id="meeting-form-notes" rows="2" placeholder="Notes, follow-up agreements, client feedback..."></textarea>
         </div>
 
       </div>
@@ -1076,18 +1065,6 @@
           <div id="md-project-link-wrap" style="margin-top: 6px;"></div>
         </div>
 
-      </div>
-
-      <!-- Agenda / Action Items Box -->
-      <div class="form-group" style="margin-bottom: 14px;">
-        <span class="detail-label">Meeting Agenda & Action Items</span>
-        <div id="md-agenda" style="background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; font-size: 0.85rem; line-height: 1.5; white-space: pre-line; color: var(--ink); min-height: 50px;">-</div>
-      </div>
-
-      <!-- Outcome Notes Box -->
-      <div class="form-group" style="margin-bottom: 0;">
-        <span class="detail-label">Outcome Notes & Decisions</span>
-        <div id="md-notes" style="background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; font-size: 0.85rem; line-height: 1.5; white-space: pre-line; color: var(--ink); min-height: 50px;">-</div>
       </div>
 
     </div>
@@ -1345,6 +1322,6 @@
 
 <div class="toast-container" id="toast-container"></div>
 <script src="/admin/html2pdf.bundle.min.js"></script>
-<script src="/admin/admin.js?v=95"></script>
+<script src="/admin/admin.js?v=96"></script>
 </body>
 </html>
