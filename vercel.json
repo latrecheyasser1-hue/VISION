@@ -3,6 +3,20 @@
   "cleanUrls": true,
   "rewrites": [
     {
+      "source": "/api/(.*)",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "admin.digitalvisiondz.com"
+        }
+      ],
+      "destination": "/admin/index.html"
+    },
+    {
       "source": "/admin",
       "destination": "/admin/index.html"
     },
@@ -17,10 +31,6 @@
     {
       "source": "/ADMIN/",
       "destination": "/admin/index.html"
-    },
-    {
-      "source": "/api/(.*)",
-      "destination": "/api/index.js"
     }
   ]
 }
