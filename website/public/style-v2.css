@@ -119,3 +119,5 @@ html[lang=fr] .brain-card{direction:ltr}
 }
 @media(max-width:360px){.hero-system>span{font-size:9px}.hero-system{gap:8px}.poster-heading{font-size:6px}}
 @media(prefers-reduced-motion:reduce){.hero-solid{clip-path:none}.hero-construction{opacity:.4}}
+
+.arrow-svg{display:inline-block;vertical-align:middle;stroke:currentColor;stroke-width:2.5;fill:none;stroke-linecap:round;stroke-linejoin:round}.button .arrow{display:inline-flex;align-items:center;justify-content:center}.button .arrow svg{width:18px;height:18px}.project-open svg{width:20px;height:20px;display:block;stroke:#000}.fit-options button b{display:flex;align-items:center;justify-content:center}.fit-options button b svg{width:18px;height:18px;stroke:#000}
