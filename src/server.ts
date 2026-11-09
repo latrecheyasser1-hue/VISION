@@ -727,53 +727,91 @@ app.post('/api/invoices', requireAdminAuth, async (req, res) => {
     }
 
     let total = 0;
-    for (const item of items) {
-      total += Number(item.priceDzd) || 0;
-    }
+    const formattedItems = items.map((item: any) => {
+      const price = Number(item.priceDzd || item.price || 0) || 0;
+      total += price;
+      return {
+        title: String(item.description || item.title || '').trim(),
+        description: String(item.description || item.title || '').trim(),
+        priceDzd: price,
+        price: price,
+      };
+    });
 
     const m1 = Math.round(total * 0.50);
     const m2 = Math.round(total * 0.20);
     const m3 = total - m1 - m2;
 
-    const invoiceNumber = `DEV-${new Date().getFullYear()}-${String(Math.floor(100 + Math.random() * 900))}`;
-
-    const isApproved = req.body.approved === true || req.body.status === 'accepted';
     const finalDeadline = (dueDate || targetDeliveryDate) ? new Date(dueDate || targetDeliveryDate) : null;
 
-    const [inserted] = await db.insert(schema.invoices).values({
-      invoiceNumber,
-      projectId,
-      clientId,
-      type: 'devis',
-      totalAmountDzd: String(total),
-      m1DepositDzd: String(m1),
-      m2DesignDzd: String(m2),
-      m3DeliveryDzd: String(m3),
-      domainIncluded: Boolean(domainIncluded),
-      hostingIncluded: Boolean(hostingIncluded),
-      itemsJson: items,
-      status: isApproved ? 'accepted' : 'draft',
-      dueDate: finalDeadline,
-      notes,
-    }).returning();
+    // Check if an existing invoice already exists for this project
+    const [existingInvoice] = await db
+      .select()
+      .from(schema.invoices)
+      .where(eq(schema.invoices.projectId, projectId));
 
-    // Sync calculated pricing, status, and deadline back to the project
+    let resultInvoice;
+    if (existingInvoice) {
+      const [updated] = await db
+        .update(schema.invoices)
+        .set({
+          totalAmountDzd: String(total),
+          m1DepositDzd: String(m1),
+          m2DesignDzd: String(m2),
+          m3DeliveryDzd: String(m3),
+          domainIncluded: Boolean(domainIncluded),
+          hostingIncluded: Boolean(hostingIncluded),
+          itemsJson: formattedItems,
+          dueDate: finalDeadline,
+          notes: notes || undefined,
+        })
+        .where(eq(schema.invoices.id, existingInvoice.id))
+        .returning();
+      resultInvoice = updated;
+    } else {
+      const invoiceNumber = `DEV-${new Date().getFullYear()}-${String(Math.floor(100 + Math.random() * 900))}`;
+      const [inserted] = await db
+        .insert(schema.invoices)
+        .values({
+          invoiceNumber,
+          projectId,
+          clientId,
+          type: 'devis',
+          totalAmountDzd: String(total),
+          m1DepositDzd: String(m1),
+          m2DesignDzd: String(m2),
+          m3DeliveryDzd: String(m3),
+          domainIncluded: Boolean(domainIncluded),
+          hostingIncluded: Boolean(hostingIncluded),
+          itemsJson: formattedItems,
+          status: 'draft',
+          dueDate: finalDeadline,
+          notes,
+        })
+        .returning();
+      resultInvoice = inserted;
+    }
+
+    // Persist calculated pricing, line items, notes, and deadline permanently to the project
     const projectUpdates: any = {
       priceTotalDzd: String(total),
       m1AmountDzd: String(m1),
       m2AmountDzd: String(m2),
       m3AmountDzd: String(m3),
-      devisStatus: isApproved ? 'approved' : 'draft',
       domainIncluded: Boolean(domainIncluded),
       hostingIncluded: Boolean(hostingIncluded),
+      deliverablesJson: formattedItems.map(i => ({ title: i.title, price: i.priceDzd })),
     };
+    if (notes !== undefined) {
+      projectUpdates.notes = notes;
+    }
     if (finalDeadline) {
       projectUpdates.targetDeliveryDate = finalDeadline;
     }
 
     await db.update(schema.projects).set(projectUpdates).where(eq(schema.projects.id, projectId));
 
-    res.status(201).json(inserted);
+    res.status(200).json(resultInvoice);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

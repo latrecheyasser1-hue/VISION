@@ -1685,13 +1685,9 @@ async function handleKanbanDrop(e, targetStage) {
     return;
   }
 
-  // RULE 2: Cannot move to deposit_50 unless quote is created and approved
+  // RULE 2: Moving to deposit_50 approves quote automatically
   if (targetStage === 'deposit_50') {
-    if (p.devisStatus !== 'approved') {
-      showQuoteGateModal(p);
-      return;
-    }
-    await updateProjectStage(projectId, 'deposit_50');
+    await updateProjectStage(projectId, 'deposit_50', { devisStatus: 'approved' });
     if (!p.m1Paid) {
       openUploadReceiptModal(p.id, p.title, 'm1');
     }
@@ -2757,26 +2753,46 @@ function openProjectDevisModal(projectId) {
   document.getElementById('modal-devis-project-title').value = p.title || '';
   document.getElementById('modal-devis-domain-check').checked = Boolean(p.domainIncluded);
   document.getElementById('modal-devis-hosting-check').checked = Boolean(p.hostingIncluded);
-  document.getElementById('modal-devis-notes').value = p.notes || '';
+
+  // Notes: take saved notes from project or associated quote
+  const existingInv = (state.invoices || []).find(i => i.projectId === projectId);
+  document.getElementById('modal-devis-notes').value = p.notes || existingInv?.notes || '';
 
   const deadlineInput = document.getElementById('modal-devis-deadline');
   if (deadlineInput) {
     if (p.targetDeliveryDate) {
       deadlineInput.value = new Date(p.targetDeliveryDate).toISOString().slice(0, 10);
+    } else if (existingInv && existingInv.dueDate) {
+      deadlineInput.value = new Date(existingInv.dueDate).toISOString().slice(0, 10);
     } else {
       deadlineInput.value = '';
     }
   }
 
-  const total = Number(p.priceTotalDzd) || 0;
-  if (total > 0) {
-    modalDevisItems = [
-      { title: `Full Solution Architecture & Implementation: ${p.title}`, price: total }
-    ];
+  // Restore saved deliverables / line items permanently
+  let savedItems = [];
+  if (Array.isArray(p.deliverablesJson) && p.deliverablesJson.length > 0) {
+    savedItems = p.deliverablesJson;
+  } else if (existingInv && Array.isArray(existingInv.itemsJson) && existingInv.itemsJson.length > 0) {
+    savedItems = existingInv.itemsJson;
+  }
+
+  if (savedItems.length > 0) {
+    modalDevisItems = savedItems.map(item => ({
+      title: item.title || item.description || '',
+      price: Number(item.price || item.priceDzd || 0)
+    }));
   } else {
-    modalDevisItems = [
-      { title: `Core Platform Architecture & Custom Engineering`, price: 0 }
-    ];
+    const total = Number(p.priceTotalDzd) || 0;
+    if (total > 0) {
+      modalDevisItems = [
+        { title: `Full Solution Architecture & Implementation: ${p.title}`, price: total }
+      ];
+    } else {
+      modalDevisItems = [
+        { title: `Core Platform Architecture & Custom Engineering`, price: 0 }
+      ];
+    }
   }
 
   renderModalDevisItems();
@@ -2795,8 +2811,8 @@ function renderModalDevisItems() {
              oninput="updateModalDevisItem(${idx}, 'title', this.value)">
       <div style="display: flex; align-items: center; gap: 4px; flex: 1;">
         <input type="number" value="${item.price || ''}" placeholder="DZD" 
-               style="width: 100%; padding: 6px 10px; font-size: 0.8rem;" 
-               oninput="updateModalDevisItem(${idx}, 'price', this.value)">
+                style="width: 100%; padding: 6px 10px; font-size: 0.8rem;" 
+                oninput="updateModalDevisItem(${idx}, 'price', this.value)">
         <span style="font-size: 0.72rem; color: var(--ink-muted); font-weight: 600;">DZD</span>
       </div>
       <button type="button" class="btn btn-secondary btn-sm" 
@@ -2852,7 +2868,7 @@ function calcModalDevisSummary() {
   if (m3El) m3El.textContent = `${formatDzd(m3)} DZD`;
 }
 
-async function saveModalDevis(approveImmediately = false) {
+async function saveModalDevis() {
   const projectId = document.getElementById('modal-devis-project-id').value;
   const clientId = document.getElementById('modal-devis-client-id').value;
   const projectTitle = document.getElementById('modal-devis-project-title').value.trim();
@@ -2860,6 +2876,7 @@ async function saveModalDevis(approveImmediately = false) {
   const hostingIncluded = document.getElementById('modal-devis-hosting-check').checked;
   const deadline = document.getElementById('modal-devis-deadline')?.value || null;
   const notes = document.getElementById('modal-devis-notes').value.trim();
+  const saveBtn = document.getElementById('modal-devis-save-btn');
 
   if (!projectId || !clientId) {
     showToast('Project or client reference missing', 'error');
@@ -2874,9 +2891,16 @@ async function saveModalDevis(approveImmediately = false) {
   }
 
   const items = validItems.map(i => ({
+    title: i.title.trim() || 'Custom Software Solution Development',
     description: i.title.trim() || 'Custom Software Solution Development',
-    priceDzd: Number(i.price) || 0
+    priceDzd: Number(i.price) || 0,
+    price: Number(i.price) || 0
   }));
+
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
+  }
 
   try {
     const res = await fetch('/api/invoices', {
@@ -2891,7 +2915,6 @@ async function saveModalDevis(approveImmediately = false) {
         dueDate: deadline,
         targetDeliveryDate: deadline,
         notes: notes || projectTitle,
-        approved: approveImmediately
       })
     });
 
@@ -2900,20 +2923,19 @@ async function saveModalDevis(approveImmediately = false) {
       throw new Error(err.error || 'Failed to save quote');
     }
 
-    const data = await res.json();
     closeModal('project-devis-modal');
-
-    if (approveImmediately) {
-      showToast(`Quote ${data.invoiceNumber} saved & approved successfully.`);
-    } else {
-      showToast(`Quote ${data.invoiceNumber} saved as draft.`);
-    }
+    showToast(`Quote for ${projectTitle || 'project'} saved successfully.`);
 
     await fetchProjects();
     await fetchStats();
     await fetchInvoices();
   } catch (err) {
     showToast(err.message, 'error');
+  } finally {
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save';
+    }
   }
 }
 
@@ -2924,12 +2946,12 @@ function prepareDevisForProject(projectId) {
 // ==========================================
 // ACTIONS & MODALS
 // ==========================================
-async function updateProjectStage(projectId, newStage) {
+async function updateProjectStage(projectId, newStage, extraData = {}) {
   try {
     const res = await fetch(`/api/projects/${projectId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ stage: newStage }),
+      body: JSON.stringify({ stage: newStage, ...extraData }),
     });
     if (!res.ok) throw new Error('Could not update stage');
     showToast('Project stage updated successfully.');

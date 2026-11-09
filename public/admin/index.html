@@ -1134,14 +1134,13 @@
     <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;">
       <button type="button" class="btn btn-secondary" onclick="closeModal('project-devis-modal')">Cancel</button>
       <button type="button" class="btn btn-secondary" onclick="exportModalDevisPdf()">Save PDF</button>
-      <button type="button" class="btn btn-secondary" onclick="saveModalDevis(false)">Save Draft</button>
-      <button type="button" class="btn btn-primary" style="background: #059669; border-color: #059669;" onclick="saveModalDevis(true)">Save & Approve Quote</button>
+      <button type="button" class="btn btn-primary" id="modal-devis-save-btn" onclick="saveModalDevis()">Save</button>
     </div>
   </div>
 </div>
 
 <div class="toast-container" id="toast-container"></div>
 <script src="/admin/html2pdf.bundle.min.js"></script>
-<script src="/admin/admin.js?v=50"></script>
+<script src="/admin/admin.js?v=60"></script>
 </body>
 </html>
