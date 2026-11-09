@@ -314,7 +314,6 @@ async function fetchLeads() {
     const data = await res.json();
     state.leads = data;
     renderLeadsTable(data);
-    renderHistoryLeadsTable();
   } catch (err) {
     console.error('Leads error:', err);
   }
@@ -1570,13 +1569,34 @@ function renderLeadsTable(leads) {
         </td>
         <td><small style="color: var(--ink-muted);">${dateStr}</small></td>
         <td>
-          <button class="btn btn-secondary btn-sm" onclick="convertLeadToClient('${escapeHtml(l.name)}', '${escapeHtml(l.phone || '')}', '${escapeHtml(l.activity || '')}')">
-            Convert to Client
-          </button>
+          <div style="display: flex; gap: 6px; align-items: center;">
+            <button class="btn btn-secondary btn-sm" onclick="convertLeadToClient('${escapeHtml(l.name)}', '${escapeHtml(l.phone || '')}', '${escapeHtml(l.activity || '')}')">
+              Convert to Client
+            </button>
+            <button class="btn btn-sm" style="background: transparent; color: #dc2626; border: 1px solid #fecaca; font-weight: 500;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='transparent'" onclick="deleteLead('${l.id}', '${escapeHtml(l.name)}')">
+              Delete
+            </button>
+          </div>
         </td>
       </tr>
     `;
   }).join('');
+}
+
+async function deleteLead(id, name) {
+  if (!confirm(`Are you sure you want to delete lead "${name}"?`)) return;
+
+  try {
+    const res = await fetch(`/api/leads/${id}`, {
+      method: 'DELETE',
+    });
+    if (!res.ok) throw new Error('Failed to delete lead');
+    showToast(`Lead "${name}" deleted.`);
+    await fetchLeads();
+    await fetchStats();
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
 }
 
 // ==========================================
@@ -1622,11 +1642,7 @@ function filterHistorySearch(query) {
 }
 
 function renderHistoryView() {
-  if (state.historyCategory === 'leads') {
-    renderHistoryLeadsTable();
-  } else {
-    renderHistoryProjectsTable();
-  }
+  renderHistoryProjectsTable();
 }
 
 // Category 1: Projects History (Scoping & Above, with Stage Filter)
@@ -2778,6 +2794,11 @@ function setupRealtimeEvents() {
       } catch (err) {
         console.error('Error handling SSE new_lead event:', err);
       }
+    });
+
+    es.addEventListener('lead_deleted', (e) => {
+      fetchLeads();
+      fetchStats();
     });
 
     es.onerror = () => {

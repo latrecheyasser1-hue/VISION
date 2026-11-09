@@ -232,6 +232,23 @@ app.patch('/api/leads/:id', async (req, res) => {
   }
 });
 
+app.delete('/api/leads/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const [deleted] = await db.delete(schema.leads)
+      .where(eq(schema.leads.id, id))
+      .returning();
+    if (!deleted) {
+      return res.status(404).json({ error: 'Lead not found' });
+    }
+    broadcastEvent('lead_deleted', { id });
+    res.json({ success: true, deleted });
+  } catch (err: any) {
+    console.error('Delete lead error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // 4. Projects CRUD & Milestones
 app.get('/api/projects', async (req, res) => {
   try {

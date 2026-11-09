@@ -413,11 +413,8 @@
         
         <div class="card" style="margin-bottom: 20px;">
           <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <div class="filter-pills" id="history-category-pills">
-                <button class="filter-pill active" data-category="projects" onclick="switchHistoryCategory('projects')">Projects History</button>
-                <button class="filter-pill" data-category="leads" onclick="switchHistoryCategory('leads')">Leads History</button>
-              </div>
+            <div class="card-title">
+              <span>Projects History</span>
             </div>
             <div id="history-search-wrap">
               <input type="text" id="history-search-input" placeholder="Search history..." oninput="filterHistorySearch(this.value)" style="padding: 6px 12px; font-size: 0.8rem; border: 1px solid var(--border); border-radius: var(--radius-sm); width: 220px;">
@@ -468,28 +465,7 @@
 
         </div>
 
-        <!-- Category 2: Leads History -->
-        <div id="history-cat-leads" class="history-category-panel" style="display: none;">
-          <div class="card">
-            <div class="table-responsive">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Prospect</th>
-                    <th>Phone</th>
-                    <th>Activity</th>
-                    <th>Source</th>
-                    <th>Status</th>
-                    <th>Submission Date</th>
-                  </tr>
-                </thead>
-                <tbody id="history-leads-tbody">
-                  <!-- Populated by JS -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+
 
 
 
@@ -1074,6 +1050,6 @@
 
 <div class="toast-container" id="toast-container"></div>
 <script src="html2pdf.bundle.min.js"></script>
-<script src="admin.js?v=26"></script>
+<script src="admin.js?v=27"></script>
 </body>
 </html>
