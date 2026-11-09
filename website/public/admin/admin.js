@@ -3648,6 +3648,7 @@ function renderCalendarView() {
 
 function renderCalendarCell(dateStr, dayNum, isOtherMonth, todayStr, meetings, deadlines) {
   const isToday = dateStr === todayStr;
+  const isPast = dateStr < todayStr;
   const dayMeetings = meetings.filter(m => m.meetingDate === dateStr);
   const dayDeadlines = deadlines.filter(p => {
     const d = new Date(p.targetDeliveryDate);
@@ -3660,6 +3661,7 @@ function renderCalendarCell(dateStr, dayNum, isOtherMonth, todayStr, meetings, d
   const cellClasses = ['calendar-cell'];
   if (isOtherMonth) cellClasses.push('other-month');
   if (isToday) cellClasses.push('is-today');
+  if (isPast) cellClasses.push('is-past');
 
   let eventsHtml = '';
 
@@ -3673,7 +3675,7 @@ function renderCalendarCell(dateStr, dayNum, isOtherMonth, todayStr, meetings, d
     `;
   });
 
-  // Render meetings
+  // Render meetings (always visible & clickable to review details, even on past dates)
   dayMeetings.forEach(m => {
     const isCompleted = m.status === 'completed';
     const typeClass = `event-chip-${m.type || 'discovery'}`;
@@ -3686,8 +3688,12 @@ function renderCalendarCell(dateStr, dayNum, isOtherMonth, todayStr, meetings, d
     `;
   });
 
+  // Past dates cannot be clicked to schedule a new meeting
+  const clickHandler = isPast ? '' : `onclick="openNewMeetingModal('${dateStr}')"`;
+  const titleAttr = isPast ? 'title="Past date (unselectable)"' : 'title="Click to schedule meeting"';
+
   return `
-    <div class="${cellClasses.join(' ')}" onclick="openNewMeetingModal('${dateStr}')">
+    <div class="${cellClasses.join(' ')}" ${clickHandler} ${titleAttr}>
       <div class="calendar-cell-top">
         <span class="calendar-cell-num">${dayNum}</span>
         ${isToday ? '<span class="calendar-cell-today-pill">Today</span>' : ''}
@@ -3841,10 +3847,16 @@ function openNewMeetingModal(prefilledDate) {
     `).join('');
   }
 
-  // Date
+  // Date (Past dates strictly blocked)
+  const todayStr = getTodayDateString();
   const dateInput = document.getElementById('meeting-form-date');
   if (dateInput) {
-    dateInput.value = prefilledDate || getTodayDateString();
+    dateInput.min = todayStr;
+    if (prefilledDate && prefilledDate >= todayStr) {
+      dateInput.value = prefilledDate;
+    } else {
+      dateInput.value = todayStr;
+    }
   }
 
   // Times
@@ -3934,6 +3946,12 @@ async function handleMeetingSubmit(e) {
     agenda,
     notes,
   };
+
+  const todayStr = getTodayDateString();
+  if (meetingDate < todayStr && !id) {
+    showToast('Cannot schedule a meeting on a past date. Please select today or a future date.', 'error');
+    return;
+  }
 
   try {
     let res;

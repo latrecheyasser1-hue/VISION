@@ -877,6 +877,11 @@ app.post('/api/meetings', requireAdminAuth, async (req, res) => {
       return res.status(400).json({ error: 'Title, meetingDate, and startTime are required.' });
     }
 
+    const todayDateStr = new Date().toISOString().split('T')[0];
+    if (String(meetingDate).trim() < todayDateStr) {
+      return res.status(400).json({ error: 'Cannot schedule a meeting on a past date.' });
+    }
+
     const [inserted] = await db
       .insert(schema.meetings)
       .values({

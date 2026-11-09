@@ -1471,6 +1471,25 @@ tr:hover td {
   opacity: 0.55;
 }
 
+.calendar-cell.is-past {
+  background: #F8FAFC !important;
+  opacity: 0.58;
+  cursor: default !important;
+}
+
+.calendar-cell.is-past:hover {
+  background: #F8FAFC !important;
+}
+
+.calendar-cell.is-past .calendar-cell-num {
+  color: #94A3B8 !important;
+}
+
+.calendar-cell.is-past .event-chip {
+  opacity: 0.9;
+  cursor: pointer !important;
+}
+
 .calendar-cell.is-today {
   background: #F0F9FF;
 }

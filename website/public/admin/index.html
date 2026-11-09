@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>VISION - Founder Dashboard</title>
-  <link rel="stylesheet" href="/admin/admin.css?v=15">
+  <link rel="stylesheet" href="/admin/admin.css?v=20">
   <style>
     .tab-section { display: none; }
     .tab-section.active { display: block; }
@@ -541,6 +541,20 @@
         
         <!-- Calendar Grid Container -->
         <div id="meetings-calendar-view" class="calendar-container">
+          
+          <!-- Integrated Header Bar -->
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--border); background: var(--surface);">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <h3 id="calendar-month-label" style="font-size: 1.2rem; font-weight: 800; color: var(--ink); margin: 0; min-width: 170px;">November 2026</h3>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="changeCalendarMonth(-1)">&lt; Prev</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="resetCalendarToToday()">Today</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="changeCalendarMonth(1)">Next &gt;</button>
+            </div>
+            <button type="button" class="btn btn-primary btn-sm" style="font-weight: 700; padding: 7px 16px;" onclick="openNewMeetingModal()">
+              + Schedule Meeting
+            </button>
+          </div>
+
           <div class="calendar-header-grid">
             <div class="calendar-day-header">Sun</div>
             <div class="calendar-day-header">Mon</div>
@@ -1331,6 +1345,6 @@
 
 <div class="toast-container" id="toast-container"></div>
 <script src="/admin/html2pdf.bundle.min.js"></script>
-<script src="/admin/admin.js?v=91"></script>
+<script src="/admin/admin.js?v=95"></script>
 </body>
 </html>
