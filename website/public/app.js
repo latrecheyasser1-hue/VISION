@@ -62,15 +62,40 @@ $$('#navigation a').forEach(a=>a.addEventListener('click',closeMenu));
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeMenu();}});
 document.addEventListener('click',e=>{if(!e.target.closest('.header'))closeMenu();});
 $('#language').addEventListener('click',()=>setLanguage(lang==='ar'?'fr':'ar'));
-$('#brief').addEventListener('submit',event=>{
- event.preventDefault();if(!event.target.reportValidity())return;
- const data=new FormData(event.target);const name=String(data.get('name')).trim(),activity=String(data.get('activity')).trim(),need=String(data.get('need')).trim();
- if(!name||!activity){$('#form-status').textContent=lang==='ar'?'عمّر اسمك ونشاطك قبل المتابعة. شرح المشكل اختياري.':'Indiquez votre nom et votre activité. La description de la difficulté est facultative.';return;}
- const message=lang==='ar'?`السلام عليكم VISION، حاب نهدر معاكم على نشاطي.\n\nالاسم: ${name}\nالنشاط: ${activity}${need?`\nالمشكل اللي راه يواجهني: ${need}`:''}`:`Bonjour VISION, je souhaite échanger avec vous au sujet de mon activité.\n\nNom : ${name}\nActivité : ${activity}${need?`\nDifficulté rencontrée : ${need}`:''}`;
- const url=`https://wa.me/213771335039?text=${encodeURIComponent(message)}`;
- // This only opens a prepared message. The visitor explicitly sends it in WhatsApp.
- window.open(url,'_blank','noopener,noreferrer');
- $('#form-status').replaceChildren();const link=document.createElement('a');link.href=url;link.target='_blank';link.rel='noopener noreferrer';link.textContent=lang==='ar'?'إذا ما تفتحش واتساب، اضغط هنا لفتح الرسالة ↗':'Si WhatsApp ne s’ouvre pas, ouvrez le message ici ↗';$('#form-status').append(link);
+$('#brief').addEventListener('submit', async event => {
+  event.preventDefault();
+  if (!event.target.reportValidity()) return;
+  const data = new FormData(event.target);
+  const name = String(data.get('name') || '').trim();
+  const phone = String(data.get('phone') || '').trim();
+  const activity = String(data.get('activity') || '').trim();
+  const need = String(data.get('need') || '').trim();
+  if (!name || !phone || !activity || !need) {
+    $('#form-status').textContent = lang === 'ar' ? 'يرجى ملء جميع الحقول الإلزامية قبل المتابعة.' : 'Veuillez remplir tous les champs obligatoires avant de continuer.';
+    return;
+  }
+  try {
+    await fetch('/api/leads', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, phone, activity, problemDescription: need, need, source: 'website_brief' })
+    });
+  } catch (err) {
+    console.error('Lead submission error:', err);
+  }
+  const message = lang === 'ar'
+    ? `السلام عليكم VISION، حاب نهدر معاكم على نشاطي.\n\nالاسم: ${name}\nالهاتف: ${phone}\nالنشاط: ${activity}\nالمشكل اللي راه يواجهني: ${need}`
+    : `Bonjour VISION, je souhaite échanger avec vous au sujet de mon activité.\n\nNom : ${name}\nTéléphone : ${phone}\nActivité : ${activity}\nDifficulté rencontrée : ${need}`;
+  const url = `https://wa.me/213771335039?text=${encodeURIComponent(message)}`;
+  window.open(url, '_blank', 'noopener,noreferrer');
+  $('#form-status').replaceChildren();
+  const link = document.createElement('a');
+  link.href = url;
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+  link.textContent = lang === 'ar' ? 'تم تسجيل طلبك بنجاح! إذا لم يفتح واتساب تلقائياً، اضغط هنا ↗' : 'Demande enregistrée avec succès ! Si WhatsApp ne s’ouvre pas, cliquez ici ↗';
+  $('#form-status').append(link);
+  event.target.reset();
 });
 $('#year').textContent=new Date().getFullYear();setLanguage(lang,{updateURL:false});
 

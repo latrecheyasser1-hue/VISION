@@ -28,6 +28,37 @@ const upload = multer({
 });
 
 // ==========================================
+// REAL-TIME SERVER-SENT EVENTS (SSE)
+// ==========================================
+const sseClients = new Set<express.Response>();
+
+app.get('/api/events', (req, res) => {
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+  });
+  res.write('retry: 5000\n\n');
+
+  sseClients.add(res);
+
+  req.on('close', () => {
+    sseClients.delete(res);
+  });
+});
+
+function broadcastEvent(type: string, data: any) {
+  const payload = `event: ${type}\ndata: ${JSON.stringify(data)}\n\n`;
+  for (const client of sseClients) {
+    try {
+      client.write(payload);
+    } catch {
+      sseClients.delete(client);
+    }
+  }
+}
+
+// ==========================================
 // API ROUTES
 // ==========================================
 
@@ -117,20 +148,72 @@ app.get('/api/leads', async (req, res) => {
 
 app.post('/api/leads', async (req, res) => {
   try {
-    const { name, phone, activity, problemDescription, selectedChallenge, budgetEstimate } = req.body;
-    if (!name || !activity) {
-      return res.status(400).json({ error: 'name and activity are required' });
+    const { name, phone, activity, problemDescription, need, selectedChallenge, budgetEstimate } = req.body;
+    const finalProblem = (problemDescription || need || '').trim();
+    const cleanName = (name || '').trim();
+    const cleanPhone = (phone || '').trim();
+    const cleanActivity = (activity || '').trim();
+
+    if (!cleanName || !cleanPhone || !cleanActivity || !finalProblem) {
+      return res.status(400).json({ error: 'Name, phone number, activity, and note/problem description are required' });
     }
+
+    // Check if client with this phone number already exists
+    const phoneDigits = cleanPhone.replace(/[^\d]/g, '');
+    const allClients = await db.select().from(schema.clients);
+    const existingClient = allClients.find(c => {
+      if (!c.phone) return false;
+      const cDigits = c.phone.replace(/[^\d]/g, '');
+      return cDigits === phoneDigits || (cDigits.length >= 8 && phoneDigits.endsWith(cDigits.slice(-8))) || (phoneDigits.length >= 8 && cDigits.endsWith(phoneDigits.slice(-8)));
+    });
+
+    let linkedClientId: string | null = null;
+    let clientCreated = false;
+
+    if (existingClient) {
+      linkedClientId = existingClient.id;
+    } else {
+      // First-time contact: Automatically register as client
+      const [newClient] = await db.insert(schema.clients).values({
+        companyName: cleanName,
+        contactName: cleanName,
+        phone: cleanPhone,
+        industry: cleanActivity,
+        wilaya: 'Algeria',
+        status: 'active',
+        notes: `Registered via website brief: ${finalProblem.slice(0, 150)}`
+      }).returning();
+
+      linkedClientId = newClient.id;
+      clientCreated = true;
+    }
+
     const [inserted] = await db.insert(schema.leads).values({
-      name,
-      phone,
-      activity,
-      problemDescription,
-      selectedChallenge,
+      name: cleanName,
+      phone: cleanPhone,
+      activity: cleanActivity,
+      problemDescription: finalProblem,
+      selectedChallenge: selectedChallenge || null,
       budgetEstimate: budgetEstimate ? String(budgetEstimate) : null,
+      clientId: linkedClientId,
+      status: 'new',
+      source: 'website_brief',
     }).returning();
-    res.status(201).json(inserted);
+
+    // Broadcast in real-time to all open admin dashboards via SSE
+    broadcastEvent('new_lead', {
+      lead: inserted,
+      clientCreated,
+      clientId: linkedClientId,
+    });
+
+    res.status(201).json({
+      ...inserted,
+      clientCreated,
+      clientId: linkedClientId,
+    });
   } catch (err: any) {
+    console.error('Lead submission error:', err);
     res.status(500).json({ error: err.message });
   }
 });

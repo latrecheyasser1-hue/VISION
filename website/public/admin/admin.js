@@ -123,6 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderDevisLive();
 
   fetchAllData();
+  setupRealtimeEvents();
 
   if (window.location.hash) {
     const tab = window.location.hash.replace('#', '');
@@ -2755,4 +2756,42 @@ function escapeHtml(str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
+}
+
+// ==========================================
+// REAL-TIME SERVER-SENT EVENTS
+// ==========================================
+function setupRealtimeEvents() {
+  if (window.__visionEventSource) return;
+
+  try {
+    const es = new EventSource('/api/events');
+    window.__visionEventSource = es;
+
+    es.addEventListener('new_lead', (e) => {
+      try {
+        const data = JSON.parse(e.data);
+        console.log('Real-time new lead received:', data);
+        fetchLeads();
+        fetchClients();
+        fetchStats();
+        const prospect = data && data.lead && data.lead.name ? data.lead.name : 'New Prospect';
+        const act = data && data.lead && data.lead.activity ? ' (' + data.lead.activity + ')' : '';
+        showToast('New Lead: ' + prospect + act, 'success');
+      } catch (err) {
+        console.error('Error handling SSE new_lead event:', err);
+      }
+    });
+
+    es.onerror = () => {
+      // EventSource automatically retries
+    };
+  } catch (err) {
+    console.error('SSE connection error:', err);
+  }
+
+  // Background fallback sync every 15 seconds
+  setInterval(() => {
+    fetchLeads();
+  }, 15000);
 }
