@@ -10,7 +10,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>VISION - Founder Dashboard</title>
-  <link rel="stylesheet" href="/admin/admin.css?v=20">
+  <link rel="stylesheet" href="/admin.css?v=21">
   <style>
     .tab-section { display: none; }
     .tab-section.active { display: block; }
@@ -174,7 +174,7 @@
     </div>
 
     <!-- PIN Form (Simple: Input + Unlock button, NO virtual keyboard) -->
-    <form id="admin-pin-form" onsubmit="handlePinSubmit(event)" style="display: flex; flex-direction: column; gap: 16px;">
+    <form id="admin-pin-form" onsubmit="handlePinSubmit(event); return false;" style="display: flex; flex-direction: column; gap: 16px;">
       <div>
         <label for="admin-pin-input" style="display: block; font-size: 0.74rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #94A3B8; margin-bottom: 8px; text-align: left;">
           Security PIN
@@ -1330,7 +1330,7 @@
 </div>
 
 <div class="toast-container" id="toast-container"></div>
-<script src="/admin/html2pdf.bundle.min.js"></script>
-<script src="/admin/admin.js?v=98"></script>
+<script src="/html2pdf.bundle.min.js"></script>
+<script src="/admin.js?v=105"></script>
 </body>
 </html>

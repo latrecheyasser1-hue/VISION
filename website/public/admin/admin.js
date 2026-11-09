@@ -287,9 +287,6 @@ async function handlePinSubmit(event) {
     }
   }
 }
-  pinInput.value = '';
-  pinInput.focus();
-}
 
 function showAlertBanner(title, detail, bg, border, textColor) {
   const alertBanner = document.getElementById('auth-alert-banner');
