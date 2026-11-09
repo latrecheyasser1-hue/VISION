@@ -362,6 +362,23 @@ function formatDateShort(dateVal) {
   return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
+function formatWhatsAppUrl(phone) {
+  if (!phone) return '#';
+  // Strip all non-digit characters except leading +
+  let digits = String(phone).replace(/[^\d+]/g, '');
+  if (digits.startsWith('+')) {
+    digits = digits.substring(1);
+  } else if (digits.startsWith('00')) {
+    digits = digits.substring(2);
+  } else if (digits.startsWith('0')) {
+    // Convert Algerian local mobile/landline 05/06/07/02 to international 213...
+    digits = '213' + digits.substring(1);
+  } else if (!digits.startsWith('213') && (digits.startsWith('5') || digits.startsWith('6') || digits.startsWith('7'))) {
+    digits = '213' + digits;
+  }
+  return `https://wa.me/${digits}`;
+}
+
 function getStageBadge(stage) {
   const map = {
     scoping: { label: 'Scoping', class: 'stage-scoping' },
@@ -416,7 +433,7 @@ function openProjectDetailsModal(projectId) {
   document.getElementById('pd-client-contact').textContent = client.contactName || '-';
   document.getElementById('pd-client-wilaya').textContent = client.wilaya || '-';
   if (client.phone) {
-    document.getElementById('pd-client-phone').innerHTML = `<a href="tel:${escapeHtml(client.phone)}" class="phone-link">${escapeHtml(client.phone)}</a>`;
+    document.getElementById('pd-client-phone').innerHTML = `<a href="${formatWhatsAppUrl(client.phone)}" target="_blank" rel="noopener noreferrer" class="phone-link" title="Open WhatsApp: ${escapeHtml(client.phone)}">${escapeHtml(client.phone)}</a>`;
   } else {
     document.getElementById('pd-client-phone').textContent = '-';
   }
@@ -1496,7 +1513,7 @@ function renderClientsTable(clients) {
   if (!tbody) return;
 
   if (clients.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--ink-muted); padding: 32px;">No clients registered.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--ink-muted); padding: 32px;">No clients registered.</td></tr>`;
     return;
   }
 
@@ -1505,10 +1522,15 @@ function renderClientsTable(clients) {
       <td>
         <strong style="color: var(--ink); font-size: 0.95rem;">${escapeHtml(c.companyName)}</strong>
       </td>
-      <td>${escapeHtml(c.contactName)}</td>
-      <td><span class="badge badge-gray">${escapeHtml(c.wilaya || '-')}</span></td>
       <td>
-        ${c.phone ? `<a href="tel:${escapeHtml(c.phone)}" class="phone-link">${escapeHtml(c.phone)}</a>` : '-'}
+        <div style="font-weight: 600; color: var(--ink);">${escapeHtml(c.contactName || 'Primary Contact')}</div>
+        ${c.phone ? `
+          <div style="margin-top: 3px;">
+            <a href="${formatWhatsAppUrl(c.phone)}" target="_blank" rel="noopener noreferrer" class="phone-link" title="Open WhatsApp: ${escapeHtml(c.phone)}">
+              ${escapeHtml(c.phone)}
+            </a>
+          </div>
+        ` : ''}
       </td>
       <td><small style="color: var(--ink-muted);">${escapeHtml(c.email || '-')}</small></td>
       <td>${escapeHtml(c.industry || '-')}</td>
@@ -1535,7 +1557,7 @@ function renderLeadsTable(leads) {
       <tr>
         <td><strong style="color: var(--ink);">${escapeHtml(l.name)}</strong></td>
         <td>
-          ${l.phone ? `<a href="tel:${escapeHtml(l.phone)}" class="phone-link">${escapeHtml(l.phone)}</a>` : '-'}
+          ${l.phone ? `<a href="${formatWhatsAppUrl(l.phone)}" target="_blank" rel="noopener noreferrer" class="phone-link" title="Open WhatsApp: ${escapeHtml(l.phone)}">${escapeHtml(l.phone)}</a>` : '-'}
         </td>
         <td><span class="badge badge-cyan">${escapeHtml(l.activity)}</span></td>
         <td style="max-width: 280px; font-size: 0.82rem; color: var(--ink);">
@@ -1745,7 +1767,7 @@ function renderHistoryLeadsTable() {
           ${l.selectedChallenge ? `<div style="font-size: 0.72rem; color: var(--ink-muted); margin-top: 2px;">${escapeHtml(l.selectedChallenge)}</div>` : ''}
         </td>
         <td>
-          ${l.phone ? `<a href="tel:${escapeHtml(l.phone)}" class="phone-link" style="font-weight: 600;">${escapeHtml(l.phone)}</a>` : '<span style="color: var(--ink-muted);">-</span>'}
+          ${l.phone ? `<a href="${formatWhatsAppUrl(l.phone)}" target="_blank" rel="noopener noreferrer" class="phone-link" style="font-weight: 600;" title="Open WhatsApp: ${escapeHtml(l.phone)}">${escapeHtml(l.phone)}</a>` : '<span style="color: var(--ink-muted);">-</span>'}
         </td>
         <td>
           <span class="badge badge-cyan" style="font-size: 0.72rem;">${escapeHtml(l.activity || 'General')}</span>
