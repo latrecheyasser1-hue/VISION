@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "start": "tsx src/server.ts",
+    "start": "node dist/src/server.js",
+    "dev": "tsx src/server.ts",
     "server": "tsx src/server.ts",
     "admin:dev": "tsx src/server.ts",
     "test:services": "tsx src/index.ts",
