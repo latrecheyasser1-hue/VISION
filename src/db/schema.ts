@@ -91,6 +91,12 @@ export const projects = pgTable('projects', {
   designStatus: varchar('design_status', { length: 50 }).default('pending'),
   status: varchar('status', { length: 50 }).default('active'),
 
+  // Schedule & Deliverables
+  startDate: timestamp('start_date'),
+  targetDeliveryDate: timestamp('target_delivery_date'),
+  actualDeliveryDate: timestamp('actual_delivery_date'),
+  deliverablesJson: jsonb('deliverables_json').default([]),
+
   // Technical links
   repoUrl: text('repo_url'),
   stagingUrl: text('staging_url'),

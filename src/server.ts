@@ -174,7 +174,7 @@ app.get('/api/projects', async (req, res) => {
 
 app.post('/api/projects', async (req, res) => {
   try {
-    const { clientId, title, type, priceTotalDzd, domainIncluded, hostingIncluded, notes } = req.body;
+    const { clientId, title, type, priceTotalDzd, domainIncluded, hostingIncluded, notes, targetDeliveryDate } = req.body;
     if (!clientId || !title || !type) {
       return res.status(400).json({ error: 'clientId, title, and type are required' });
     }
@@ -198,6 +198,8 @@ app.post('/api/projects', async (req, res) => {
       m2Paid: false,
       m3AmountDzd: String(m3Amount),
       m3Paid: false,
+      targetDeliveryDate: targetDeliveryDate ? new Date(targetDeliveryDate) : null,
+      deliverablesJson: [],
       notes,
     }).returning();
 
@@ -211,11 +213,17 @@ app.patch('/api/projects/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const updateData: any = {};
-    const allowed = ['title', 'stage', 'type', 'priceTotalDzd', 'domainIncluded', 'hostingIncluded', 'repoUrl', 'stagingUrl', 'productionUrl', 'isPublicPortfolio', 'notes', 'devisStatus', 'designStatus', 'status', 'm1Paid', 'm2Paid', 'm3Paid'];
+    const allowed = ['title', 'stage', 'type', 'priceTotalDzd', 'domainIncluded', 'hostingIncluded', 'repoUrl', 'stagingUrl', 'productionUrl', 'isPublicPortfolio', 'notes', 'devisStatus', 'designStatus', 'status', 'm1Paid', 'm2Paid', 'm3Paid', 'targetDeliveryDate', 'deliverablesJson'];
 
     for (const key of allowed) {
       if (req.body[key] !== undefined) {
-        updateData[key] = req.body[key];
+        if (key === 'targetDeliveryDate') {
+          updateData.targetDeliveryDate = req.body.targetDeliveryDate ? new Date(req.body.targetDeliveryDate) : null;
+        } else if (key === 'deliverablesJson') {
+          updateData.deliverablesJson = Array.isArray(req.body.deliverablesJson) ? req.body.deliverablesJson : [];
+        } else {
+          updateData[key] = req.body[key];
+        }
       }
     }
 
@@ -357,7 +365,7 @@ app.get('/api/invoices', async (req, res) => {
 
 app.post('/api/invoices', async (req, res) => {
   try {
-    const { projectId, clientId, items, domainIncluded, hostingIncluded, notes } = req.body;
+    const { projectId, clientId, items, domainIncluded, hostingIncluded, notes, dueDate, targetDeliveryDate } = req.body;
 
     if (!projectId || !clientId || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: 'projectId, clientId, and items array are required' });
@@ -375,6 +383,7 @@ app.post('/api/invoices', async (req, res) => {
     const invoiceNumber = `DEV-${new Date().getFullYear()}-${String(Math.floor(100 + Math.random() * 900))}`;
 
     const isApproved = req.body.approved === true || req.body.status === 'accepted';
+    const finalDeadline = (dueDate || targetDeliveryDate) ? new Date(dueDate || targetDeliveryDate) : null;
 
     const [inserted] = await db.insert(schema.invoices).values({
       invoiceNumber,
@@ -389,11 +398,12 @@ app.post('/api/invoices', async (req, res) => {
       hostingIncluded: Boolean(hostingIncluded),
       itemsJson: items,
       status: isApproved ? 'accepted' : 'draft',
+      dueDate: finalDeadline,
       notes,
     }).returning();
 
-    // Sync calculated pricing and status back to the project
-    await db.update(schema.projects).set({
+    // Sync calculated pricing, status, and deadline back to the project
+    const projectUpdates: any = {
       priceTotalDzd: String(total),
       m1AmountDzd: String(m1),
       m2AmountDzd: String(m2),
@@ -401,7 +411,12 @@ app.post('/api/invoices', async (req, res) => {
       devisStatus: isApproved ? 'approved' : 'draft',
       domainIncluded: Boolean(domainIncluded),
       hostingIncluded: Boolean(hostingIncluded),
-    }).where(eq(schema.projects.id, projectId));
+    };
+    if (finalDeadline) {
+      projectUpdates.targetDeliveryDate = finalDeadline;
+    }
+
+    await db.update(schema.projects).set(projectUpdates).where(eq(schema.projects.id, projectId));
 
     res.status(201).json(inserted);
   } catch (err: any) {

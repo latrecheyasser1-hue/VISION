@@ -285,6 +285,7 @@ async function fetchProjects() {
     renderHistoryProjectsTable();
     renderHistoryFinancials();
     updateProjectSelects();
+    checkDeadlineAlerts();
   } catch (err) {
     console.error('Projects error:', err);
   }
@@ -381,6 +382,8 @@ function getStageBadge(stage) {
   return `<span class="badge-stage ${item.class}">${item.label}</span>`;
 }
 
+let currentDetailsProjectId = null;
+
 // Open Read-Only Project Details Modal
 function openProjectDetailsModal(projectId) {
   const p = state.projects.find(x => x.id === projectId);
@@ -388,6 +391,7 @@ function openProjectDetailsModal(projectId) {
     showToast('Project details not found', 'error');
     return;
   }
+  currentDetailsProjectId = projectId;
 
   const client = p.client || {};
   const total = Number(p.priceTotalDzd) || 0;
@@ -477,6 +481,48 @@ function openProjectDetailsModal(projectId) {
   document.getElementById('pd-domain-status').textContent = p.domainIncluded ? 'Included (Covered by VISION)' : 'Not Included';
   document.getElementById('pd-hosting-status').textContent = p.hostingIncluded ? 'Included (Covered by VISION)' : 'Not Included';
 
+  // Target Delivery Deadline & Status
+  const deadlineValEl = document.getElementById('pd-delivery-deadline');
+  const deadlineStatusEl = document.getElementById('pd-deadline-status');
+  if (deadlineValEl && deadlineStatusEl) {
+    if (p.targetDeliveryDate) {
+      const targetDate = new Date(p.targetDeliveryDate);
+      deadlineValEl.textContent = targetDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      const targetDay = new Date(targetDate);
+      targetDay.setHours(0, 0, 0, 0);
+      const diffDays = Math.ceil((targetDay - now) / (1000 * 60 * 60 * 24));
+
+      const isDelivered = p.stage === 'delivered' || p.status === 'delivered';
+      const isCancelled = p.status === 'cancelled';
+
+      if (isDelivered) {
+        deadlineStatusEl.innerHTML = `<span class="badge badge-green">Delivered</span>`;
+      } else if (isCancelled) {
+        deadlineStatusEl.innerHTML = `<span class="badge badge-gray">Cancelled</span>`;
+      } else if (diffDays < 0) {
+        deadlineStatusEl.innerHTML = `<span class="badge" style="background: #FEE2E2; color: #DC2626; border: 1px solid #FCA5A5; font-weight: 700;">Overdue by ${Math.abs(diffDays)} days</span>`;
+      } else if (diffDays <= 3) {
+        const text = diffDays === 0 ? 'Due Today' : `Due in ${diffDays} days`;
+        deadlineStatusEl.innerHTML = `<span class="badge" style="background: #FEE2E2; color: #DC2626; border: 1px solid #F87171; font-weight: 700;">${text} (Critical)</span>`;
+      } else if (diffDays <= 7) {
+        deadlineStatusEl.innerHTML = `<span class="badge" style="background: #FEF3C7; color: #D97706; border: 1px solid #FCD34D; font-weight: 600;">Due in ${diffDays} days</span>`;
+      } else {
+        deadlineStatusEl.innerHTML = `<span class="badge badge-gray">On Schedule (${diffDays} days left)</span>`;
+      }
+    } else {
+      deadlineValEl.textContent = 'Not specified';
+      deadlineStatusEl.innerHTML = `<span class="badge badge-gray">Pending Scope</span>`;
+    }
+  }
+
+  // Interactive Project Action Items (To-Do)
+  const taskInputEl = document.getElementById('pd-new-task-input');
+  if (taskInputEl) taskInputEl.value = '';
+  renderProjectTasks(p.deliverablesJson || []);
+
   // Cancel Action
   const cancelWrap = document.getElementById('pd-cancel-action-wrap');
   if (cancelWrap) {
@@ -493,6 +539,248 @@ function openProjectDetailsModal(projectId) {
   }
 
   openModal('project-details-modal');
+}
+
+// ==========================================
+// PROJECT ACTION ITEMS (TO-DO WORKSPACE)
+// ==========================================
+function renderProjectTasks(tasks) {
+  const container = document.getElementById('pd-tasks-list');
+  const counterEl = document.getElementById('pd-todo-counter');
+  const badgeEl = document.getElementById('pd-todo-progress-badge');
+  if (!container) return;
+
+  const list = Array.isArray(tasks) ? tasks : [];
+  const completedCount = list.filter(t => t.completed).length;
+  const totalCount = list.length;
+  const pct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+  if (counterEl) {
+    counterEl.textContent = `${completedCount} of ${totalCount} deliverables completed`;
+  }
+  if (badgeEl) {
+    badgeEl.textContent = `${pct}%`;
+    badgeEl.className = `badge ${pct === 100 && totalCount > 0 ? 'badge-green' : (pct > 0 ? 'badge-cyan' : 'badge-gray')}`;
+  }
+
+  if (list.length === 0) {
+    container.innerHTML = `
+      <div style="padding: 16px; text-align: center; color: var(--ink-muted); font-size: 0.82rem; background: var(--paper); border: 1px dashed var(--border); border-radius: var(--radius-sm);">
+        No action items recorded yet. Enter a task above to track project execution.
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = list.map(t => `
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-sm); gap: 10px;">
+      <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; flex: 1; margin: 0;">
+        <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleProjectTask('${t.id}')" style="width: 16px; height: 16px; cursor: pointer;">
+        <span style="${t.completed ? 'text-decoration: line-through; color: var(--ink-muted);' : 'color: var(--ink); font-weight: 600;'} font-size: 0.85rem; line-height: 1.3;">
+          ${escapeHtml(t.text)}
+        </span>
+      </label>
+      <button type="button" class="btn btn-secondary btn-sm" style="padding: 2px 8px; color: #DC2626; border-color: transparent; font-size: 0.75rem;" onclick="deleteProjectTask('${t.id}')">
+        Delete
+      </button>
+    </div>
+  `).join('');
+}
+
+async function addProjectTask() {
+  if (!currentDetailsProjectId) return;
+  const inputEl = document.getElementById('pd-new-task-input');
+  if (!inputEl) return;
+  const text = inputEl.value.trim();
+  if (!text) {
+    showToast('Please enter an action item or deliverable text', 'error');
+    return;
+  }
+
+  const p = state.projects.find(x => x.id === currentDetailsProjectId);
+  if (!p) return;
+
+  const currentTasks = Array.isArray(p.deliverablesJson) ? [...p.deliverablesJson] : [];
+  const newTask = {
+    id: 'task_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+    text,
+    completed: false,
+    createdAt: new Date().toISOString()
+  };
+  currentTasks.push(newTask);
+
+  // Optimistic UI update
+  p.deliverablesJson = currentTasks;
+  renderProjectTasks(currentTasks);
+  inputEl.value = '';
+
+  try {
+    const res = await fetch(`/api/projects/${currentDetailsProjectId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ deliverablesJson: currentTasks })
+    });
+    if (!res.ok) throw new Error('Failed to save task');
+    showToast('Task added successfully.');
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+async function toggleProjectTask(taskId) {
+  if (!currentDetailsProjectId) return;
+  const p = state.projects.find(x => x.id === currentDetailsProjectId);
+  if (!p) return;
+
+  const currentTasks = Array.isArray(p.deliverablesJson) ? [...p.deliverablesJson] : [];
+  const task = currentTasks.find(t => t.id === taskId);
+  if (!task) return;
+
+  task.completed = !task.completed;
+
+  // Optimistic UI update
+  p.deliverablesJson = currentTasks;
+  renderProjectTasks(currentTasks);
+
+  try {
+    const res = await fetch(`/api/projects/${currentDetailsProjectId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ deliverablesJson: currentTasks })
+    });
+    if (!res.ok) throw new Error('Failed to update task');
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+async function deleteProjectTask(taskId) {
+  if (!currentDetailsProjectId) return;
+  const p = state.projects.find(x => x.id === currentDetailsProjectId);
+  if (!p) return;
+
+  const currentTasks = (Array.isArray(p.deliverablesJson) ? p.deliverablesJson : []).filter(t => t.id !== taskId);
+
+  // Optimistic UI update
+  p.deliverablesJson = currentTasks;
+  renderProjectTasks(currentTasks);
+
+  try {
+    const res = await fetch(`/api/projects/${currentDetailsProjectId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ deliverablesJson: currentTasks })
+    });
+    if (!res.ok) throw new Error('Failed to delete task');
+    showToast('Task removed.');
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+// ==========================================
+// DEADLINE MONITORING & NOTIFICATION ALERTS
+// ==========================================
+function checkDeadlineAlerts() {
+  const activeProjects = (state.projects || []).filter(p => p.status !== 'cancelled' && p.stage !== 'delivered');
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+
+  const urgentProjects = [];
+  activeProjects.forEach(p => {
+    if (!p.targetDeliveryDate) return;
+    const targetDate = new Date(p.targetDeliveryDate);
+    targetDate.setHours(0, 0, 0, 0);
+    const diffDays = Math.ceil((targetDate - now) / (1000 * 60 * 60 * 24));
+    if (diffDays <= 3) {
+      urgentProjects.push({
+        project: p,
+        diffDays,
+        isOverdue: diffDays < 0
+      });
+    }
+  });
+
+  // Sort: overdue first, then closest
+  urgentProjects.sort((a, b) => a.diffDays - b.diffDays);
+
+  const navAlert = document.getElementById('nav-deadline-alert');
+  if (navAlert) {
+    if (urgentProjects.length > 0) {
+      navAlert.style.display = 'inline-block';
+      navAlert.textContent = `${urgentProjects.length}`;
+      navAlert.title = `${urgentProjects.length} project(s) nearing or past delivery deadline`;
+    } else {
+      navAlert.style.display = 'none';
+    }
+  }
+
+  const renderBannerHtml = () => {
+    if (urgentProjects.length === 0) return '';
+    return `
+      <div style="background: #FEF2F2; border: 1px solid #FCA5A5; border-radius: var(--radius-md); padding: 14px 18px; box-shadow: var(--shadow-sm);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #DC2626;"></span>
+            <strong style="color: #991B1B; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.04em;">
+              Deadline Alert: ${urgentProjects.length} Project${urgentProjects.length > 1 ? 's' : ''} Require Immediate Attention
+            </strong>
+          </div>
+          <span style="font-size: 0.75rem; color: #B91C1C; font-weight: 600;">Delivery Monitoring</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          ${urgentProjects.map(u => {
+            const p = u.project;
+            const clientName = p.client ? p.client.companyName : 'Direct Client';
+            const statusLabel = u.isOverdue
+              ? `Overdue by ${Math.abs(u.diffDays)} day${Math.abs(u.diffDays) > 1 ? 's' : ''}`
+              : (u.diffDays === 0 ? 'Due Today' : `Due in ${u.diffDays} day${u.diffDays > 1 ? 's' : ''}`);
+            return `
+              <div style="display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid #FECACA;">
+                <div>
+                  <strong style="color: var(--ink); font-size: 0.86rem; cursor: pointer;" onclick="openProjectDetailsModal('${p.id}')">${escapeHtml(p.title)}</strong>
+                  <span style="font-size: 0.78rem; color: var(--ink-muted); margin-left: 8px;">· ${escapeHtml(clientName)} · Stage: ${escapeHtml(p.stage)}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span class="badge" style="background: #FEE2E2; color: #DC2626; border: 1px solid #F87171; font-weight: 700; font-size: 0.72rem;">
+                    ${statusLabel}
+                  </span>
+                  <button type="button" class="btn btn-secondary btn-sm" style="padding: 2px 8px; font-size: 0.75rem;" onclick="openProjectDetailsModal('${p.id}')">
+                    View
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  };
+
+  const overviewBanner = document.getElementById('overview-deadline-alerts');
+  const projectsBanner = document.getElementById('projects-deadline-alerts');
+
+  const bannerHtml = renderBannerHtml();
+
+  if (overviewBanner) {
+    if (bannerHtml) {
+      overviewBanner.innerHTML = bannerHtml;
+      overviewBanner.style.display = 'block';
+    } else {
+      overviewBanner.style.display = 'none';
+      overviewBanner.innerHTML = '';
+    }
+  }
+
+  if (projectsBanner) {
+    if (bannerHtml) {
+      projectsBanner.innerHTML = bannerHtml;
+      projectsBanner.style.display = 'block';
+    } else {
+      projectsBanner.style.display = 'none';
+      projectsBanner.innerHTML = '';
+    }
+  }
 }
 
 // 1. Overview Projects Table
@@ -835,17 +1123,50 @@ function renderProjectsKanban(projects) {
             `;
           }
 
+          let deadlineBadgeHtml = '';
+          let isUrgentDeadline = false;
+          let isOverdue = false;
+
+          if (p.targetDeliveryDate && currentStage !== 'delivered') {
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+            const targetDate = new Date(p.targetDeliveryDate);
+            targetDate.setHours(0, 0, 0, 0);
+            const diffDays = Math.ceil((targetDate - now) / (1000 * 60 * 60 * 24));
+
+            if (diffDays < 0) {
+              isOverdue = true;
+              deadlineBadgeHtml = `<span class="badge" style="background: #FEE2E2; color: #DC2626; border: 1px solid #FCA5A5; font-weight: 700; font-size: 0.65rem;">Overdue (${Math.abs(diffDays)}d)</span>`;
+            } else if (diffDays <= 3) {
+              isUrgentDeadline = true;
+              const label = diffDays === 0 ? 'Due Today' : `Due in ${diffDays}d`;
+              deadlineBadgeHtml = `<span class="badge" style="background: #FEE2E2; color: #DC2626; border: 1px solid #F87171; font-weight: 700; font-size: 0.65rem;">${label}</span>`;
+            } else if (diffDays <= 7) {
+              deadlineBadgeHtml = `<span class="badge" style="background: #FEF3C7; color: #D97706; border: 1px solid #FCD34D; font-weight: 600; font-size: 0.65rem;">Due in ${diffDays}d</span>`;
+            } else {
+              deadlineBadgeHtml = `<span class="badge badge-gray" style="font-size: 0.65rem;">Due: ${formatDateShort(targetDate)}</span>`;
+            }
+          }
+
+          const cardUrgentStyle = (isOverdue || isUrgentDeadline)
+            ? 'border: 1.5px solid #DC2626; box-shadow: 0 0 0 1px #FCA5A5;'
+            : '';
+
           return `
             <div class="kanban-card" 
                  draggable="true" 
                  data-project-id="${p.id}"
+                 style="${cardUrgentStyle}"
                  ondragstart="handleKanbanDragStart(event, '${p.id}')"
                  onclick="openProjectDetailsModal('${p.id}')">
               
               <div class="kanban-card-top">
-                <span class="badge ${p.type === 'ecommerce' ? 'badge-purple' : 'badge-cyan'}" style="font-size: 0.65rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.03em;">
-                  ${escapeHtml(typeLabel)}
-                </span>
+                <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                  <span class="badge ${p.type === 'ecommerce' ? 'badge-purple' : 'badge-cyan'}" style="font-size: 0.65rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.03em;">
+                    ${escapeHtml(typeLabel)}
+                  </span>
+                  ${deadlineBadgeHtml}
+                </div>
                 <span class="kanban-card-date">${formatDateShort(p.createdAt)}</span>
               </div>
 
@@ -1588,6 +1909,17 @@ function downloadInvoicePdf(invoiceId) {
     hostingEl.style.color = inv.hostingIncluded ? '#059669' : '#B45309';
   }
 
+  const deadlineEl = document.getElementById('devis-view-deadline-val');
+  if (deadlineEl) {
+    const dVal = inv.dueDate || (proj ? proj.targetDeliveryDate : null);
+    if (dVal) {
+      const d = new Date(dVal);
+      deadlineEl.textContent = !isNaN(d.getTime()) ? d.toLocaleDateString('en-GB') : String(dVal);
+    } else {
+      deadlineEl.textContent = 'To be scheduled';
+    }
+  }
+
   const items = Array.isArray(inv.itemsJson) ? inv.itemsJson : [];
   const tbody = document.getElementById('devis-view-items-tbody');
   let total = 0;
@@ -1659,6 +1991,17 @@ function exportModalDevisPdf() {
   if (hostingEl) {
     hostingEl.textContent = hostingIncluded ? 'Hosting & SSL included' : 'Hosting & SSL excluded';
     hostingEl.style.color = hostingIncluded ? '#059669' : '#B45309';
+  }
+
+  const deadline = document.getElementById('modal-devis-deadline')?.value;
+  const deadlineEl = document.getElementById('devis-view-deadline-val');
+  if (deadlineEl) {
+    if (deadline) {
+      const d = new Date(deadline);
+      deadlineEl.textContent = !isNaN(d.getTime()) ? d.toLocaleDateString('en-GB') : deadline;
+    } else {
+      deadlineEl.textContent = 'To be scheduled';
+    }
   }
 
   let total = 0;
@@ -1948,6 +2291,15 @@ function openProjectDevisModal(projectId) {
   document.getElementById('modal-devis-hosting-check').checked = Boolean(p.hostingIncluded);
   document.getElementById('modal-devis-notes').value = p.notes || '';
 
+  const deadlineInput = document.getElementById('modal-devis-deadline');
+  if (deadlineInput) {
+    if (p.targetDeliveryDate) {
+      deadlineInput.value = new Date(p.targetDeliveryDate).toISOString().slice(0, 10);
+    } else {
+      deadlineInput.value = '';
+    }
+  }
+
   const total = Number(p.priceTotalDzd) || 0;
   if (total > 0) {
     modalDevisItems = [
@@ -2038,6 +2390,7 @@ async function saveModalDevis(approveImmediately = false) {
   const projectTitle = document.getElementById('modal-devis-project-title').value.trim();
   const domainIncluded = document.getElementById('modal-devis-domain-check').checked;
   const hostingIncluded = document.getElementById('modal-devis-hosting-check').checked;
+  const deadline = document.getElementById('modal-devis-deadline')?.value || null;
   const notes = document.getElementById('modal-devis-notes').value.trim();
 
   if (!projectId || !clientId) {
@@ -2067,6 +2420,8 @@ async function saveModalDevis(approveImmediately = false) {
         items,
         domainIncluded,
         hostingIncluded,
+        dueDate: deadline,
+        targetDeliveryDate: deadline,
         notes: notes || projectTitle,
         approved: approveImmediately
       })
@@ -2227,6 +2582,7 @@ async function handleNewProject(e) {
   const priceTotalDzd = document.getElementById('proj-price').value;
   const domainIncluded = document.getElementById('proj-domain').checked;
   const hostingIncluded = document.getElementById('proj-hosting').checked;
+  const deadline = document.getElementById('proj-deadline')?.value || null;
   const notes = document.getElementById('proj-notes').value.trim();
 
   try {
@@ -2240,6 +2596,7 @@ async function handleNewProject(e) {
         priceTotalDzd,
         domainIncluded,
         hostingIncluded,
+        targetDeliveryDate: deadline,
         notes,
       }),
     });
