@@ -1572,12 +1572,14 @@ function renderLeadsTable(leads) {
   const tbody = document.getElementById('leads-table-tbody');
   if (!tbody) return;
 
-  if (leads.length === 0) {
+  const activeLeads = (leads || []).filter(l => l.status !== 'converted');
+
+  if (activeLeads.length === 0) {
     tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--ink-muted); padding: 32px;">No inquiries received yet.</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = leads.map(l => {
+  tbody.innerHTML = activeLeads.map(l => {
     const dateStr = l.createdAt ? new Date(l.createdAt).toLocaleDateString('en-GB') : '-';
     return `
       <tr>
@@ -1597,13 +1599,9 @@ function renderLeadsTable(leads) {
         <td><small style="color: var(--ink-muted);">${dateStr}</small></td>
         <td>
           <div style="display: flex; gap: 6px; align-items: center;">
-            ${l.status === 'converted' ? `
-              <span class="badge badge-green" style="font-size: 0.72rem; padding: 4px 8px;">Converted</span>
-            ` : `
-              <button class="btn btn-primary btn-sm" onclick="convertLeadToClient('${l.id}')">
-                Convert to Client
-              </button>
-            `}
+            <button class="btn btn-primary btn-sm" onclick="convertLeadToClient('${l.id}')">
+              Convert to Client
+            </button>
             <button class="btn btn-sm" style="background: transparent; color: #dc2626; border: 1px solid #fecaca; font-weight: 500;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='transparent'" onclick="deleteLead('${l.id}', '${escapeHtml(l.name)}')">
               Delete
             </button>
