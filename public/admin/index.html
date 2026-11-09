@@ -716,6 +716,7 @@
         <p id="pd-subtitle" style="font-size: 0.8rem; color: var(--ink-muted); margin-top: 4px;">Comprehensive project summary</p>
       </div>
       <div style="display: flex; align-items: center; gap: 12px;">
+        <div id="pd-header-devis-btn"></div>
         <span id="pd-stage-badge"></span>
         <button class="modal-close" onclick="closeModal('project-details-modal')">&times;</button>
       </div>
@@ -904,8 +905,11 @@
       </div>
     </div>
     <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
-      <div id="pd-cancel-action-wrap"></div>
-      <button type="button" class="btn btn-secondary" onclick="closeModal('project-details-modal')">Close</button>
+      <div id="pd-cancel-action-wrap" style="display: flex; gap: 8px; align-items: center;"></div>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <div id="pd-footer-devis-btn"></div>
+        <button type="button" class="btn btn-secondary" onclick="closeModal('project-details-modal')">Close</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1322,6 +1326,6 @@
 
 <div class="toast-container" id="toast-container"></div>
 <script src="/admin/html2pdf.bundle.min.js"></script>
-<script src="/admin/admin.js?v=96"></script>
+<script src="/admin/admin.js?v=97"></script>
 </body>
 </html>

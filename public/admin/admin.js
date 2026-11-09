@@ -843,6 +843,35 @@ function openProjectDetailsModal(projectId) {
     }
   }
 
+  // Official Quote / Devis Document Action Buttons
+  const linkedInvoice = (state.invoices || []).find(inv => inv.projectId === p.id);
+  const headerDevisBtn = document.getElementById('pd-header-devis-btn');
+  const footerDevisBtn = document.getElementById('pd-footer-devis-btn');
+
+  if (headerDevisBtn) {
+    if (linkedInvoice) {
+      headerDevisBtn.innerHTML = `
+        <button type="button" class="btn btn-primary btn-sm" style="font-weight: 700; padding: 4px 12px; font-size: 0.76rem;" onclick="openProjectDevisDocument('${p.id}')">
+          Open Devis File (PDF)
+        </button>
+      `;
+    } else {
+      headerDevisBtn.innerHTML = '';
+    }
+  }
+
+  if (footerDevisBtn) {
+    if (linkedInvoice) {
+      footerDevisBtn.innerHTML = `
+        <button type="button" class="btn btn-primary btn-sm" style="font-weight: 700; padding: 6px 14px; font-size: 0.8rem;" onclick="openProjectDevisDocument('${p.id}')">
+          Open Devis File (PDF)
+        </button>
+      `;
+    } else {
+      footerDevisBtn.innerHTML = '';
+    }
+  }
+
   openModal('project-details-modal');
 }
 
@@ -964,20 +993,46 @@ function renderProjectReceipts(p) {
 
   if (invoiceDocEl) {
     const linkedInvoice = (state.invoices || []).find(inv => inv.projectId === p.id);
-    if (linkedInvoice && linkedInvoice.pdfUrl) {
+    if (linkedInvoice) {
+      const itemsCount = Array.isArray(linkedInvoice.itemsJson) ? linkedInvoice.itemsJson.length : 0;
       invoiceDocEl.innerHTML = `
-        <div style="padding: 10px 14px; background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius-sm); display: flex; justify-content: space-between; align-items: center;">
+        <div style="padding: 12px 14px; background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius-sm); display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
           <div>
-            <span style="font-weight: 700; font-size: 0.80rem; color: var(--ink);">Official Quote / Devis: ${escapeHtml(linkedInvoice.invoiceNumber || 'VISION-QUOTE')}</span>
-            <div style="font-size: 0.72rem; color: var(--ink-muted); margin-top: 2px;">Stored in Cloudflare R2</div>
+            <span style="font-weight: 700; font-size: 0.82rem; color: var(--ink);">Official Quote / Devis: ${escapeHtml(linkedInvoice.invoiceNumber || 'VISION-QUOTE')}</span>
+            <div style="font-size: 0.72rem; color: var(--ink-muted); margin-top: 2px;">Total: ${formatDzd(linkedInvoice.totalAmountDzd || p.priceTotalDzd)} DZD · ${itemsCount} scope line items</div>
           </div>
-          <a href="${linkedInvoice.pdfUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm" style="padding: 4px 10px; font-size: 0.74rem;">Open PDF</a>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" class="btn btn-secondary btn-sm" style="padding: 4px 10px; font-size: 0.74rem;" onclick="closeModal('project-details-modal'); openProjectDevisModal('${p.id}')">Edit Devis Scope</button>
+            <button type="button" class="btn btn-primary btn-sm" style="padding: 4px 12px; font-size: 0.74rem; font-weight: 700;" onclick="openProjectDevisDocument('${p.id}')">Open Devis File (PDF)</button>
+          </div>
         </div>
       `;
     } else {
       invoiceDocEl.innerHTML = '';
     }
   }
+}
+
+// Open / Download Official Devis PDF for Project
+function openProjectDevisDocument(projectId) {
+  const p = state.projects.find(x => x.id === projectId);
+  if (!p) {
+    showToast('Project record not found', 'error');
+    return;
+  }
+  const linkedInvoice = (state.invoices || []).find(inv => inv.projectId === projectId);
+  if (!linkedInvoice) {
+    showToast('No Devis has been created for this project yet.', 'error');
+    return;
+  }
+
+  if (linkedInvoice.pdfUrl) {
+    window.open(linkedInvoice.pdfUrl, '_blank');
+    return;
+  }
+
+  // Generate and open PDF directly via html2pdf
+  downloadInvoicePdf(linkedInvoice.id, 'open');
 }
 
 // ==========================================
@@ -1124,7 +1179,7 @@ function renderProjectTasks(tasks) {
   if (!container) return;
 
   const list = Array.isArray(tasks) ? tasks : [];
-  const completedCount = list.filter(t => t.completed).length;
+  const completedCount = list.filter(t => t && t.completed).length;
   const totalCount = list.length;
   const pct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
@@ -1145,19 +1200,25 @@ function renderProjectTasks(tasks) {
     return;
   }
 
-  container.innerHTML = list.map(t => `
-    <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-sm); gap: 10px;">
-      <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; flex: 1; margin: 0;">
-        <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleProjectTask('${t.id}')" style="width: 16px; height: 16px; cursor: pointer;">
-        <span style="${t.completed ? 'text-decoration: line-through; color: var(--ink-muted);' : 'color: var(--ink); font-weight: 600;'} font-size: 0.85rem; line-height: 1.3;">
-          ${escapeHtml(t.text)}
-        </span>
-      </label>
-      <button type="button" class="btn btn-secondary btn-sm" style="padding: 2px 8px; color: #DC2626; border-color: transparent; font-size: 0.75rem;" onclick="deleteProjectTask('${t.id}')">
-        Delete
-      </button>
-    </div>
-  `).join('');
+  container.innerHTML = list.map((t, idx) => {
+    const taskId = (t && t.id) ? String(t.id) : `task_${idx}`;
+    const taskText = (t && (t.text || t.title || t.description)) ? String(t.text || t.title || t.description) : `Task #${idx + 1}`;
+    const isCompleted = !!(t && t.completed);
+
+    return `
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-sm); gap: 10px;">
+        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; flex: 1; margin: 0;">
+          <input type="checkbox" ${isCompleted ? 'checked' : ''} onchange="toggleProjectTask('${escapeHtml(taskId)}', ${idx})" style="width: 16px; height: 16px; cursor: pointer;">
+          <span style="${isCompleted ? 'text-decoration: line-through; color: var(--ink-muted);' : 'color: var(--ink); font-weight: 600;'} font-size: 0.85rem; line-height: 1.3;">
+            ${escapeHtml(taskText)}
+          </span>
+        </label>
+        <button type="button" class="btn btn-secondary btn-sm" style="padding: 2px 8px; color: #DC2626; border-color: transparent; font-size: 0.75rem;" onclick="deleteProjectTask('${escapeHtml(taskId)}', ${idx})">
+          Delete
+        </button>
+      </div>
+    `;
+  }).join('');
 }
 
 async function addProjectTask() {
@@ -1200,13 +1261,16 @@ async function addProjectTask() {
   }
 }
 
-async function toggleProjectTask(taskId) {
+async function toggleProjectTask(taskId, idx) {
   if (!currentDetailsProjectId) return;
   const p = state.projects.find(x => x.id === currentDetailsProjectId);
   if (!p) return;
 
   const currentTasks = Array.isArray(p.deliverablesJson) ? [...p.deliverablesJson] : [];
-  const task = currentTasks.find(t => t.id === taskId);
+  let task = currentTasks.find(t => t && t.id && String(t.id) === String(taskId));
+  if (!task && typeof idx === 'number' && currentTasks[idx]) {
+    task = currentTasks[idx];
+  }
   if (!task) return;
 
   task.completed = !task.completed;
@@ -1227,25 +1291,30 @@ async function toggleProjectTask(taskId) {
   }
 }
 
-async function deleteProjectTask(taskId) {
+async function deleteProjectTask(taskId, idx) {
   if (!currentDetailsProjectId) return;
   const p = state.projects.find(x => x.id === currentDetailsProjectId);
   if (!p) return;
 
-  const currentTasks = (Array.isArray(p.deliverablesJson) ? p.deliverablesJson : []).filter(t => t.id !== taskId);
+  const currentTasks = Array.isArray(p.deliverablesJson) ? [...p.deliverablesJson] : [];
+  const updatedTasks = currentTasks.filter((t, index) => {
+    if (t && t.id && String(t.id) === String(taskId)) return false;
+    if (typeof idx === 'number' && index === idx) return false;
+    if (String(taskId) === `task_${index}`) return false;
+    return true;
+  });
 
-  // Optimistic UI update
-  p.deliverablesJson = currentTasks;
-  renderProjectTasks(currentTasks);
+  // Optimistic UI update: item vanishes instantly with ZERO popups, alerts or confirmations
+  p.deliverablesJson = updatedTasks;
+  renderProjectTasks(updatedTasks);
 
   try {
     const res = await fetch(`/api/projects/${currentDetailsProjectId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ deliverablesJson: currentTasks })
+      body: JSON.stringify({ deliverablesJson: updatedTasks })
     });
     if (!res.ok) throw new Error('Failed to delete task');
-    showToast('Task removed.');
   } catch (err) {
     showToast(err.message, 'error');
   }
@@ -2505,7 +2574,7 @@ function renderHistoryFinancials() {
 }
 
 // Download PDF for historical invoice
-function downloadInvoicePdf(invoiceId) {
+function downloadInvoicePdf(invoiceId, action = 'save') {
   const inv = (state.invoices || []).find(x => x.id === invoiceId);
   if (!inv) {
     showToast('Quote record not found', 'error');
@@ -2585,7 +2654,7 @@ function downloadInvoicePdf(invoiceId) {
   const m3El = document.getElementById('devis-view-m3');
   if (m3El) m3El.textContent = formatDzd(m3);
 
-  exportDevisPdf();
+  exportDevisPdf(action);
 }
 
 // Export modal quote directly as PDF
@@ -2871,7 +2940,7 @@ async function saveDevisToDb() {
   }
 }
 
-function exportDevisPdf() {
+function exportDevisPdf(action = 'save') {
   const element = document.getElementById('devis-printable-area');
   if (!element) {
     showToast('Quote sheet not found', 'error');
@@ -2887,7 +2956,7 @@ function exportDevisPdf() {
     return;
   }
 
-  showToast('Generating and saving PDF file...');
+  showToast('Preparing Devis PDF file...');
 
   const opt = {
     margin: [10, 10, 10, 10],
@@ -2897,12 +2966,27 @@ function exportDevisPdf() {
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
 
-  html2pdf().set(opt).from(element).save().then(() => {
-    showToast('PDF file saved successfully to Downloads.');
-  }).catch(err => {
-    console.error('PDF export error:', err);
-    window.print();
-  });
+  const worker = html2pdf().set(opt).from(element);
+  if (action === 'open') {
+    worker.output('bloburl').then((blobUrl) => {
+      const opened = window.open(blobUrl, '_blank');
+      if (!opened) {
+        worker.save().then(() => showToast('Devis PDF saved to Downloads.'));
+      } else {
+        showToast('Devis PDF document opened.');
+      }
+    }).catch(err => {
+      console.error('PDF export error:', err);
+      worker.save();
+    });
+  } else {
+    worker.save().then(() => {
+      showToast('PDF file saved successfully to Downloads.');
+    }).catch(err => {
+      console.error('PDF export error:', err);
+      window.print();
+    });
+  }
 }
 
 // In-Context Project Devis Creator (Without leaving the Projects Pipeline)
@@ -2937,11 +3021,9 @@ function openProjectDevisModal(projectId) {
     }
   }
 
-  // Restore saved deliverables / line items permanently
+  // Restore saved deliverables / line items permanently from invoice
   let savedItems = [];
-  if (Array.isArray(p.deliverablesJson) && p.deliverablesJson.length > 0) {
-    savedItems = p.deliverablesJson;
-  } else if (existingInv && Array.isArray(existingInv.itemsJson) && existingInv.itemsJson.length > 0) {
+  if (existingInv && Array.isArray(existingInv.itemsJson) && existingInv.itemsJson.length > 0) {
     savedItems = existingInv.itemsJson;
   }
 

@@ -797,7 +797,7 @@ app.post('/api/invoices', requireAdminAuth, async (req, res) => {
       resultInvoice = inserted;
     }
 
-    // Persist calculated pricing, line items, notes, and deadline permanently to the project
+    // Persist calculated pricing, notes, and deadline permanently to the project
     const projectUpdates: any = {
       priceTotalDzd: String(total),
       m1AmountDzd: String(m1),
@@ -805,7 +805,6 @@ app.post('/api/invoices', requireAdminAuth, async (req, res) => {
       m3AmountDzd: String(m3),
       domainIncluded: Boolean(domainIncluded),
       hostingIncluded: Boolean(hostingIncluded),
-      deliverablesJson: formattedItems.map(i => ({ title: i.title, price: i.priceDzd })),
     };
     if (notes !== undefined) {
       projectUpdates.notes = notes;
