@@ -763,6 +763,32 @@
         </div>
       </div>
 
+      <!-- Project Design & Inspiration References -->
+      <div style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div>
+            <span class="detail-label" style="font-weight: 700; color: var(--ink); text-transform: uppercase; font-size: 0.78rem;">Project References</span>
+            <div id="pd-references-counter" style="font-size: 0.78rem; color: var(--ink-muted); margin-top: 2px;">0 reference links bookmarked</div>
+          </div>
+        </div>
+
+        <!-- Add Reference Row -->
+        <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
+          <input type="text" id="pd-new-ref-title" placeholder="Reference title (e.g. Nike Checkout, Stripe Hero...)" 
+                 style="flex: 1.2; min-width: 170px; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.85rem;"
+                 onkeydown="if(event.key === 'Enter'){ addProjectReference(); }">
+          <input type="url" id="pd-new-ref-url" placeholder="https://example.com" 
+                 style="flex: 1.8; min-width: 200px; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.85rem;"
+                 onkeydown="if(event.key === 'Enter'){ addProjectReference(); }">
+          <button type="button" class="btn btn-primary btn-sm" style="white-space: nowrap; padding: 8px 14px;" onclick="addProjectReference()">Add Reference</button>
+        </div>
+
+        <!-- Scrollable Reference Links List -->
+        <div id="pd-references-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 180px; overflow-y: auto; padding-right: 4px;">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
       <!-- Project Action Items & Interactive To-Do Checklist -->
       <div style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 16px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
@@ -1054,6 +1080,6 @@
 
 <div class="toast-container" id="toast-container"></div>
 <script src="html2pdf.bundle.min.js"></script>
-<script src="admin.js?v=32"></script>
+<script src="admin.js?v=33"></script>
 </body>
 </html>

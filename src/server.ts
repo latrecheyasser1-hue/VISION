@@ -269,6 +269,7 @@ app.post('/api/leads/:id/convert', async (req, res) => {
       m3Paid: false,
       notes: lead.problemDescription || '',
       deliverablesJson: [],
+      referencesJson: [],
     }).returning();
 
     // 4. Update Lead to converted
@@ -378,6 +379,7 @@ app.post('/api/projects', async (req, res) => {
       m3Paid: false,
       targetDeliveryDate: targetDeliveryDate ? new Date(targetDeliveryDate) : null,
       deliverablesJson: [],
+      referencesJson: [],
       notes,
     }).returning();
 
@@ -391,7 +393,7 @@ app.patch('/api/projects/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const updateData: any = {};
-    const allowed = ['title', 'stage', 'type', 'priceTotalDzd', 'domainIncluded', 'hostingIncluded', 'repoUrl', 'stagingUrl', 'productionUrl', 'isPublicPortfolio', 'notes', 'devisStatus', 'designStatus', 'status', 'm1Paid', 'm2Paid', 'm3Paid', 'targetDeliveryDate', 'deliverablesJson'];
+    const allowed = ['title', 'stage', 'type', 'priceTotalDzd', 'domainIncluded', 'hostingIncluded', 'repoUrl', 'stagingUrl', 'productionUrl', 'isPublicPortfolio', 'notes', 'devisStatus', 'designStatus', 'status', 'm1Paid', 'm2Paid', 'm3Paid', 'targetDeliveryDate', 'deliverablesJson', 'referencesJson'];
 
     for (const key of allowed) {
       if (req.body[key] !== undefined) {
@@ -399,6 +401,8 @@ app.patch('/api/projects/:id', async (req, res) => {
           updateData.targetDeliveryDate = req.body.targetDeliveryDate ? new Date(req.body.targetDeliveryDate) : null;
         } else if (key === 'deliverablesJson') {
           updateData.deliverablesJson = Array.isArray(req.body.deliverablesJson) ? req.body.deliverablesJson : [];
+        } else if (key === 'referencesJson') {
+          updateData.referencesJson = Array.isArray(req.body.referencesJson) ? req.body.referencesJson : [];
         } else {
           updateData[key] = req.body[key];
         }

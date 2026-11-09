@@ -96,6 +96,7 @@ export const projects = pgTable('projects', {
   targetDeliveryDate: timestamp('target_delivery_date'),
   actualDeliveryDate: timestamp('actual_delivery_date'),
   deliverablesJson: jsonb('deliverables_json').default([]),
+  referencesJson: jsonb('references_json').default([]),
 
   // Technical links
   repoUrl: text('repo_url'),

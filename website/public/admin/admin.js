@@ -555,6 +555,13 @@ function openProjectDetailsModal(projectId) {
     }
   }
 
+  // Project References
+  const refTitleEl = document.getElementById('pd-new-ref-title');
+  const refUrlEl = document.getElementById('pd-new-ref-url');
+  if (refTitleEl) refTitleEl.value = '';
+  if (refUrlEl) refUrlEl.value = '';
+  renderProjectReferences(p.referencesJson || []);
+
   // Interactive Project Action Items (To-Do)
   const taskInputEl = document.getElementById('pd-new-task-input');
   if (taskInputEl) taskInputEl.value = '';
@@ -576,6 +583,140 @@ function openProjectDetailsModal(projectId) {
   }
 
   openModal('project-details-modal');
+}
+
+// ==========================================
+// PROJECT REFERENCES (DESIGN & INSPIRATION)
+// ==========================================
+function renderProjectReferences(refs) {
+  const container = document.getElementById('pd-references-list');
+  const counterEl = document.getElementById('pd-references-counter');
+  if (!container) return;
+
+  const list = Array.isArray(refs) ? refs : [];
+  if (counterEl) {
+    const count = list.length;
+    counterEl.textContent = `${count} reference ${count === 1 ? 'link' : 'links'} bookmarked`;
+  }
+
+  if (list.length === 0) {
+    container.innerHTML = `
+      <div style="padding: 14px; text-align: center; color: var(--ink-muted); font-size: 0.82rem; background: var(--paper); border: 1px dashed var(--border); border-radius: var(--radius-sm);">
+        No reference links bookmarked yet. Add reference URLs above to keep benchmarks handy.
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = list.map(ref => {
+    let rawUrl = (ref.url || '').trim();
+    let safeUrl = rawUrl;
+    if (safeUrl && !safeUrl.startsWith('http://') && !safeUrl.startsWith('https://')) {
+      safeUrl = 'https://' + safeUrl;
+    }
+    let domain = '';
+    try {
+      const u = new URL(safeUrl);
+      domain = u.hostname.replace(/^www\./, '');
+    } catch (e) {
+      domain = safeUrl;
+    }
+
+    return `
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-sm); gap: 10px;">
+        <div style="display: flex; flex-direction: column; min-width: 0; flex: 1;">
+          <a href="${escapeHtml(safeUrl)}" target="_blank" rel="noopener noreferrer" 
+             style="color: var(--cyan-dark); font-weight: 600; font-size: 0.86rem; text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+             onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
+            ${escapeHtml(ref.title || domain || 'Reference Link')}
+          </a>
+          <span style="font-size: 0.73rem; color: var(--ink-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+            ${escapeHtml(domain)}
+          </span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+          <a href="${escapeHtml(safeUrl)}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm" style="padding: 2px 8px; font-size: 0.75rem; text-decoration: none;">
+            Visit
+          </a>
+          <button type="button" class="btn btn-secondary btn-sm" style="padding: 2px 8px; color: #DC2626; border-color: transparent; font-size: 0.75rem;" onclick="deleteProjectReference('${ref.id}')">
+            Delete
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function addProjectReference() {
+  if (!currentDetailsProjectId) return;
+  const titleEl = document.getElementById('pd-new-ref-title');
+  const urlEl = document.getElementById('pd-new-ref-url');
+  if (!titleEl || !urlEl) return;
+
+  const title = titleEl.value.trim();
+  let url = urlEl.value.trim();
+
+  if (!url) {
+    showToast('Please enter a website URL', 'error');
+    return;
+  }
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    url = 'https://' + url;
+  }
+
+  const p = state.projects.find(x => x.id === currentDetailsProjectId);
+  if (!p) return;
+
+  const currentRefs = Array.isArray(p.referencesJson) ? [...p.referencesJson] : [];
+  const newRef = {
+    id: 'ref_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+    title: title || url,
+    url,
+    createdAt: new Date().toISOString()
+  };
+  currentRefs.push(newRef);
+
+  // Optimistic UI update
+  p.referencesJson = currentRefs;
+  renderProjectReferences(currentRefs);
+  titleEl.value = '';
+  urlEl.value = '';
+
+  try {
+    const res = await fetch(`/api/projects/${currentDetailsProjectId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ referencesJson: currentRefs })
+    });
+    if (!res.ok) throw new Error('Failed to save reference');
+    showToast('Reference added successfully.');
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+async function deleteProjectReference(refId) {
+  if (!currentDetailsProjectId) return;
+  const p = state.projects.find(x => x.id === currentDetailsProjectId);
+  if (!p) return;
+
+  const currentRefs = (Array.isArray(p.referencesJson) ? p.referencesJson : []).filter(r => r.id !== refId);
+
+  // Optimistic UI update
+  p.referencesJson = currentRefs;
+  renderProjectReferences(currentRefs);
+
+  try {
+    const res = await fetch(`/api/projects/${currentDetailsProjectId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ referencesJson: currentRefs })
+    });
+    if (!res.ok) throw new Error('Failed to delete reference');
+    showToast('Reference removed.');
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
 }
 
 // ==========================================
