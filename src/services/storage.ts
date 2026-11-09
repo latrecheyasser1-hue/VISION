@@ -5,16 +5,15 @@ dotenv.config({ path: '.env.local' });
 dotenv.config({ path: '.env' });
 dotenv.config();
 
-const DEFAULT_R2_ENDPOINT = 'https://73b22fc72b6c98643bbab88ae6dbbfad.r2.cloudflarestorage.com';
-const DEFAULT_R2_KEY_ID = 'c62c2d58a45a508da6bf33839e661585';
-const DEFAULT_R2_SECRET = '24dd0a0922dbf40e23ae26ffb23be7d6889d240c7e812dc755aac7eedfbf1144';
-const DEFAULT_R2_PUBLIC_URL = 'https://pub-688a9ac86fa04eaebf3f982ff63502d9.r2.dev';
-
 export function getR2Client() {
-  const endpoint = process.env.R2_ENDPOINT || DEFAULT_R2_ENDPOINT;
-  const accessKeyId = process.env.R2_ACCESS_KEY_ID || DEFAULT_R2_KEY_ID;
-  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY || DEFAULT_R2_SECRET;
+  const endpoint = process.env.R2_ENDPOINT;
+  const accessKeyId = process.env.R2_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
   const region = 'auto'; // Cloudflare R2 uses 'auto'
+
+  if (!endpoint || !accessKeyId || !secretAccessKey) {
+    throw new Error('Cloudflare R2 storage credentials are not properly configured in environment variables.');
+  }
 
   return new S3Client({
     endpoint,
@@ -32,7 +31,10 @@ export function getR2BucketName(): string {
 }
 
 export function getR2PublicUrl(key: string): string {
-  const baseUrl = (process.env.R2_PUBLIC_URL || DEFAULT_R2_PUBLIC_URL).replace(/\/$/, '');
+  const baseUrl = (process.env.R2_PUBLIC_URL || '').replace(/\/$/, '');
+  if (!baseUrl) {
+    throw new Error('R2_PUBLIC_URL environment variable is required.');
+  }
   const cleanKey = key.replace(/^\//, '');
   return `${baseUrl}/${cleanKey}`;
 }

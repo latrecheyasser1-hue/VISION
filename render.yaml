@@ -13,7 +13,9 @@ services:
       - key: DATABASE_URL
         sync: false
       - key: ADMIN_PIN
-        value: 765483
+        sync: false
+      - key: ADMIN_AUTH_SECRET
+        sync: false
       - key: R2_ACCOUNT_ID
         sync: false
       - key: R2_ACCESS_KEY_ID

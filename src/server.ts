@@ -6,10 +6,10 @@ import path from 'node:path';
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import * as dotenv from 'dotenv';
-import { eq, desc, asc, sql as dSql } from 'drizzle-orm';
+import { eq, desc, asc } from 'drizzle-orm';
 import { db } from './db/client.js';
 import * as schema from './db/schema.js';
-import { uploadToR2, getR2PublicUrl } from './services/storage.js';
+import { uploadToR2 } from './services/storage.js';
 
 dotenv.config({ path: '.env.local' });
 dotenv.config({ path: '.env' });
@@ -31,40 +31,74 @@ const websitePublicDir = candidatePublicDirs.find(dir => existsSync(dir) && exis
 const app = express();
 const port = process.env.PORT || 4190;
 
-app.use(cors());
+// ==========================================
+// SECURITY HARDENING & HEADERS
+// ==========================================
+app.disable('x-powered-by');
+app.set('trust proxy', 1);
+
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  next();
+});
+
+// Strict CORS Allowlist
+const allowedOrigins = new Set([
+  'https://admin.digitalvisiondz.com',
+  'https://www.digitalvisiondz.com',
+  'https://digitalvisiondz.com',
+  'http://localhost:4190',
+  'http://127.0.0.1:4190',
+]);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.has(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Blocked by CORS policy'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
 app.use((req, res, next) => {
   if (req.url.startsWith('/api/index.js') && req.originalUrl) {
     req.url = req.originalUrl;
   }
   next();
 });
-app.use(express.json());
 
-// Memory storage for multer uploads (direct stream to Cloudflare R2)
+app.use(express.json({ limit: '1mb' }));
+
+// Restrict uploads to safe document and image formats
+const ALLOWED_MIME_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'application/pdf',
+]);
+
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 15 * 1024 * 1024 }, // 15MB max
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB max
+  fileFilter: (req, file, cb) => {
+    if (ALLOWED_MIME_TYPES.has(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only JPG, PNG, WEBP, and PDF receipts are permitted.'));
+    }
+  },
 });
 
 // ==========================================
 // REAL-TIME SERVER-SENT EVENTS (SSE)
 // ==========================================
 const sseClients = new Set<express.Response>();
-
-app.get('/api/events', (req, res) => {
-  res.writeHead(200, {
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive',
-  });
-  res.write('retry: 5000\n\n');
-
-  sseClients.add(res);
-
-  req.on('close', () => {
-    sseClients.delete(res);
-  });
-});
 
 function broadcastEvent(type: string, data: any) {
   const payload = `event: ${type}\ndata: ${JSON.stringify(data)}\n\n`;
@@ -78,13 +112,15 @@ function broadcastEvent(type: string, data: any) {
 }
 
 // ==========================================
-// ADMIN PORTAL PIN AUTHENTICATION & RATE LIMITING
+// ADMIN PORTAL AUTHENTICATION & RATE LIMITING
 // ==========================================
-const ADMIN_PIN = (process.env.ADMIN_PIN || '765483').trim();
+const ADMIN_AUTH_SECRET = (process.env.ADMIN_AUTH_SECRET || 'VISION_FOUNDER_SECURE_AUTH_KEY_2026').trim();
+const ADMIN_PIN = (process.env.ADMIN_PIN || '').trim();
+if (!ADMIN_PIN) {
+  console.warn('WARNING: ADMIN_PIN is not configured in environment variables.');
+}
 const MAX_PIN_ATTEMPTS = 5;
 const PIN_LOCKOUT_MS = 15 * 60 * 1000; // 15 minutes
-const ADMIN_AUTH_SECRET = 'VISION_FOUNDER_PERSISTENT_AUTH_2026';
-const ADMIN_MASTER_TOKEN = crypto.createHmac('sha256', ADMIN_AUTH_SECRET).update(ADMIN_PIN).digest('hex');
 
 interface PinRateLimit {
   attempts: number;
@@ -92,23 +128,54 @@ interface PinRateLimit {
 }
 
 const pinAttemptsMap = new Map<string, PinRateLimit>();
-const validAdminTokens = new Set<string>();
+
+interface SessionPayload {
+  iat: number;
+  exp: number;
+  nonce: string;
+}
+
+function createSignedSessionToken(): string {
+  const payload: SessionPayload = {
+    iat: Date.now(),
+    exp: Date.now() + 24 * 60 * 60 * 1000, // 24-hour expiration
+    nonce: crypto.randomBytes(16).toString('hex'),
+  };
+  const payloadB64 = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  const signature = crypto.createHmac('sha256', ADMIN_AUTH_SECRET).update(payloadB64).digest('base64url');
+  return `${payloadB64}.${signature}`;
+}
 
 function isValidAdminToken(token: string | null | undefined): boolean {
-  if (!token) return false;
-  return (
-    token === 'vision_founder_authorized_765483' ||
-    token === ADMIN_PIN ||
-    token === ADMIN_MASTER_TOKEN ||
-    validAdminTokens.has(token)
-  );
+  if (!token || typeof token !== 'string') return false;
+  const parts = token.split('.');
+  if (parts.length !== 2) return false;
+  const [payloadB64, signature] = parts;
+  try {
+    const expectedSig = crypto.createHmac('sha256', ADMIN_AUTH_SECRET).update(payloadB64).digest('base64url');
+    const sigBuf = Buffer.from(signature);
+    const expSigBuf = Buffer.from(expectedSig);
+    if (sigBuf.length !== expSigBuf.length || !crypto.timingSafeEqual(sigBuf, expSigBuf)) {
+      return false;
+    }
+    const payload: SessionPayload = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf8'));
+    if (!payload.exp || Date.now() > payload.exp) {
+      return false;
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function verifyPinTimingSafe(submitted: string): boolean {
+  const a = Buffer.from(submitted.trim());
+  const b = Buffer.from(ADMIN_PIN);
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(a, b);
 }
 
 function getClientIp(req: express.Request): string {
-  const forwarded = req.headers['x-forwarded-for'];
-  if (typeof forwarded === 'string') {
-    return forwarded.split(',')[0].trim();
-  }
   return req.ip || req.socket.remoteAddress || 'unknown';
 }
 
@@ -120,6 +187,27 @@ const requireAdminAuth: express.RequestHandler = (req, res, next) => {
   }
   next();
 };
+
+// Authenticated Real-Time Events endpoint
+app.get('/api/events', (req, res) => {
+  const token = (req.query.token as string) || (req.headers.authorization?.startsWith('Bearer ') ? req.headers.authorization.slice(7).trim() : null);
+  if (!isValidAdminToken(token)) {
+    return res.status(401).json({ error: 'Unauthorized: Admin authentication required for event stream.' });
+  }
+
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+  });
+  res.write('retry: 5000\n\n');
+
+  sseClients.add(res);
+
+  req.on('close', () => {
+    sseClients.delete(res);
+  });
+});
 
 // Check current lock status or attempts remaining
 app.get('/api/auth/status', (req, res) => {
@@ -136,7 +224,6 @@ app.get('/api/auth/status', (req, res) => {
     });
   }
 
-  // If lockout expired, reset
   if (state.lockedUntil && now >= state.lockedUntil) {
     pinAttemptsMap.delete(ip);
   }
@@ -149,7 +236,7 @@ app.get('/api/auth/status', (req, res) => {
   });
 });
 
-// Verify PIN code with strict 5-attempt rate limiter and 15-min lockout
+// Verify PIN code with strict 5-attempt rate limiter, constant-time compare, and 15-min lockout
 app.post('/api/auth/pin', (req, res) => {
   const ip = getClientIp(req);
   const now = Date.now();
@@ -176,15 +263,13 @@ app.post('/api/auth/pin', (req, res) => {
     state.lockedUntil = null;
   }
 
-  // 3. Verify submitted PIN
+  // 3. Verify submitted PIN in constant time
   const { pin } = req.body || {};
   const submittedPin = typeof pin === 'string' ? pin.trim() : String(pin || '').trim();
 
-  if (submittedPin === ADMIN_PIN) {
-    // Correct PIN: reset rate limiter for this IP
+  if (verifyPinTimingSafe(submittedPin)) {
     pinAttemptsMap.delete(ip);
-    const token = 'vision_founder_authorized_765483';
-    validAdminTokens.add(token);
+    const token = createSignedSessionToken();
 
     return res.json({
       success: true,
@@ -226,7 +311,7 @@ app.post('/api/auth/verify-token', (req, res) => {
   return res.status(401).json({ valid: false, message: 'Invalid or expired session token.' });
 });
 
-// Logout / Lock session
+// Logout
 app.post('/api/auth/logout', (req, res) => {
   return res.json({ success: true });
 });
@@ -274,7 +359,7 @@ app.get('/api/stats', requireAdminAuth, async (req, res) => {
     });
   } catch (err: any) {
     console.error('Error fetching stats:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Failed to retrieve stats.' });
   }
 });
 
@@ -284,28 +369,30 @@ app.get('/api/clients', requireAdminAuth, async (req, res) => {
     const list = await db.select().from(schema.clients).orderBy(desc(schema.clients.createdAt));
     res.json(list);
   } catch (err: any) {
-    res.status(500).json({ error: err.message });
+    console.error('Error fetching clients:', err);
+    res.status(500).json({ error: 'Failed to retrieve clients.' });
   }
 });
 
 app.post('/api/clients', requireAdminAuth, async (req, res) => {
   try {
-    const { companyName, contactName, phone, email, wilaya, industry, notes } = req.body;
+    const { companyName, contactName, phone, email, wilaya, industry, notes } = req.body || {};
     if (!companyName || !contactName || !phone) {
       return res.status(400).json({ error: 'companyName, contactName, and phone are required' });
     }
     const [inserted] = await db.insert(schema.clients).values({
-      companyName,
-      contactName,
-      phone,
-      email,
-      wilaya,
-      industry,
-      notes,
+      companyName: String(companyName).trim(),
+      contactName: String(contactName).trim(),
+      phone: String(phone).trim(),
+      email: email ? String(email).trim() : null,
+      wilaya: wilaya ? String(wilaya).trim() : null,
+      industry: industry ? String(industry).trim() : null,
+      notes: notes ? String(notes).trim() : null,
     }).returning();
     res.status(201).json(inserted);
   } catch (err: any) {
-    res.status(500).json({ error: err.message });
+    console.error('Error creating client:', err);
+    res.status(500).json({ error: 'Failed to create client.' });
   }
 });
 
@@ -325,23 +412,44 @@ app.delete('/api/clients/:id', requireAdminAuth, async (req, res) => {
     res.json({ success: true, deleted });
   } catch (err: any) {
     console.error('Delete client error:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Failed to delete client.' });
   }
 });
 
 // 3. Leads Ingestion & Management
+const leadSubmissionsMap = new Map<string, { count: number; resetAt: number }>();
+function checkLeadRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const entry = leadSubmissionsMap.get(ip);
+  if (!entry || now > entry.resetAt) {
+    leadSubmissionsMap.set(ip, { count: 1, resetAt: now + 10 * 60 * 1000 });
+    return true;
+  }
+  if (entry.count >= 10) {
+    return false;
+  }
+  entry.count += 1;
+  return true;
+}
+
 app.get('/api/leads', requireAdminAuth, async (req, res) => {
   try {
     const list = await db.select().from(schema.leads).orderBy(desc(schema.leads.createdAt));
     res.json(list);
   } catch (err: any) {
-    res.status(500).json({ error: err.message });
+    console.error('Error fetching leads:', err);
+    res.status(500).json({ error: 'Failed to retrieve leads.' });
   }
 });
 
 app.post('/api/leads', async (req, res) => {
   try {
-    const { name, phone, activity, problemDescription, need, selectedChallenge, budgetEstimate } = req.body;
+    const ip = getClientIp(req);
+    if (!checkLeadRateLimit(ip)) {
+      return res.status(429).json({ error: 'Too many submissions. Please wait a few minutes before trying again.' });
+    }
+
+    const { name, phone, activity, problemDescription, need, selectedChallenge, budgetEstimate } = req.body || {};
     const finalProblem = (problemDescription || need || '').trim();
     const cleanName = (name || '').trim();
     const cleanPhone = (phone || '').trim();
@@ -374,16 +482,19 @@ app.post('/api/leads', async (req, res) => {
       source: 'website_brief',
     }).returning();
 
-    // Broadcast in real-time to all open admin dashboards via SSE
+    // Broadcast in real-time to authenticated admin dashboards via SSE
     broadcastEvent('new_lead', {
       lead: inserted,
       clientId: linkedClientId,
     });
 
-    res.status(201).json(inserted);
+    res.status(201).json({
+      success: true,
+      message: 'Brief submitted successfully.',
+    });
   } catch (err: any) {
     console.error('Lead submission error:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Failed to submit brief. Please contact via WhatsApp.' });
   }
 });
 
@@ -466,21 +577,22 @@ app.post('/api/leads/:id/convert', requireAdminAuth, async (req, res) => {
     });
   } catch (err: any) {
     console.error('Lead conversion error:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Failed to convert lead.' });
   }
 });
 
 app.patch('/api/leads/:id', requireAdminAuth, async (req, res) => {
   try {
     const id = String(req.params.id);
-    const { status } = req.body;
+    const { status } = req.body || {};
     const [updated] = await db.update(schema.leads)
       .set({ status })
       .where(eq(schema.leads.id, id))
       .returning();
     res.json(updated);
   } catch (err: any) {
-    res.status(500).json({ error: err.message });
+    console.error('Update lead error:', err);
+    res.status(500).json({ error: 'Failed to update lead.' });
   }
 });
 
@@ -497,7 +609,7 @@ app.delete('/api/leads/:id', requireAdminAuth, async (req, res) => {
     res.json({ success: true, deleted });
   } catch (err: any) {
     console.error('Delete lead error:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Failed to delete lead.' });
   }
 });
 
@@ -520,13 +632,14 @@ app.get('/api/projects', requireAdminAuth, async (req, res) => {
 
     res.json(result);
   } catch (err: any) {
-    res.status(500).json({ error: err.message });
+    console.error('Error fetching projects:', err);
+    res.status(500).json({ error: 'Failed to retrieve projects.' });
   }
 });
 
 app.post('/api/projects', requireAdminAuth, async (req, res) => {
   try {
-    const { clientId, title, type, priceTotalDzd, domainIncluded, hostingIncluded, notes, targetDeliveryDate } = req.body;
+    const { clientId, title, type, priceTotalDzd, domainIncluded, hostingIncluded, notes, targetDeliveryDate } = req.body || {};
     if (!clientId || !title || !type) {
       return res.status(400).json({ error: 'clientId, title, and type are required' });
     }
@@ -534,12 +647,12 @@ app.post('/api/projects', requireAdminAuth, async (req, res) => {
     const total = Number(priceTotalDzd) || 0;
     const m1Amount = Math.round(total * 0.50);
     const m2Amount = Math.round(total * 0.20);
-    const m3Amount = total - m1Amount - m2Amount; // Remaining 30%
+    const m3Amount = total - m1Amount - m2Amount;
 
     const [inserted] = await db.insert(schema.projects).values({
-      clientId,
-      title,
-      type,
+      clientId: String(clientId).trim(),
+      title: String(title).trim(),
+      type: String(type).trim(),
       stage: 'scoping',
       priceTotalDzd: String(total),
       domainIncluded: Boolean(domainIncluded),
@@ -553,12 +666,13 @@ app.post('/api/projects', requireAdminAuth, async (req, res) => {
       targetDeliveryDate: targetDeliveryDate ? new Date(targetDeliveryDate) : null,
       deliverablesJson: [],
       referencesJson: [],
-      notes,
+      notes: notes ? String(notes).trim() : null,
     }).returning();
 
     res.status(201).json(inserted);
   } catch (err: any) {
-    res.status(500).json({ error: err.message });
+    console.error('Create project error:', err);
+    res.status(500).json({ error: 'Failed to create project.' });
   }
 });
 
@@ -582,7 +696,6 @@ app.patch('/api/projects/:id', requireAdminAuth, async (req, res) => {
       }
     }
 
-    // Cancellation Rule: Can only cancel projects in scoping, devis, or deposit_50 before m1 is paid
     if (updateData.status === 'cancelled') {
       const [currProject] = await db.select().from(schema.projects).where(eq(schema.projects.id, id));
       if (!currProject) {
@@ -613,7 +726,6 @@ app.patch('/api/projects/:id', requireAdminAuth, async (req, res) => {
       const normalizedNewStage = stageMap[updateData.stage] || updateData.stage;
       updateData.stage = normalizedNewStage;
 
-      // Rule: Projects cannot be moved backward or skip stages (must advance step-by-step)
       const [currentProject] = await db.select({ stage: schema.projects.stage }).from(schema.projects).where(eq(schema.projects.id, id));
       if (currentProject) {
         const STAGE_ORDER = ['scoping', 'devis', 'deposit_50', 'design', 'design_approved_20', 'development', 'security_qa', 'delivered', 'maintenance'];
@@ -644,7 +756,8 @@ app.patch('/api/projects/:id', requireAdminAuth, async (req, res) => {
 
     res.json(updated);
   } catch (err: any) {
-    res.status(500).json({ error: err.message });
+    console.error('Update project error:', err);
+    res.status(500).json({ error: 'Failed to update project.' });
   }
 });
 
@@ -652,7 +765,7 @@ app.patch('/api/projects/:id', requireAdminAuth, async (req, res) => {
 app.post('/api/projects/:id/receipt', requireAdminAuth, upload.single('receipt'), async (req, res) => {
   try {
     const id = String(req.params.id);
-    const { milestone } = req.body; // 'm1', 'm2', or 'm3'
+    const { milestone } = req.body || {};
 
     if (!['m1', 'm2', 'm3'].includes(milestone)) {
       return res.status(400).json({ error: 'Milestone must be m1, m2, or m3' });
@@ -662,13 +775,19 @@ app.post('/api/projects/:id/receipt', requireAdminAuth, upload.single('receipt')
       return res.status(400).json({ error: 'No receipt file uploaded' });
     }
 
-    const ext = path.extname(req.file.originalname) || '.jpg';
-    const key = `receipts/${id}-${milestone}-${Date.now()}${ext}`;
+    const MIME_TO_EXT: Record<string, string> = {
+      'image/jpeg': '.jpg',
+      'image/png': '.png',
+      'image/webp': '.webp',
+      'application/pdf': '.pdf',
+    };
+    const ext = MIME_TO_EXT[req.file.mimetype] || '.jpg';
+    const safeId = id.replace(/[^a-zA-Z0-9_-]/g, '');
+    const randomSuffix = crypto.randomBytes(4).toString('hex');
+    const key = `receipts/${safeId}-${milestone}-${Date.now()}-${randomSuffix}${ext}`;
 
-    // Upload to Cloudflare R2 bucket "vision"
     const uploadResult = await uploadToR2(key, req.file.buffer, req.file.mimetype);
 
-    // Update Project milestone in Neon Postgres & automatically advance stage
     let updated: any;
     if (milestone === 'm1') {
       [updated] = await db.update(schema.projects)
@@ -678,7 +797,7 @@ app.post('/api/projects/:id/receipt', requireAdminAuth, upload.single('receipt')
           m1PaidAt: new Date(),
           stage: 'design',
         })
-        .where(dSql`${schema.projects.id} = ${id}`)
+        .where(eq(schema.projects.id, id))
         .returning();
     } else if (milestone === 'm2') {
       [updated] = await db.update(schema.projects)
@@ -688,7 +807,7 @@ app.post('/api/projects/:id/receipt', requireAdminAuth, upload.single('receipt')
           m2PaidAt: new Date(),
           stage: 'development',
         })
-        .where(dSql`${schema.projects.id} = ${id}`)
+        .where(eq(schema.projects.id, id))
         .returning();
     } else if (milestone === 'm3') {
       [updated] = await db.update(schema.projects)
@@ -698,7 +817,7 @@ app.post('/api/projects/:id/receipt', requireAdminAuth, upload.single('receipt')
           m3PaidAt: new Date(),
           stage: 'delivered',
         })
-        .where(dSql`${schema.projects.id} = ${id}`)
+        .where(eq(schema.projects.id, id))
         .returning();
     }
 
@@ -709,7 +828,7 @@ app.post('/api/projects/:id/receipt', requireAdminAuth, upload.single('receipt')
     });
   } catch (err: any) {
     console.error('Receipt upload error:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Failed to upload receipt.' });
   }
 });
 
@@ -719,13 +838,14 @@ app.get('/api/invoices', requireAdminAuth, async (req, res) => {
     const list = await db.select().from(schema.invoices).orderBy(desc(schema.invoices.createdAt));
     res.json(list);
   } catch (err: any) {
-    res.status(500).json({ error: err.message });
+    console.error('Error fetching invoices:', err);
+    res.status(500).json({ error: 'Failed to retrieve invoices.' });
   }
 });
 
 app.post('/api/invoices', requireAdminAuth, async (req, res) => {
   try {
-    const { projectId, clientId, items, domainIncluded, hostingIncluded, notes, dueDate, targetDeliveryDate } = req.body;
+    const { projectId, clientId, items, domainIncluded, hostingIncluded, notes, dueDate, targetDeliveryDate } = req.body || {};
 
     if (!projectId || !clientId || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: 'projectId, clientId, and items array are required' });
@@ -749,7 +869,6 @@ app.post('/api/invoices', requireAdminAuth, async (req, res) => {
 
     const finalDeadline = (dueDate || targetDeliveryDate) ? new Date(dueDate || targetDeliveryDate) : null;
 
-    // Check if an existing invoice already exists for this project
     const [existingInvoice] = await db
       .select()
       .from(schema.invoices)
@@ -797,7 +916,6 @@ app.post('/api/invoices', requireAdminAuth, async (req, res) => {
       resultInvoice = inserted;
     }
 
-    // Persist calculated pricing, notes, and deadline permanently to the project
     const projectUpdates: any = {
       priceTotalDzd: String(total),
       m1AmountDzd: String(m1),
@@ -817,13 +935,12 @@ app.post('/api/invoices', requireAdminAuth, async (req, res) => {
 
     res.status(200).json(resultInvoice);
   } catch (err: any) {
-    res.status(500).json({ error: err.message });
+    console.error('Invoice error:', err);
+    res.status(500).json({ error: 'Failed to process quote/invoice.' });
   }
 });
 
-// ==========================================
-// 7. MEETINGS & SCHEDULE CALENDAR
-// ==========================================
+// 7. Meetings & Schedule Calendar
 app.get('/api/meetings', requireAdminAuth, async (req, res) => {
   try {
     const list = await db
@@ -849,7 +966,7 @@ app.get('/api/meetings', requireAdminAuth, async (req, res) => {
     res.json(formatted);
   } catch (err: any) {
     console.error('Fetch meetings error:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Failed to retrieve meetings.' });
   }
 });
 
@@ -870,7 +987,7 @@ app.post('/api/meetings', requireAdminAuth, async (req, res) => {
       agenda,
       notes,
       status,
-    } = req.body;
+    } = req.body || {};
 
     if (!title || !meetingDate || !startTime) {
       return res.status(400).json({ error: 'Title, meetingDate, and startTime are required.' });
@@ -909,7 +1026,7 @@ app.post('/api/meetings', requireAdminAuth, async (req, res) => {
     res.status(201).json(inserted);
   } catch (err: any) {
     console.error('Create meeting error:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Failed to create meeting.' });
   }
 });
 
@@ -943,7 +1060,7 @@ app.patch('/api/meetings/:id', requireAdminAuth, async (req, res) => {
     const [updated] = await db
       .update(schema.meetings)
       .set(updateData)
-      .where(dSql`${schema.meetings.id} = ${id}`)
+      .where(eq(schema.meetings.id, id))
       .returning();
 
     if (!updated) {
@@ -954,7 +1071,7 @@ app.patch('/api/meetings/:id', requireAdminAuth, async (req, res) => {
     res.json(updated);
   } catch (err: any) {
     console.error('Update meeting error:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Failed to update meeting.' });
   }
 });
 
@@ -963,7 +1080,7 @@ app.delete('/api/meetings/:id', requireAdminAuth, async (req, res) => {
     const id = String(req.params.id);
     const [deleted] = await db
       .delete(schema.meetings)
-      .where(dSql`${schema.meetings.id} = ${id}`)
+      .where(eq(schema.meetings.id, id))
       .returning();
 
     if (!deleted) {
@@ -974,7 +1091,7 @@ app.delete('/api/meetings/:id', requireAdminAuth, async (req, res) => {
     res.json({ success: true, id });
   } catch (err: any) {
     console.error('Delete meeting error:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Failed to delete meeting.' });
   }
 });
 
@@ -1062,11 +1179,10 @@ app.use((req, res, next) => {
 if (!process.env.VERCEL) {
   app.listen(port, () => {
     console.log(`\n======================================================`);
-    console.log(`🚀 VISION Server live on: http://127.0.0.1:${port}`);
-    console.log(`🌐 Public Website:         http://127.0.0.1:${port}/`);
-    console.log(`⚡ Admin Dashboard:        http://127.0.0.1:${port}/admin`);
-    console.log(`📡 Cloudflare R2 Bucket:   vision`);
-    console.log(`🐘 Database:               Neon Serverless Postgres`);
+    console.log(`VISION Server live on: http://127.0.0.1:${port}`);
+    console.log(`Public Website:        http://127.0.0.1:${port}/`);
+    console.log(`Admin Portal:          https://admin.digitalvisiondz.com/`);
+    console.log(`Security:              Strict CORS, Rate Limiting, Signed Tokens`);
     console.log(`======================================================\n`);
   });
 }

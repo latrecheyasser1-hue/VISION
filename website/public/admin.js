@@ -141,34 +141,58 @@ window.fetch = async function(url, options = {}) {
     }
   }
 
-  return await originalFetch(url, options);
+  const response = await originalFetch(url, options);
+
+  if (response.status === 401 && typeof url === 'string' && url.startsWith('/api/') && !url.includes('/api/auth/')) {
+    lockAdminDashboard('Session expired or unauthorized. Please re-enter your PIN.');
+  }
+
+  return response;
 };
 
 let authLockoutTimer = null;
 let hasDashboardStarted = false;
 
-function checkAdminAuth() {
-  // Clear any persistent localStorage auto-login so PIN is ALWAYS requested on new sessions
+async function checkAdminAuth() {
   localStorage.removeItem('vision_admin_token');
-
-  // Check if authenticated in current browser session
   const sessionToken = sessionStorage.getItem('vision_admin_token');
-  if (sessionToken === 'vision_founder_authorized_765483') {
-    currentAuthToken = sessionToken;
-    hideAuthGate();
-    startAdminDashboard();
-    return true;
+
+  if (sessionToken) {
+    try {
+      const res = await fetch('/api/auth/verify-token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + sessionToken,
+        },
+        body: JSON.stringify({ token: sessionToken }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.valid) {
+        currentAuthToken = sessionToken;
+        hideAuthGate();
+        startAdminDashboard();
+        return true;
+      }
+    } catch (err) {
+      console.warn('Token verification error:', err);
+    }
+    sessionStorage.removeItem('vision_admin_token');
+    currentAuthToken = '';
   }
 
-  // Not authenticated in this session: ALWAYS show PIN gate!
   showAuthGate();
 
-  // Check if currently locked out
-  const lockoutUntil = parseInt(localStorage.getItem('vision_lockout_until') || '0', 10);
-  const now = Date.now();
-  if (lockoutUntil && now < lockoutUntil) {
-    startLockoutCountdown(Math.ceil((lockoutUntil - now) / 1000));
-    return false;
+  // Check lockout status from server
+  try {
+    const res = await fetch('/api/auth/status');
+    const data = await res.json().catch(() => ({}));
+    if (data && data.locked && data.remainingSeconds > 0) {
+      startLockoutCountdown(data.remainingSeconds);
+      return false;
+    }
+  } catch (err) {
+    console.warn('Status check error:', err);
   }
 
   return false;
@@ -203,61 +227,66 @@ async function handlePinSubmit(event) {
   if (!pinInput || !submitBtn) return;
   const pin = (pinInput.value || '').trim();
 
-  // Check if currently locked out
-  const lockoutUntil = parseInt(localStorage.getItem('vision_lockout_until') || '0', 10);
-  const now = Date.now();
-  if (lockoutUntil && now < lockoutUntil) {
-    startLockoutCountdown(Math.ceil((lockoutUntil - now) / 1000));
-    return;
-  }
-
   if (!pin) {
     showAlertBanner('PIN Required', 'Please enter your 6-digit security PIN to unlock.', '#FEF3C7', '#B45309', '#92400E');
     pinInput.focus();
     return;
   }
 
-  // CORRECT PIN (765483) -> INSTANT UNLOCK
-  if (pin === '765483') {
-    currentAuthToken = 'vision_founder_authorized_765483';
-    sessionStorage.setItem('vision_admin_token', currentAuthToken);
-    localStorage.removeItem('vision_failed_attempts');
-    localStorage.removeItem('vision_lockout_until');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Verifying...';
 
-    hideAuthGate();
-    pinInput.value = '';
-    if (alertBanner) alertBanner.style.display = 'none';
-    if (authLockoutTimer) {
-      clearInterval(authLockoutTimer);
-      authLockoutTimer = null;
+  try {
+    const res = await fetch('/api/auth/pin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pin }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    if (res.ok && data.success && data.token) {
+      currentAuthToken = data.token;
+      sessionStorage.setItem('vision_admin_token', currentAuthToken);
+      hideAuthGate();
+      pinInput.value = '';
+      if (alertBanner) alertBanner.style.display = 'none';
+      if (authLockoutTimer) {
+        clearInterval(authLockoutTimer);
+        authLockoutTimer = null;
+      }
+      showToast('Dashboard unlocked.');
+      startAdminDashboard();
+      return;
     }
-    showToast('Dashboard unlocked.');
-    startAdminDashboard();
-    return;
-  }
 
-  // INCORRECT PIN -> Track 5 attempts, then 15-min lockout
-  let failed = parseInt(localStorage.getItem('vision_failed_attempts') || '0', 10) + 1;
-  localStorage.setItem('vision_failed_attempts', String(failed));
+    if (res.status === 429 || data.locked) {
+      startLockoutCountdown(data.remainingSeconds || 900);
+      return;
+    }
 
-  if (failed >= 5) {
-    const lockSeconds = 15 * 60; // 15 minutes
-    localStorage.setItem('vision_lockout_until', String(Date.now() + lockSeconds * 1000));
-    startLockoutCountdown(lockSeconds);
-    return;
+    const attemptsLeft = typeof data.attemptsLeft === 'number' ? data.attemptsLeft : 0;
+    showAlertBanner(
+      'Invalid PIN Code',
+      `${attemptsLeft} ${attemptsLeft === 1 ? 'attempt' : 'attempts'} remaining before 15-minute security lockout.`,
+      '#FEE2E2',
+      '#DC2626',
+      '#B91C1C'
+    );
+    if (statusInfo) {
+      statusInfo.textContent = `${attemptsLeft} ${attemptsLeft === 1 ? 'attempt' : 'attempts'} remaining before 15-minute security lockout.`;
+    }
+    pinInput.value = '';
+    pinInput.focus();
+  } catch (err) {
+    showAlertBanner('Connection Error', 'Could not reach server to verify PIN. Please try again.', '#FEE2E2', '#DC2626', '#B91C1C');
+  } finally {
+    if (submitBtn && !submitBtn.disabled) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Unlock Dashboard';
+    }
   }
-
-  const remaining = 5 - failed;
-  showAlertBanner(
-    'Invalid PIN Code',
-    `${remaining} ${remaining === 1 ? 'attempt' : 'attempts'} remaining before 15-minute security lockout.`,
-    '#FEE2E2',
-    '#DC2626',
-    '#B91C1C'
-  );
-  if (statusInfo) {
-    statusInfo.textContent = `${remaining} ${remaining === 1 ? 'attempt' : 'attempts'} remaining before 15-minute security lockout.`;
-  }
+}
   pinInput.value = '';
   pinInput.focus();
 }
@@ -345,7 +374,13 @@ function startLockoutCountdown(seconds) {
 }
 
 function lockAdminDashboard(reason) {
+  sessionStorage.removeItem('vision_admin_token');
   localStorage.removeItem('vision_admin_token');
+  currentAuthToken = '';
+  if (window.__visionEventSource) {
+    window.__visionEventSource.close();
+    window.__visionEventSource = null;
+  }
   hasDashboardStarted = false;
   showAuthGate();
   const alertBanner = document.getElementById('auth-alert-banner');
@@ -3497,7 +3532,7 @@ function setupRealtimeEvents() {
   if (window.__visionEventSource) return;
 
   try {
-    const es = new EventSource('/api/events');
+    const es = new EventSource('/api/events?token=' + encodeURIComponent(currentAuthToken));
     window.__visionEventSource = es;
 
     es.addEventListener('new_lead', (e) => {
