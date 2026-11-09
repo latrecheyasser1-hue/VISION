@@ -4,23 +4,45 @@
   "redirects": [
     {
       "source": "/admin",
-      "destination": "https://admin.digitalvisiondz.com",
-      "permanent": true
+      "destination": "/",
+      "permanent": false
     },
     {
       "source": "/ADMIN",
-      "destination": "https://admin.digitalvisiondz.com",
-      "permanent": true
+      "destination": "/",
+      "permanent": false
     },
     {
       "source": "/admin/",
-      "destination": "https://admin.digitalvisiondz.com",
-      "permanent": true
+      "destination": "/",
+      "permanent": false
     },
     {
       "source": "/ADMIN/",
-      "destination": "https://admin.digitalvisiondz.com",
-      "permanent": true
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/admin/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.digitalvisiondz.com"
+        }
+      ],
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/admin/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "digitalvisiondz.com"
+        }
+      ],
+      "destination": "/",
+      "permanent": false
     }
   ],
   "rewrites": [
@@ -36,7 +58,17 @@
           "value": "admin.digitalvisiondz.com"
         }
       ],
-      "destination": "/api/admin-entry"
+      "destination": "/admin.html"
+    },
+    {
+      "source": "/index.html",
+      "has": [
+        {
+          "type": "host",
+          "value": "admin.digitalvisiondz.com"
+        }
+      ],
+      "destination": "/admin.html"
     }
   ]
 }

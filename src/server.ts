@@ -985,9 +985,13 @@ app.delete('/api/meetings/:id', requireAdminAuth, async (req, res) => {
 // Dedicated entry for admin subdomain root rewrite
 app.get('/api/admin-entry', (req, res) => {
   const candidates = [
+    path.resolve(websitePublicDir, 'admin.html'),
     path.resolve(websitePublicDir, 'admin', 'index.html'),
+    path.resolve(__dirname, '..', 'public', 'admin.html'),
     path.resolve(__dirname, '..', 'public', 'admin', 'index.html'),
+    path.resolve(process.cwd(), 'public', 'admin.html'),
     path.resolve(process.cwd(), 'public', 'admin', 'index.html'),
+    path.resolve(process.cwd(), 'website', 'public', 'admin.html'),
     path.resolve(process.cwd(), 'website', 'public', 'admin', 'index.html'),
   ];
   for (const p of candidates) {
@@ -999,43 +1003,54 @@ app.get('/api/admin-entry', (req, res) => {
   res.status(404).send('Admin dashboard HTML not found');
 });
 
+const adminHtmlPath = path.resolve(websitePublicDir, 'admin', 'index.html');
+const indexHtmlPath = path.resolve(websitePublicDir, 'index.html');
+const adminRootHtmlPath = path.resolve(websitePublicDir, 'admin.html');
+
+// 1. Host-based routing for admin subdomain
+app.use((req, res, next) => {
+  const host = req.headers.host || '';
+  if (host.startsWith('admin.')) {
+    if (req.path === '/' || req.path === '/index.html') {
+      const p = existsSync(adminRootHtmlPath) ? adminRootHtmlPath : adminHtmlPath;
+      if (existsSync(p)) {
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        return res.sendFile(p);
+      }
+    }
+    if (req.path === '/admin' || req.path === '/admin/') {
+      return res.redirect(302, '/');
+    }
+  } else {
+    // On public website, /admin or /admin/* redirects to homepage /
+    if (req.path === '/admin' || req.path.startsWith('/admin/')) {
+      return res.redirect(302, '/');
+    }
+  }
+  next();
+});
+
 // Serve public website files
 if (existsSync(websitePublicDir)) {
   app.use(express.static(websitePublicDir));
 }
 
-const adminHtmlPath = path.resolve(websitePublicDir, 'admin', 'index.html');
-const indexHtmlPath = path.resolve(websitePublicDir, 'index.html');
-
-// Fallback for /admin route to redirect to admin subdomain in production
-app.get('/admin', (req, res) => {
-  const host = req.headers.host || '';
-  if (host.includes('digitalvisiondz.com') && !host.startsWith('admin.')) {
-    return res.redirect(301, 'https://admin.digitalvisiondz.com');
-  }
-  if (existsSync(adminHtmlPath)) {
-    res.sendFile(adminHtmlPath);
-  } else {
-    res.redirect('/admin/index.html');
-  }
-});
-
-app.use('/admin', (req, res) => {
-  const host = req.headers.host || '';
-  if (host.includes('digitalvisiondz.com') && !host.startsWith('admin.')) {
-    return res.redirect(301, 'https://admin.digitalvisiondz.com');
-  }
-  if (existsSync(adminHtmlPath)) {
-    res.sendFile(adminHtmlPath);
-  } else {
-    res.redirect('/admin/index.html');
-  }
-});
-
 // Fallback for root and client pages (excluding /api routes)
 app.use((req, res, next) => {
   if (req.path.startsWith('/api')) {
     return next();
+  }
+  const host = req.headers.host || '';
+  if (host.startsWith('admin.')) {
+    const adminRootHtml = path.resolve(websitePublicDir, 'admin.html');
+    if (existsSync(adminRootHtml)) {
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      return res.sendFile(adminRootHtml);
+    }
+    if (existsSync(adminHtmlPath)) {
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      return res.sendFile(adminHtmlPath);
+    }
   }
   if (existsSync(indexHtmlPath)) {
     res.sendFile(indexHtmlPath);
