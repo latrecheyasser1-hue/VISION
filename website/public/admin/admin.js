@@ -112,12 +112,14 @@ const DEVIS_I18N = {
 };
 
 // ==========================================
-// AUTHENTICATION INTERCEPTOR & PIN SESSION LOGIC
+// AUTHENTICATION INTERCEPTOR & PIN GATE LOGIC
 // ==========================================
+let currentAuthToken = '';
+
 const originalFetch = window.fetch;
 window.fetch = async function(url, options = {}) {
-  const token = localStorage.getItem('vision_admin_token') || 'vision_founder_authorized_765483';
-  if (typeof url === 'string' && url.startsWith('/api/')) {
+  const token = currentAuthToken || sessionStorage.getItem('vision_admin_token') || '';
+  if (token && typeof url === 'string' && url.startsWith('/api/')) {
     options.headers = options.headers || {};
     if (options.headers instanceof Headers) {
       if (!options.headers.has('Authorization')) {
@@ -132,30 +134,36 @@ window.fetch = async function(url, options = {}) {
     }
   }
 
-  const response = await originalFetch(url, options);
-  return response;
+  return await originalFetch(url, options);
 };
 
 let authLockoutTimer = null;
 let hasDashboardStarted = false;
 
 function checkAdminAuth() {
-  const token = localStorage.getItem('vision_admin_token');
-  if (token) {
+  // Clear any persistent localStorage auto-login so PIN is ALWAYS requested on new sessions
+  localStorage.removeItem('vision_admin_token');
+
+  // Check if authenticated in current browser session
+  const sessionToken = sessionStorage.getItem('vision_admin_token');
+  if (sessionToken === 'vision_founder_authorized_765483') {
+    currentAuthToken = sessionToken;
     hideAuthGate();
     startAdminDashboard();
     return true;
   }
 
+  // Not authenticated in this session: ALWAYS show PIN gate!
+  showAuthGate();
+
+  // Check if currently locked out
   const lockoutUntil = parseInt(localStorage.getItem('vision_lockout_until') || '0', 10);
   const now = Date.now();
   if (lockoutUntil && now < lockoutUntil) {
-    showAuthGate();
     startLockoutCountdown(Math.ceil((lockoutUntil - now) / 1000));
     return false;
   }
 
-  showAuthGate();
   return false;
 }
 
@@ -202,10 +210,10 @@ async function handlePinSubmit(event) {
     return;
   }
 
-  // CORRECT PIN (765483) -> INSTANT UNLOCK WITH ZERO DELAY
+  // CORRECT PIN (765483) -> INSTANT UNLOCK
   if (pin === '765483') {
-    const token = 'vision_founder_authorized_765483';
-    localStorage.setItem('vision_admin_token', token);
+    currentAuthToken = 'vision_founder_authorized_765483';
+    sessionStorage.setItem('vision_admin_token', currentAuthToken);
     localStorage.removeItem('vision_failed_attempts');
     localStorage.removeItem('vision_lockout_until');
 
@@ -218,15 +226,6 @@ async function handlePinSubmit(event) {
     }
     showToast('Dashboard unlocked.');
     startAdminDashboard();
-
-    // Notify backend in background (fire-and-forget)
-    try {
-      originalFetch('/api/auth/pin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pin: '765483' })
-      }).catch(() => {});
-    } catch {}
     return;
   }
 
@@ -254,12 +253,6 @@ async function handlePinSubmit(event) {
   }
   pinInput.value = '';
   pinInput.focus();
-}
-    showAlertBanner('Connection Error', 'Unable to reach the security authentication service.', '#FEE2E2', '#DC2626', '#B91C1C');
-  } finally {
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Unlock Dashboard';
-  }
 }
 
 function showAlertBanner(title, detail, bg, border, textColor) {
