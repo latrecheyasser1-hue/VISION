@@ -269,9 +269,22 @@ async function fetchStats() {
     if (navProjBadge && data.activeProjectsCount !== undefined) {
       navProjBadge.textContent = data.activeProjectsCount;
     }
-    document.getElementById('nav-leads-count').textContent = data.newLeadsCount;
+    updateLeadsBadge(data.newLeadsCount);
   } catch (err) {
     console.error('Stats error:', err);
+  }
+}
+
+function updateLeadsBadge(count) {
+  const leadsBadge = document.getElementById('nav-leads-count');
+  if (!leadsBadge) return;
+  const num = Number(count) || 0;
+  if (num > 0) {
+    leadsBadge.textContent = num;
+    leadsBadge.style.display = 'inline-flex';
+  } else {
+    leadsBadge.textContent = '';
+    leadsBadge.style.display = 'none';
   }
 }
 
@@ -319,6 +332,8 @@ async function fetchLeads() {
     const data = await res.json();
     state.leads = data;
     renderLeadsTable(data);
+    const newCount = (data || []).filter(l => l.status === 'new').length;
+    updateLeadsBadge(newCount);
   } catch (err) {
     console.error('Leads error:', err);
   }
