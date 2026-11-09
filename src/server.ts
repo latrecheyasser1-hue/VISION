@@ -1173,6 +1173,23 @@ app.use((req, res, next) => {
   }
 });
 
+// Centralized Error Handling Middleware (OWASP Secure Error Handling)
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ error: 'File size limit exceeded (maximum 10MB).' });
+    }
+    return res.status(400).json({ error: `Upload error: ${err.message}` });
+  }
+  if (err && err.message && err.message.includes('Invalid file type')) {
+    return res.status(400).json({ error: err.message });
+  }
+  console.error('Unhandled server error:', err?.message || err);
+  if (!res.headersSent) {
+    res.status(500).json({ error: 'An unexpected internal error occurred.' });
+  }
+});
+
 if (!process.env.VERCEL) {
   app.listen(port, () => {
     console.log(`\n======================================================`);
