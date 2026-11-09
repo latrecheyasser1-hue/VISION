@@ -14,7 +14,7 @@ const projects=[
 const storyCopy={ar:['نبدأ بالأسئلة الصحيحة: كيف تعمل، وأين تتكرّر الصعوبات؟','نرتّب الأولويات ونربط الوظائف بطريقة عملك، قبل بدء التطوير.','نحوّل التصوّر إلى نظام مترابط، نختبره ونراجعه معك.'],fr:['Les bonnes questions : comment travaillez-vous et où se situent les difficultés ?','Nous définissons les priorités et les fonctions utiles avant le développement.','Nous transformons le concept en un système cohérent, testé et revu avec vous.']};
 function translate(root=document){
  $$('[data-ar]',root).forEach(el=>{el.innerHTML=el.dataset[lang];});
- $$('[data-placeholder-ar]',root).forEach(el=>{el.placeholder=el.dataset[lang==='ar'?'placeholderAr':'placeholderFr'];});
+
 }
 function setLanguage(next,{updateURL=true}={}){
  lang=next;document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';
