@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
+    "build:deploy": "node website/build-deploy.mjs",
     "start": "node dist/src/server.js",
     "dev": "tsx src/server.ts",
     "server": "tsx src/server.ts",
