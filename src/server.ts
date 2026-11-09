@@ -32,6 +32,12 @@ const app = express();
 const port = process.env.PORT || 4190;
 
 app.use(cors());
+app.use((req, res, next) => {
+  if (req.url.startsWith('/api/index.js') && req.originalUrl) {
+    req.url = req.originalUrl;
+  }
+  next();
+});
 app.use(express.json());
 
 // Memory storage for multer uploads (direct stream to Cloudflare R2)
