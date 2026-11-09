@@ -6,7 +6,7 @@ import path from 'node:path';
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import * as dotenv from 'dotenv';
-import { eq, desc, asc } from 'drizzle-orm';
+import { eq, desc, asc, sql } from 'drizzle-orm';
 import { db } from './db/client.js';
 import * as schema from './db/schema.js';
 import { uploadToR2 } from './services/storage.js';
@@ -115,7 +115,6 @@ function broadcastEvent(type: string, data: any) {
 // ADMIN PORTAL AUTHENTICATION & RATE LIMITING
 // ==========================================
 const ADMIN_AUTH_SECRET = (process.env.ADMIN_AUTH_SECRET || 'VISION_FOUNDER_SECURE_AUTH_KEY_2026').trim();
-const ADMIN_PIN = (process.env.ADMIN_PIN || '765483').trim();
 const MAX_PIN_ATTEMPTS = 5;
 const PIN_LOCKOUT_MS = 15 * 60 * 1000; // 15 minutes
 
@@ -125,6 +124,20 @@ interface PinRateLimit {
 }
 
 const pinAttemptsMap = new Map<string, PinRateLimit>();
+
+async function getExpectedPin(): Promise<string | null> {
+  const envPin = (process.env.ADMIN_PIN || '').trim();
+  if (envPin) return envPin;
+  try {
+    const res = await db.execute(sql`SELECT pin_code FROM admin_users WHERE username = 'founder' LIMIT 1`);
+    if (res.rows.length > 0 && (res.rows[0] as any)?.pin_code) {
+      return String((res.rows[0] as any).pin_code).trim();
+    }
+  } catch (err) {
+    console.error('Database PIN lookup failed:', err);
+  }
+  return null;
+}
 
 interface SessionPayload {
   iat: number;
@@ -165,9 +178,10 @@ function isValidAdminToken(token: string | null | undefined): boolean {
   }
 }
 
-function verifyPinTimingSafe(submitted: string): boolean {
+function verifyPinTimingSafe(submitted: string, expected: string): boolean {
+  if (!submitted || !expected) return false;
   const a = Buffer.from(submitted.trim());
-  const b = Buffer.from(ADMIN_PIN);
+  const b = Buffer.from(expected.trim());
   if (a.length !== b.length) return false;
   return crypto.timingSafeEqual(a, b);
 }
@@ -234,7 +248,7 @@ app.get('/api/auth/status', (req, res) => {
 });
 
 // Verify PIN code with strict 5-attempt rate limiter, constant-time compare, and 15-min lockout
-app.post('/api/auth/pin', (req, res) => {
+app.post('/api/auth/pin', async (req, res) => {
   const ip = getClientIp(req);
   const now = Date.now();
   let state = pinAttemptsMap.get(ip);
@@ -260,11 +274,12 @@ app.post('/api/auth/pin', (req, res) => {
     state.lockedUntil = null;
   }
 
-  // 3. Verify submitted PIN in constant time
+  // 3. Verify submitted PIN in constant time against env variable or secure DB
   const { pin } = req.body || {};
   const submittedPin = typeof pin === 'string' ? pin.trim() : String(pin || '').trim();
+  const expectedPin = await getExpectedPin();
 
-  if (verifyPinTimingSafe(submittedPin)) {
+  if (expectedPin && verifyPinTimingSafe(submittedPin, expectedPin)) {
     pinAttemptsMap.delete(ip);
     const token = createSignedSessionToken();
 
