@@ -539,53 +539,6 @@
       <!-- TAB 6: MEETINGS & CALENDAR -->
       <section id="tab-meetings" class="tab-section">
         
-        <!-- Top Controls Bar -->
-        <div class="card" style="margin-bottom: 20px;">
-          <div class="card-body" style="padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
-            
-            <!-- Month Nav & Today -->
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <button type="button" class="btn btn-secondary btn-sm" onclick="changeCalendarMonth(-1)">&lt; Prev</button>
-              <button type="button" class="btn btn-secondary btn-sm" onclick="resetCalendarToToday()">Today</button>
-              <button type="button" class="btn btn-secondary btn-sm" onclick="changeCalendarMonth(1)">Next &gt;</button>
-              <h3 id="calendar-month-label" style="font-size: 1.15rem; font-weight: 800; color: var(--ink); margin: 0 0 0 8px; min-width: 170px;">November 2026</h3>
-            </div>
-
-            <!-- View Toggles & Filters & Action -->
-            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-              <!-- View Switcher -->
-              <div style="display: flex; background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 2px;">
-                <button type="button" id="btn-view-cal" class="btn btn-primary btn-sm" style="padding: 5px 12px; font-size: 0.78rem;" onclick="setMeetingView('calendar')">Calendar View</button>
-                <button type="button" id="btn-view-list" class="btn btn-secondary btn-sm" style="padding: 5px 12px; font-size: 0.78rem; border: none; background: transparent;" onclick="setMeetingView('list')">Agenda / List</button>
-              </div>
-
-              <!-- Filter by Type -->
-              <select id="meetings-filter-type" onchange="handleMeetingsFilterChange()" style="padding: 6px 10px; font-size: 0.8rem; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--surface);">
-                <option value="all">All Types</option>
-                <option value="discovery">Discovery Calls</option>
-                <option value="scoping">Scoping Sessions</option>
-                <option value="design_review">Design Reviews</option>
-                <option value="demo_delivery">Demos & Delivery</option>
-                <option value="followup">Follow-ups</option>
-                <option value="work_session">Work Sessions</option>
-              </select>
-
-              <!-- Filter by Status -->
-              <select id="meetings-filter-status" onchange="handleMeetingsFilterChange()" style="padding: 6px 10px; font-size: 0.8rem; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--surface);">
-                <option value="all">All Statuses</option>
-                <option value="scheduled">Scheduled Only</option>
-                <option value="completed">Completed Only</option>
-              </select>
-
-              <!-- Schedule Button -->
-              <button type="button" class="btn btn-primary btn-sm" style="font-weight: 700; padding: 7px 14px;" onclick="openNewMeetingModal()">
-                + Schedule Meeting
-              </button>
-            </div>
-
-          </div>
-        </div>
-
         <!-- Calendar Grid Container -->
         <div id="meetings-calendar-view" class="calendar-container">
           <div class="calendar-header-grid">
@@ -1378,6 +1331,6 @@
 
 <div class="toast-container" id="toast-container"></div>
 <script src="/admin/html2pdf.bundle.min.js"></script>
-<script src="/admin/admin.js?v=90"></script>
+<script src="/admin/admin.js?v=91"></script>
 </body>
 </html>
