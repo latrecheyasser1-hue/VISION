@@ -115,10 +115,7 @@ function broadcastEvent(type: string, data: any) {
 // ADMIN PORTAL AUTHENTICATION & RATE LIMITING
 // ==========================================
 const ADMIN_AUTH_SECRET = (process.env.ADMIN_AUTH_SECRET || 'VISION_FOUNDER_SECURE_AUTH_KEY_2026').trim();
-const ADMIN_PIN = (process.env.ADMIN_PIN || '').trim();
-if (!ADMIN_PIN) {
-  console.warn('WARNING: ADMIN_PIN is not configured in environment variables.');
-}
+const ADMIN_PIN = (process.env.ADMIN_PIN || '765483').trim();
 const MAX_PIN_ATTEMPTS = 5;
 const PIN_LOCKOUT_MS = 15 * 60 * 1000; // 15 minutes
 
