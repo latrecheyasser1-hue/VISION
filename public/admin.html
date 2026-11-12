@@ -10,7 +10,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>VISION - Founder Dashboard</title>
-  <link rel="stylesheet" href="/admin.css?v=23">
+  <link rel="stylesheet" href="/admin.css?v=24">
   <style>
     .tab-section { display: none; }
     .tab-section.active { display: block; }
@@ -783,10 +783,6 @@
               <button type="button" class="btn btn-secondary btn-sm" onclick="exportOutreachToExcel()" style="font-weight: 700; padding: 7px 14px;">
                 Export to Excel
               </button>
-
-              <button type="button" class="btn btn-primary btn-sm" onclick="focusNewOutreachRow()" style="font-weight: 700; padding: 7px 16px;">
-                + Add Row
-              </button>
             </div>
           </div>
 
@@ -835,16 +831,31 @@
                   <th style="min-width: 160px;">Type / Niche</th>
                   <th style="min-width: 210px;">Phone (WhatsApp)</th>
                   <th style="min-width: 210px;">Instagram</th>
-                  <th style="width: 145px;">Status</th>
-                  <th style="min-width: 180px;">Notes</th>
-                  <th style="width: 68px; text-align: right;">Action</th>
+                  <th style="width: 150px;">Status</th>
+                  <th style="min-width: 200px;">Notes</th>
                 </tr>
               </thead>
               <tbody id="outreach-tbody">
-                <tr><td colspan="8" style="text-align: center; color: var(--ink-muted); padding: 40px;">Loading outreach sheet...</td></tr>
+                <tr><td colspan="7" style="text-align: center; color: var(--ink-muted); padding: 40px;">Loading outreach sheet...</td></tr>
               </tbody>
             </table>
           </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; border-top: 1px solid #CBD5E1; background: #F8FAFC;">
+            <span id="outreach-autosave-indicator" style="font-size: 0.76rem; color: var(--ink-muted); font-weight: 600;">
+              Auto-saves automatically · Right-click any row to delete
+            </span>
+            <button type="button" class="btn btn-primary btn-sm" onclick="addOutreachRowAndFocus()" style="font-weight: 700; padding: 6px 16px;">
+              + Add Row
+            </button>
+          </div>
+        </div>
+
+        <!-- Right-Click Row Context Menu -->
+        <div id="outreach-context-menu" class="outreach-context-menu" style="display: none;">
+          <button type="button" class="outreach-context-item danger" onclick="deleteOutreachContextRow()">
+            Delete Row
+          </button>
         </div>
 
       </section>
@@ -1552,6 +1563,6 @@
 
 <div class="toast-container" id="toast-container"></div>
 <script src="/html2pdf.bundle.min.js"></script>
-<script src="/admin.js?v=114"></script>
+<script src="/admin.js?v=115"></script>
 </body>
 </html>

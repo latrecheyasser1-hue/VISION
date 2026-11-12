@@ -2286,3 +2286,43 @@ tr:hover td {
 .outreach-draft-row:hover {
   background: #F1F5F9 !important;
 }
+
+.outreach-row-context-active {
+  background: #FEF2F2 !important;
+}
+
+/* Custom Right-Click Context Menu for Outreach Rows */
+.outreach-context-menu {
+  position: fixed;
+  z-index: 9999;
+  min-width: 170px;
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.16);
+  padding: 5px;
+}
+
+.outreach-context-item {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--ink);
+  cursor: pointer;
+  display: block;
+  transition: background 0.12s ease;
+}
+
+.outreach-context-item.danger {
+  color: #DC2626;
+}
+
+.outreach-context-item.danger:hover {
+  background: #FEF2F2;
+  color: #B91C1C;
+}

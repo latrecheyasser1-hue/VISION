@@ -4840,13 +4840,31 @@ function updateOutreachBadge() {
   }
 }
 
-let isSavingOutreachDraft = false;
+let outreachDraftSeq = 1;
+const outreachSaveTimers = new Map();
+let outreachContextTarget = null;
+let outreachIndicatorTimer = null;
 
-function focusNewOutreachRow() {
-  const draftInput = document.querySelector('#outreach-draft-row input[data-draft-field="businessName"]');
-  if (draftInput) {
-    draftInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    draftInput.focus();
+function setOutreachAutosaveStatus(mode) {
+  const el = document.getElementById('outreach-autosave-indicator');
+  if (!el) return;
+  if (outreachIndicatorTimer) {
+    clearTimeout(outreachIndicatorTimer);
+    outreachIndicatorTimer = null;
+  }
+  if (mode === 'saving') {
+    el.textContent = 'Saving...';
+    el.style.color = '#1A73E8';
+  } else if (mode === 'saved') {
+    el.textContent = 'Saved automatically';
+    el.style.color = '#047857';
+    outreachIndicatorTimer = setTimeout(() => {
+      el.textContent = 'Auto-saves automatically · Right-click any row to delete';
+      el.style.color = 'var(--ink-muted)';
+    }, 1800);
+  } else {
+    el.textContent = 'Auto-saves automatically · Right-click any row to delete';
+    el.style.color = 'var(--ink-muted)';
   }
 }
 
@@ -4877,153 +4895,300 @@ function syncCellActionLink(inputEl, kind) {
   link.style.display = 'inline-block';
 }
 
-function getDraftRowPayload() {
-  const row = document.getElementById('outreach-draft-row');
-  if (!row) return null;
-  const businessName = (row.querySelector('[data-draft-field="businessName"]')?.value || '').trim();
-  const businessType = (row.querySelector('[data-draft-field="businessType"]')?.value || '').trim();
-  const phone = (row.querySelector('[data-draft-field="phone"]')?.value || '').trim();
-  const instagramUrl = (row.querySelector('[data-draft-field="instagramUrl"]')?.value || '').trim();
-  const status = row.querySelector('[data-draft-field="status"]')?.value || 'no_reply';
-  const notes = (row.querySelector('[data-draft-field="notes"]')?.value || '').trim();
+function getRowPayloadFromDom(tr) {
+  if (!tr) return null;
+  const businessName = (tr.querySelector('[data-field="businessName"]')?.value || '').trim();
+  const businessType = (tr.querySelector('[data-field="businessType"]')?.value || '').trim();
+  const phone = (tr.querySelector('[data-field="phone"]')?.value || '').trim();
+  const instagramUrl = (tr.querySelector('[data-field="instagramUrl"]')?.value || '').trim();
+  const status = tr.querySelector('[data-field="status"]')?.value || 'no_reply';
+  const notes = (tr.querySelector('[data-field="notes"]')?.value || '').trim();
   return { businessName, businessType, phone, instagramUrl, status, notes };
 }
 
-function hasAnyDraftValue(payload) {
+function hasAnyRowValue(payload) {
   if (!payload) return false;
   return Boolean(payload.businessName || payload.businessType || payload.phone || payload.instagramUrl || payload.notes);
 }
 
-async function commitOutreachDraftRow(focusNext = false) {
-  if (isSavingOutreachDraft) return;
-  const payload = getDraftRowPayload();
-  if (!hasAnyDraftValue(payload)) return;
+function syncDraftStateFromDom(tr) {
+  const tempId = tr?.dataset?.tempId;
+  if (!tempId || !state.outreachDrafts) return;
+  const draft = state.outreachDrafts.find(d => d.tempId === tempId);
+  if (!draft) return;
+  const payload = getRowPayloadFromDom(tr);
+  if (payload) {
+    Object.assign(draft, payload);
+  }
+}
 
-  isSavingOutreachDraft = true;
+function addOutreachRowAndFocus() {
+  if (!Array.isArray(state.outreachDrafts)) state.outreachDrafts = [];
+  const tempId = 'draft-' + (++outreachDraftSeq);
+  state.outreachDrafts.push({
+    tempId,
+    businessName: '',
+    businessType: '',
+    phone: '',
+    instagramUrl: '',
+    status: 'no_reply',
+    notes: '',
+  });
+  renderOutreachView();
+  const input = document.querySelector(`tr[data-temp-id="${tempId}"] input[data-field="businessName"]`);
+  if (input) {
+    input.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    input.focus();
+  }
+}
+
+function handleSheetInput(el) {
+  const tr = el?.closest('tr');
+  if (!tr) return;
+  if (tr.dataset.tempId) {
+    syncDraftStateFromDom(tr);
+  }
+  scheduleRowAutoSave(tr, 450);
+}
+
+function handleSheetBlur(el) {
+  const tr = el?.closest('tr');
+  if (!tr) return;
+  if (tr.dataset.tempId) {
+    syncDraftStateFromDom(tr);
+  }
+  scheduleRowAutoSave(tr, 0);
+}
+
+function handleSheetKeydown(e, el) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const tr = el?.closest('tr');
+    if (tr) scheduleRowAutoSave(tr, 0);
+    el.blur();
+  }
+}
+
+function handleSheetStatusChange(selectEl) {
+  const newStatus = selectEl.value;
+  selectEl.className = 'outreach-status-select status-' + newStatus;
+  const tr = selectEl.closest('tr');
+  if (!tr) return;
+  if (tr.dataset.tempId) {
+    syncDraftStateFromDom(tr);
+  }
+  scheduleRowAutoSave(tr, 0);
+}
+
+function scheduleRowAutoSave(tr, delayMs) {
+  if (!tr) return;
+  const key = tr.dataset.rowId || tr.dataset.tempId;
+  if (!key) return;
+
+  if (outreachSaveTimers.has(key)) {
+    clearTimeout(outreachSaveTimers.get(key));
+    outreachSaveTimers.delete(key);
+  }
+
+  if (delayMs <= 0) {
+    persistOutreachRow(tr);
+  } else {
+    const timer = setTimeout(() => {
+      outreachSaveTimers.delete(key);
+      persistOutreachRow(tr);
+    }, delayMs);
+    outreachSaveTimers.set(key, timer);
+  }
+}
+
+async function persistOutreachRow(tr) {
+  if (!tr || !tr.isConnected) return;
+  if (tr.dataset.saving === '1') {
+    tr.dataset.needsResave = '1';
+    return;
+  }
+
+  const payload = getRowPayloadFromDom(tr);
+  if (!payload) return;
+
+  const existingId = tr.dataset.rowId;
+  const tempId = tr.dataset.tempId;
+
+  if (!existingId) {
+    // Draft row: create only when user has typed something
+    if (!hasAnyRowValue(payload)) return;
+
+    tr.dataset.saving = '1';
+    setOutreachAutosaveStatus('saving');
+    try {
+      const res = await fetch('/api/outreach', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to save row.');
+      }
+      const saved = await res.json();
+
+      // Upgrade draft row to persisted row in-place without losing focus
+      tr.dataset.rowId = saved.id;
+      delete tr.dataset.tempId;
+      tr.classList.remove('outreach-draft-row');
+
+      if (Array.isArray(state.outreachDrafts)) {
+        state.outreachDrafts = state.outreachDrafts.filter(d => d.tempId !== tempId);
+      }
+      state.outreach = [...(state.outreach || []), saved];
+      updateOutreachBadge();
+      updateOutreachMetrics();
+      updateOutreachCountLabel();
+      refreshOutreachRowNumbers();
+      setOutreachAutosaveStatus('saved');
+
+      // If user kept typing in another cell while POST was in flight, sync delta immediately
+      const latest = getRowPayloadFromDom(tr);
+      const changed =
+        latest.businessName !== payload.businessName ||
+        latest.businessType !== payload.businessType ||
+        latest.phone !== payload.phone ||
+        latest.instagramUrl !== payload.instagramUrl ||
+        latest.status !== payload.status ||
+        latest.notes !== payload.notes;
+      if (changed) {
+        tr.dataset.needsResave = '1';
+      }
+    } catch (err) {
+      console.error('Auto-create outreach row error:', err);
+      showToast(err.message || 'Error saving row.', 'error');
+    } finally {
+      delete tr.dataset.saving;
+      if (tr.dataset.needsResave === '1') {
+        delete tr.dataset.needsResave;
+        persistOutreachRow(tr);
+      }
+    }
+    return;
+  }
+
+  // Existing row: compare with cached state to skip redundant PATCHes
+  const cached = (state.outreach || []).find(x => x.id === existingId);
+  if (cached) {
+    const unchanged =
+      String(cached.businessName || '').trim() === payload.businessName &&
+      String(cached.businessType || '').trim() === payload.businessType &&
+      String(cached.phone || '').trim() === payload.phone &&
+      String(cached.instagramUrl || '').trim() === payload.instagramUrl &&
+      String(cached.status || 'no_reply') === payload.status &&
+      String(cached.notes || '').trim() === payload.notes;
+    if (unchanged) return;
+  }
+
+  tr.dataset.saving = '1';
+  setOutreachAutosaveStatus('saving');
   try {
-    const res = await fetch('/api/outreach', {
-      method: 'POST',
+    const res = await fetch('/api/outreach/' + existingId, {
+      method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
-    if (!res.ok) {
-      const errData = await res.json().catch(() => ({}));
-      throw new Error(errData.error || 'Failed to save row.');
-    }
-    const saved = await res.json();
-    state.outreach = [...(state.outreach || []), saved];
-    updateOutreachBadge();
-    renderOutreachView();
-    if (focusNext) {
-      focusNewOutreachRow();
-    }
+    if (!res.ok) throw new Error('Failed to save changes');
+    const updated = await res.json();
+    const idx = (state.outreach || []).findIndex(x => x.id === existingId);
+    if (idx !== -1) state.outreach[idx] = updated;
+    updateOutreachMetrics();
+    setOutreachAutosaveStatus('saved');
   } catch (err) {
-    console.error('Save outreach draft error:', err);
-    showToast(err.message || 'Error saving row.', 'error');
+    console.error('Auto-save outreach row error:', err);
+    showToast('Failed to save change.', 'error');
   } finally {
-    isSavingOutreachDraft = false;
+    delete tr.dataset.saving;
+    if (tr.dataset.needsResave === '1') {
+      delete tr.dataset.needsResave;
+      persistOutreachRow(tr);
+    }
   }
 }
 
-function commitDraftRowAndFocusNext() {
-  const payload = getDraftRowPayload();
-  if (!hasAnyDraftValue(payload)) {
-    focusNewOutreachRow();
+function refreshOutreachRowNumbers() {
+  const rows = document.querySelectorAll('#outreach-tbody tr');
+  rows.forEach((row, i) => {
+    const numCell = row.querySelector('.sheet-row-num');
+    if (numCell) numCell.textContent = String(i + 1);
+  });
+}
+
+function openOutreachRowContextMenu(e, tr) {
+  e.preventDefault();
+  e.stopPropagation();
+
+  closeOutreachContextMenu();
+  const menu = document.getElementById('outreach-context-menu');
+  if (!menu || !tr) return;
+
+  outreachContextTarget = {
+    rowEl: tr,
+    rowId: tr.dataset.rowId || null,
+    tempId: tr.dataset.tempId || null,
+  };
+  tr.classList.add('outreach-row-context-active');
+
+  menu.style.display = 'block';
+  const menuWidth = menu.offsetWidth || 170;
+  const menuHeight = menu.offsetHeight || 46;
+  const x = Math.min(e.clientX, window.innerWidth - menuWidth - 8);
+  const y = Math.min(e.clientY, window.innerHeight - menuHeight - 8);
+  menu.style.left = `${Math.max(8, x)}px`;
+  menu.style.top = `${Math.max(8, y)}px`;
+}
+
+function closeOutreachContextMenu() {
+  const menu = document.getElementById('outreach-context-menu');
+  if (menu) menu.style.display = 'none';
+  if (outreachContextTarget?.rowEl) {
+    outreachContextTarget.rowEl.classList.remove('outreach-row-context-active');
+  }
+  outreachContextTarget = null;
+}
+
+async function deleteOutreachContextRow() {
+  if (!outreachContextTarget) return;
+  const { rowId, tempId } = outreachContextTarget;
+  closeOutreachContextMenu();
+
+  if (rowId) {
+    try {
+      const res = await fetch('/api/outreach/' + rowId, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete outreach row');
+      state.outreach = (state.outreach || []).filter(x => x.id !== rowId);
+      updateOutreachBadge();
+      renderOutreachView();
+    } catch (err) {
+      console.error('Delete outreach error:', err);
+      showToast('Failed to delete row.', 'error');
+    }
     return;
   }
-  commitOutreachDraftRow(true);
-}
 
-function handleDraftRowKeydown(e) {
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    commitOutreachDraftRow(true);
-  }
-}
-
-function handleDraftRowBlur() {
-  setTimeout(() => {
-    const draftRow = document.getElementById('outreach-draft-row');
-    if (!draftRow) return;
-    if (draftRow.contains(document.activeElement)) {
-      return;
-    }
-    const payload = getDraftRowPayload();
-    if (hasAnyDraftValue(payload)) {
-      commitOutreachDraftRow(false);
-    }
-  }, 90);
-}
-
-function handleOutreachCellKeydown(e, id) {
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    e.target.blur();
-  }
-}
-
-async function saveOutreachCell(inputEl, id) {
-  const field = inputEl.getAttribute('data-field');
-  if (!field || !id) return;
-  const newVal = (inputEl.value || '').trim();
-  const item = (state.outreach || []).find(x => x.id === id);
-  if (!item) return;
-
-  const prevVal = String(item[field] || '').trim();
-  if (newVal === prevVal) return;
-
-  try {
-    const res = await fetch('/api/outreach/' + id, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ [field]: newVal }),
-    });
-    if (!res.ok) throw new Error('Failed to save cell');
-    const updated = await res.json();
-    const idx = (state.outreach || []).findIndex(x => x.id === id);
-    if (idx !== -1) state.outreach[idx] = updated;
-  } catch (err) {
-    console.error('Save outreach cell error:', err);
-    showToast('Failed to save change.', 'error');
-  }
-}
-
-async function updateOutreachStatus(id, newStatus) {
-  try {
-    const res = await fetch('/api/outreach/' + id, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: newStatus }),
-    });
-
-    if (!res.ok) throw new Error('Failed to update status');
-    const updated = await res.json();
-
-    const idx = (state.outreach || []).findIndex(x => x.id === id);
-    if (idx !== -1) {
-      state.outreach[idx] = updated;
-    }
+  if (tempId && Array.isArray(state.outreachDrafts)) {
+    state.outreachDrafts = state.outreachDrafts.filter(d => d.tempId !== tempId);
     renderOutreachView();
-  } catch (err) {
-    console.error('Update outreach status error:', err);
-    showToast('Failed to update prospect status.', 'error');
   }
 }
 
-async function deleteOutreachBusiness(id) {
-  if (!confirm('Delete this row from the outreach sheet?')) return;
-
-  try {
-    const res = await fetch('/api/outreach/' + id, { method: 'DELETE' });
-    if (!res.ok) throw new Error('Failed to delete outreach entry');
-    state.outreach = (state.outreach || []).filter(x => x.id !== id);
-    updateOutreachBadge();
-    renderOutreachView();
-  } catch (err) {
-    console.error('Delete outreach error:', err);
-    showToast('Failed to delete row.', 'error');
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('outreach-context-menu');
+  if (menu && menu.style.display === 'block' && !menu.contains(e.target)) {
+    closeOutreachContextMenu();
   }
-}
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeOutreachContextMenu();
+  }
+});
 
 function updateOutreachMetrics() {
   const rawList = state.outreach || [];
@@ -5048,124 +5213,119 @@ function updateOutreachMetrics() {
   return totalCount;
 }
 
-function renderOutreachView() {
-  const tbody = document.getElementById('outreach-tbody');
-  if (!tbody) return;
-
+function getFilteredOutreachList() {
   const rawList = state.outreach || [];
-  const totalCount = updateOutreachMetrics();
-
-  // Apply Filter & Search
   let list = rawList;
   if (state.outreachFilterStatus && state.outreachFilterStatus !== 'all') {
     list = list.filter(x => x.status === state.outreachFilterStatus);
   }
   if (state.outreachSearchQuery) {
     const q = state.outreachSearchQuery;
-    list = list.filter(x => 
+    list = list.filter(x =>
       (x.businessName || '').toLowerCase().includes(q) ||
       (x.businessType || '').toLowerCase().includes(q) ||
       (x.phone || '').includes(q) ||
       (x.notes || '').toLowerCase().includes(q)
     );
   }
+  return list;
+}
 
+function updateOutreachCountLabel() {
+  const totalCount = (state.outreach || []).length;
+  const filteredLen = getFilteredOutreachList().length;
   const countLabel = document.getElementById('outreach-count-label');
   if (countLabel) {
-    countLabel.textContent = `Showing ${list.length} of ${totalCount} businesses`;
+    countLabel.textContent = `Showing ${filteredLen} of ${totalCount} businesses`;
   }
+}
 
-  const savedRowsHtml = list.map((item, idx) => {
-    const waUrl = getWhatsAppUrl(item.phone);
-    const instaUrl = getInstagramUrl(item.instagramUrl);
-    const status = item.status || 'no_reply';
+function renderSheetRowHtml(rowObj, rowIndex, isDraft) {
+  const waUrl = getWhatsAppUrl(rowObj.phone);
+  const instaUrl = getInstagramUrl(rowObj.instagramUrl);
+  const status = rowObj.status || 'no_reply';
+  const rowAttr = isDraft ? `data-temp-id="${rowObj.tempId}"` : `data-row-id="${rowObj.id}"`;
+  const rowClass = isDraft ? 'outreach-draft-row' : '';
 
-    return `
-      <tr data-row-id="${item.id}">
-        <td style="text-align: center; font-weight: 700; color: var(--ink-muted); font-size: 0.78rem; background: #F8FAFC;">
-          ${idx + 1}
-        </td>
-        <td>
-          <input type="text" class="sheet-cell-input is-bold" value="${escapeHtml(item.businessName || '')}" placeholder="Business name..." data-field="businessName" onblur="saveOutreachCell(this, '${item.id}')" onkeydown="handleOutreachCellKeydown(event, '${item.id}')">
-        </td>
-        <td>
-          <input type="text" class="sheet-cell-input" value="${escapeHtml(item.businessType || '')}" placeholder="Type / niche..." data-field="businessType" onblur="saveOutreachCell(this, '${item.id}')" onkeydown="handleOutreachCellKeydown(event, '${item.id}')">
-        </td>
-        <td>
-          <div class="sheet-cell-with-action">
-            <input type="tel" class="sheet-cell-input" value="${escapeHtml(item.phone || '')}" placeholder="0550..." data-field="phone" oninput="syncCellActionLink(this, 'wa')" onblur="saveOutreachCell(this, '${item.id}')" onkeydown="handleOutreachCellKeydown(event, '${item.id}')">
-            <a href="${waUrl}" target="_blank" rel="noopener noreferrer" class="sheet-action-pill wa" style="${item.phone ? '' : 'display:none;'}" title="Open WhatsApp chat">WhatsApp</a>
-          </div>
-        </td>
-        <td>
-          <div class="sheet-cell-with-action">
-            <input type="text" class="sheet-cell-input" value="${escapeHtml(item.instagramUrl || '')}" placeholder="@handle or URL..." data-field="instagramUrl" oninput="syncCellActionLink(this, 'ig')" onblur="saveOutreachCell(this, '${item.id}')" onkeydown="handleOutreachCellKeydown(event, '${item.id}')">
-            <a href="${instaUrl}" target="_blank" rel="noopener noreferrer" class="sheet-action-pill ig" style="${item.instagramUrl ? '' : 'display:none;'}" title="Open Instagram profile">IG</a>
-          </div>
-        </td>
-        <td>
-          <select onchange="updateOutreachStatus('${item.id}', this.value)" class="outreach-status-select status-${status}" style="width: calc(100% - 12px); margin: 0 6px;">
-            <option value="no_reply" ${status === 'no_reply' ? 'selected' : ''}>No Reply</option>
-            <option value="responded" ${status === 'responded' ? 'selected' : ''}>Responded</option>
-            <option value="thinking" ${status === 'thinking' ? 'selected' : ''}>Thinking</option>
-            <option value="declined" ${status === 'declined' ? 'selected' : ''}>Declined</option>
-          </select>
-        </td>
-        <td>
-          <input type="text" class="sheet-cell-input" value="${escapeHtml(item.notes || '')}" placeholder="Notes..." data-field="notes" onblur="saveOutreachCell(this, '${item.id}')" onkeydown="handleOutreachCellKeydown(event, '${item.id}')">
-        </td>
-        <td style="text-align: right; white-space: nowrap;">
-          <button type="button" class="btn btn-secondary btn-sm" onclick="deleteOutreachBusiness('${item.id}')" style="color: #DC2626; border-color: #FECACA; padding: 3px 8px; font-size: 0.72rem; margin-right: 6px;">
-            Delete
-          </button>
-        </td>
-      </tr>
-    `;
-  }).join('');
-
-  const draftRowHtml = `
-    <tr id="outreach-draft-row" class="outreach-draft-row">
-      <td style="text-align: center; font-weight: 800; color: #1A73E8; font-size: 0.85rem; background: #EFF6FF;">
-        +
+  return `
+    <tr ${rowAttr} class="${rowClass}" oncontextmenu="openOutreachRowContextMenu(event, this)">
+      <td class="sheet-row-num" style="text-align: center; font-weight: 700; color: var(--ink-muted); font-size: 0.78rem; background: #F8FAFC;">
+        ${rowIndex}
       </td>
       <td>
-        <input type="text" class="sheet-cell-input is-bold" data-draft-field="businessName" placeholder="Type business name..." onkeydown="handleDraftRowKeydown(event)" onblur="handleDraftRowBlur()">
+        <input type="text" class="sheet-cell-input is-bold" value="${escapeHtml(rowObj.businessName || '')}" placeholder="Business name..." data-field="businessName" oninput="handleSheetInput(this)" onblur="handleSheetBlur(this)" onkeydown="handleSheetKeydown(event, this)">
       </td>
       <td>
-        <input type="text" class="sheet-cell-input" data-draft-field="businessType" placeholder="Type / niche..." onkeydown="handleDraftRowKeydown(event)" onblur="handleDraftRowBlur()">
+        <input type="text" class="sheet-cell-input" value="${escapeHtml(rowObj.businessType || '')}" placeholder="Type / niche..." data-field="businessType" oninput="handleSheetInput(this)" onblur="handleSheetBlur(this)" onkeydown="handleSheetKeydown(event, this)">
       </td>
       <td>
         <div class="sheet-cell-with-action">
-          <input type="tel" class="sheet-cell-input" data-draft-field="phone" placeholder="0550..." oninput="syncCellActionLink(this, 'wa')" onkeydown="handleDraftRowKeydown(event)" onblur="handleDraftRowBlur()">
-          <a href="#" target="_blank" rel="noopener noreferrer" class="sheet-action-pill wa" style="display:none;">WhatsApp</a>
+          <input type="tel" class="sheet-cell-input" value="${escapeHtml(rowObj.phone || '')}" placeholder="0550..." data-field="phone" oninput="syncCellActionLink(this, 'wa'); handleSheetInput(this)" onblur="handleSheetBlur(this)" onkeydown="handleSheetKeydown(event, this)">
+          <a href="${waUrl}" target="_blank" rel="noopener noreferrer" class="sheet-action-pill wa" style="${rowObj.phone ? '' : 'display:none;'}" title="Open WhatsApp chat">WhatsApp</a>
         </div>
       </td>
       <td>
         <div class="sheet-cell-with-action">
-          <input type="text" class="sheet-cell-input" data-draft-field="instagramUrl" placeholder="@handle or URL..." oninput="syncCellActionLink(this, 'ig')" onkeydown="handleDraftRowKeydown(event)" onblur="handleDraftRowBlur()">
-          <a href="#" target="_blank" rel="noopener noreferrer" class="sheet-action-pill ig" style="display:none;">IG</a>
+          <input type="text" class="sheet-cell-input" value="${escapeHtml(rowObj.instagramUrl || '')}" placeholder="@handle or URL..." data-field="instagramUrl" oninput="syncCellActionLink(this, 'ig'); handleSheetInput(this)" onblur="handleSheetBlur(this)" onkeydown="handleSheetKeydown(event, this)">
+          <a href="${instaUrl}" target="_blank" rel="noopener noreferrer" class="sheet-action-pill ig" style="${rowObj.instagramUrl ? '' : 'display:none;'}" title="Open Instagram profile">IG</a>
         </div>
       </td>
       <td>
-        <select data-draft-field="status" class="outreach-status-select status-no_reply" style="width: calc(100% - 12px); margin: 0 6px;" onchange="this.className='outreach-status-select status-' + this.value" onblur="handleDraftRowBlur()">
-          <option value="no_reply">No Reply</option>
-          <option value="responded">Responded</option>
-          <option value="thinking">Thinking</option>
-          <option value="declined">Declined</option>
+        <select data-field="status" onchange="handleSheetStatusChange(this)" class="outreach-status-select status-${status}" style="width: calc(100% - 12px); margin: 0 6px;">
+          <option value="no_reply" ${status === 'no_reply' ? 'selected' : ''}>No Reply</option>
+          <option value="responded" ${status === 'responded' ? 'selected' : ''}>Responded</option>
+          <option value="thinking" ${status === 'thinking' ? 'selected' : ''}>Thinking</option>
+          <option value="declined" ${status === 'declined' ? 'selected' : ''}>Declined</option>
         </select>
       </td>
       <td>
-        <input type="text" class="sheet-cell-input" data-draft-field="notes" placeholder="Notes..." onkeydown="handleDraftRowKeydown(event)" onblur="handleDraftRowBlur()">
-      </td>
-      <td style="text-align: right; white-space: nowrap;">
-        <button type="button" class="btn btn-primary btn-sm" onclick="commitDraftRowAndFocusNext()" style="padding: 3px 10px; font-size: 0.72rem; margin-right: 6px; font-weight: 700;">
-          Save
-        </button>
+        <input type="text" class="sheet-cell-input" value="${escapeHtml(rowObj.notes || '')}" placeholder="Notes..." data-field="notes" oninput="handleSheetInput(this)" onblur="handleSheetBlur(this)" onkeydown="handleSheetKeydown(event, this)">
       </td>
     </tr>
   `;
+}
 
-  tbody.innerHTML = savedRowsHtml + draftRowHtml;
+function renderOutreachView() {
+  const tbody = document.getElementById('outreach-tbody');
+  if (!tbody) return;
+
+  updateOutreachMetrics();
+  updateOutreachCountLabel();
+
+  const list = getFilteredOutreachList();
+  if (!Array.isArray(state.outreachDrafts)) state.outreachDrafts = [];
+
+  // Ensure at least 1 blank row when sheet is completely empty
+  const isUnfiltered = (!state.outreachFilterStatus || state.outreachFilterStatus === 'all') && !state.outreachSearchQuery;
+  if (isUnfiltered && (state.outreach || []).length === 0 && state.outreachDrafts.length === 0) {
+    state.outreachDrafts.push({
+      tempId: 'draft-' + (++outreachDraftSeq),
+      businessName: '',
+      businessType: '',
+      phone: '',
+      instagramUrl: '',
+      status: 'no_reply',
+      notes: '',
+    });
+  }
+
+  const savedRowsHtml = list.map((item, idx) => renderSheetRowHtml(item, idx + 1, false)).join('');
+  const draftRowsHtml = state.outreachDrafts
+    .map((draft, dIdx) => renderSheetRowHtml(draft, list.length + dIdx + 1, true))
+    .join('');
+
+  if (!savedRowsHtml && !draftRowsHtml) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" style="text-align: center; padding: 36px 20px; color: var(--ink-muted);">
+          No businesses match the current filter.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = savedRowsHtml + draftRowsHtml;
 }
 
 function exportOutreachToExcel() {
