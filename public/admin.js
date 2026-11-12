@@ -4257,16 +4257,33 @@ function renderAgendaMeetingCard(m) {
   `;
 }
 
-function openNewMeetingModal(prefilledDate, prefilledStartTime) {
-  const todayStr = getTodayDateString();
-  const now = new Date();
-  if (prefilledDate && prefilledDate < todayStr) {
+function updateMeetingModalDateDisplay() {
+  const dateInput = document.getElementById('meeting-form-date');
+  const dateDisplay = document.getElementById('meeting-modal-date-display');
+  if (!dateInput || !dateDisplay) return;
+  const val = dateInput.value;
+  if (!val) {
+    dateDisplay.textContent = '';
     return;
   }
-  if (prefilledDate === todayStr && prefilledStartTime) {
-    const [sh] = prefilledStartTime.split(':').map(Number);
-    if (!isNaN(sh) && sh < now.getHours()) {
+  const dateObj = new Date(`${val}T00:00:00`);
+  dateDisplay.textContent = !isNaN(dateObj.getTime())
+    ? dateObj.toLocaleDateString('en-GB', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })
+    : val;
+}
+
+function openNewMeetingModal(prefilledDate, prefilledStartTime, isEdit = false) {
+  const todayStr = getTodayDateString();
+  const now = new Date();
+  if (!isEdit) {
+    if (prefilledDate && prefilledDate < todayStr) {
       return;
+    }
+    if (prefilledDate === todayStr && prefilledStartTime) {
+      const [sh] = prefilledStartTime.split(':').map(Number);
+      if (!isNaN(sh) && sh < now.getHours()) {
+        return;
+      }
     }
   }
 
@@ -4274,40 +4291,22 @@ function openNewMeetingModal(prefilledDate, prefilledStartTime) {
   const idInput = document.getElementById('meeting-form-id');
   if (idInput) idInput.value = '';
   const titleEl = document.getElementById('meeting-modal-title');
-  if (titleEl) titleEl.textContent = 'Schedule Meeting';
+  if (titleEl) titleEl.textContent = isEdit ? 'Edit Event' : 'Add Event';
   const saveBtn = document.getElementById('btn-save-meeting');
-  if (saveBtn) saveBtn.textContent = 'Schedule Meeting';
+  if (saveBtn) saveBtn.textContent = isEdit ? 'Save Changes' : 'Save';
 
-  // Populate client select
-  const clientSelect = document.getElementById('meeting-form-client');
-  if (clientSelect) {
-    clientSelect.innerHTML = '<option value="">Select a Client...</option>' + (state.clients || []).map(c => `
-      <option value="${c.id}">${escapeHtml(c.companyName || c.contactName)}</option>
-    `).join('');
-  }
-
-  // Populate project select
-  const projectSelect = document.getElementById('meeting-form-project');
-  if (projectSelect) {
-    projectSelect.innerHTML = '<option value="">No Project (General Meeting)</option>' + (state.projects || []).map(p => `
-      <option value="${p.id}">${escapeHtml(p.title)} (${escapeHtml(p.client?.companyName || 'VISION')})</option>
-    `).join('');
-  }
-
-  // Date (Hidden input, automatically bound to clicked date or today)
+  // Date
   const effectiveDate = prefilledDate || todayStr;
   const dateInput = document.getElementById('meeting-form-date');
   if (dateInput) {
     dateInput.value = effectiveDate;
+    if (isEdit) {
+      dateInput.removeAttribute('min');
+    } else {
+      dateInput.min = todayStr;
+    }
   }
-  const dateDisplay = document.getElementById('meeting-modal-date-display');
-  if (dateDisplay) {
-    const dateObj = new Date(`${effectiveDate}T00:00:00`);
-    const formatted = !isNaN(dateObj.getTime())
-      ? dateObj.toLocaleDateString('en-GB', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })
-      : effectiveDate;
-    dateDisplay.textContent = formatted;
-  }
+  updateMeetingModalDateDisplay();
 
   // Times (Defaults or clicked slot)
   const startInput = document.getElementById('meeting-form-start-time');
@@ -4320,20 +4319,15 @@ function openNewMeetingModal(prefilledDate, prefilledStartTime) {
       endInput.value = `${String(nextH).padStart(2, '0')}:${String(m || 0).padStart(2, '0')}`;
     }
   } else {
-    const curH = new Date().getHours();
-    const nextH = (curH + 1) % 24;
-    const nextH2 = (curH + 2) % 24;
-    if (startInput) startInput.value = `${String(nextH).padStart(2, '0')}:00`;
-    if (endInput) endInput.value = `${String(nextH2).padStart(2, '0')}:00`;
+    const curH = now.getHours();
+    const startH = curH < 23 ? curH + 1 : 23;
+    const endH = curH < 22 ? curH + 2 : 23;
+    if (startInput) startInput.value = `${String(startH).padStart(2, '0')}:00`;
+    if (endInput) endInput.value = `${String(endH).padStart(2, '0')}:${curH >= 22 ? '59' : '00'}`;
   }
 
-  // Fields
-  document.getElementById('meeting-form-title').value = '';
-  document.getElementById('meeting-form-type').value = 'discovery';
-  document.getElementById('meeting-form-platform').value = 'google_meet';
-  document.getElementById('meeting-form-link').value = '';
-  if (document.getElementById('meeting-form-agenda')) document.getElementById('meeting-form-agenda').value = '';
-  if (document.getElementById('meeting-form-notes')) document.getElementById('meeting-form-notes').value = '';
+  const titleInput = document.getElementById('meeting-form-title');
+  if (titleInput) titleInput.value = '';
 
   openModal('new-meeting-modal');
   setTimeout(() => {
@@ -4341,75 +4335,19 @@ function openNewMeetingModal(prefilledDate, prefilledStartTime) {
   }, 100);
 }
 
-function handleMeetingClientSelectChange() {
-  const clientId = document.getElementById('meeting-form-client').value;
-  const projectSelect = document.getElementById('meeting-form-project');
-  const titleInput = document.getElementById('meeting-form-title');
-
-  if (projectSelect) {
-    if (clientId) {
-      const clientProjects = (state.projects || []).filter(p => p.clientId === clientId);
-      projectSelect.innerHTML = '<option value="">No Project (General Meeting)</option>' + clientProjects.map(p => `
-        <option value="${p.id}">${escapeHtml(p.title)}</option>
-      `).join('');
-      if (clientProjects.length === 1) {
-        projectSelect.value = clientProjects[0].id;
-      }
-    } else {
-      projectSelect.innerHTML = '<option value="">No Project (General Meeting)</option>' + (state.projects || []).map(p => `
-        <option value="${p.id}">${escapeHtml(p.title)} (${escapeHtml(p.client?.companyName || 'VISION')})</option>
-      `).join('');
-    }
-  }
-
-  if (clientId && titleInput && !titleInput.value) {
-    const client = (state.clients || []).find(c => c.id === clientId);
-    if (client) {
-      titleInput.value = `Scoping Session - ${client.companyName || client.contactName}`;
-    }
-  }
-}
-
-function handleMeetingPlatformChange() {
-  const platform = document.getElementById('meeting-form-platform').value;
-  const linkInput = document.getElementById('meeting-form-link');
-  if (!linkInput) return;
-  if (platform === 'whatsapp_call') {
-    const clientId = document.getElementById('meeting-form-client')?.value;
-    const client = (state.clients || []).find(c => c.id === clientId);
-    if (client && client.phone) {
-      linkInput.value = formatWhatsAppUrl(client.phone);
-    }
-  }
-}
-
 async function handleMeetingSubmit(e) {
   e.preventDefault();
   const id = document.getElementById('meeting-form-id').value;
-  const clientId = document.getElementById('meeting-form-client').value || null;
-  const projectId = document.getElementById('meeting-form-project').value || null;
   const title = document.getElementById('meeting-form-title').value.trim();
-  const type = document.getElementById('meeting-form-type').value;
   const meetingDate = document.getElementById('meeting-form-date').value;
   const startTime = document.getElementById('meeting-form-start-time').value;
   const endTime = document.getElementById('meeting-form-end-time').value || null;
-  const platform = document.getElementById('meeting-form-platform').value;
-  const link = document.getElementById('meeting-form-link').value.trim() || null;
-  const agenda = document.getElementById('meeting-form-agenda')?.value?.trim() || null;
-  const notes = document.getElementById('meeting-form-notes')?.value?.trim() || null;
 
   const payload = {
     title,
-    clientId,
-    projectId,
-    type,
     meetingDate,
     startTime,
     endTime,
-    platform,
-    link,
-    agenda,
-    notes,
   };
 
   const todayStr = getTodayDateString();
@@ -4596,33 +4534,18 @@ function editCurrentMeeting() {
   if (!m) return;
 
   closeModal('meeting-details-modal');
-  openNewMeetingModal(m.meetingDate);
+  openNewMeetingModal(m.meetingDate, m.startTime, true);
 
   state.currentMeetingId = m.id;
   document.getElementById('meeting-form-id').value = m.id;
-  document.getElementById('meeting-modal-title').textContent = 'Edit Meeting';
+  document.getElementById('meeting-modal-title').textContent = 'Edit Event';
   document.getElementById('btn-save-meeting').textContent = 'Save Changes';
 
-  document.getElementById('meeting-form-client').value = m.clientId || '';
-  handleMeetingClientSelectChange();
-  document.getElementById('meeting-form-project').value = m.projectId || '';
   document.getElementById('meeting-form-title').value = m.title || '';
-  document.getElementById('meeting-form-type').value = m.type || 'discovery';
   document.getElementById('meeting-form-date').value = m.meetingDate || '';
-  const dateDisplay = document.getElementById('meeting-modal-date-display');
-  if (dateDisplay && m.meetingDate) {
-    const dateObj = new Date(`${m.meetingDate}T00:00:00`);
-    const formatted = !isNaN(dateObj.getTime())
-      ? dateObj.toLocaleDateString('en-GB', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })
-      : m.meetingDate;
-    dateDisplay.textContent = formatted;
-  }
+  updateMeetingModalDateDisplay();
   document.getElementById('meeting-form-start-time').value = m.startTime || '';
   document.getElementById('meeting-form-end-time').value = m.endTime || '';
-  document.getElementById('meeting-form-platform').value = m.platform || 'google_meet';
-  document.getElementById('meeting-form-link').value = m.link || '';
-  if (document.getElementById('meeting-form-agenda')) document.getElementById('meeting-form-agenda').value = m.agenda || '';
-  if (document.getElementById('meeting-form-notes')) document.getElementById('meeting-form-notes').value = m.notes || '';
 }
 
 async function deleteCurrentMeeting() {
