@@ -1868,6 +1868,11 @@ tr:hover td {
   font-weight: 700;
 }
 
+.gcal-header-day-col.is-past .gcal-day-name,
+.gcal-header-day-col.is-past .gcal-day-num {
+  color: #9AA0A6;
+}
+
 .gcal-day-num {
   font-size: 1.45rem;
   font-weight: 500;
@@ -1924,6 +1929,10 @@ tr:hover td {
   display: inline-block;
 }
 
+.gcal-time-cell.is-first-hour .gcal-time-label {
+  transform: translateY(2px);
+}
+
 .gcal-day-column {
   border-right: 1px solid #E8EAED;
   position: relative;
@@ -1944,6 +1953,15 @@ tr:hover td {
 
 .gcal-hour-slot:hover {
   background: rgba(26, 115, 232, 0.05);
+}
+
+.gcal-hour-slot.is-past {
+  background: #F8FAFC;
+  cursor: default !important;
+}
+
+.gcal-hour-slot.is-past:hover {
+  background: #F8FAFC;
 }
 
 /* Current Time Indicator (Red line & dot) */

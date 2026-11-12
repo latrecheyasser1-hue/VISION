@@ -3686,8 +3686,8 @@ function scrollCalendarToCurrentTime() {
     if (!scrollEl) return;
     const now = new Date();
     const curHour = now.getHours();
-    const targetHour = Math.max(8, Math.min(20, curHour - 1));
-    const targetTop = (targetHour - 8) * 60;
+    const targetHour = Math.max(0, Math.min(18, curHour - 2));
+    const targetTop = targetHour * 60;
     scrollEl.scrollTop = targetTop;
   }, 60);
 }
@@ -3771,6 +3771,72 @@ function renderMeetingsView() {
   }
 }
 
+function layoutDayMeetings(meetings, startHour) {
+  const items = meetings.map(m => {
+    const [startH, startM] = (m.startTime || '09:00').split(':').map(Number);
+    let endH = startH + 1;
+    let endM = startM || 0;
+    if (m.endTime) {
+      const parts = m.endTime.split(':').map(Number);
+      endH = parts[0];
+      endM = parts[1] || 0;
+    }
+    const startMinutes = (startH - startHour) * 60 + (startM || 0);
+    const rawEndMinutes = (endH - startHour) * 60 + (endM || 0);
+    const duration = Math.max(30, rawEndMinutes - startMinutes);
+    return {
+      m,
+      startMinutes,
+      endMinutes: startMinutes + duration,
+      duration,
+      col: 0,
+      totalCols: 1,
+    };
+  });
+
+  items.sort((a, b) => a.startMinutes - b.startMinutes || b.duration - a.duration);
+
+  let cluster = [];
+  let clusterEnd = -1;
+
+  const finalizeCluster = (c) => {
+    if (c.length === 0) return;
+    const colEnds = [];
+    c.forEach(ev => {
+      let assigned = -1;
+      for (let i = 0; i < colEnds.length; i++) {
+        if (colEnds[i] <= ev.startMinutes) {
+          assigned = i;
+          break;
+        }
+      }
+      if (assigned === -1) {
+        assigned = colEnds.length;
+        colEnds.push(ev.endMinutes);
+      } else {
+        colEnds[assigned] = ev.endMinutes;
+      }
+      ev.col = assigned;
+    });
+    const total = Math.max(1, colEnds.length);
+    c.forEach(ev => { ev.totalCols = total; });
+  };
+
+  items.forEach(item => {
+    if (cluster.length === 0 || item.startMinutes < clusterEnd) {
+      cluster.push(item);
+      clusterEnd = Math.max(clusterEnd, item.endMinutes);
+    } else {
+      finalizeCluster(cluster);
+      cluster = [item];
+      clusterEnd = item.endMinutes;
+    }
+  });
+  finalizeCluster(cluster);
+
+  return items;
+}
+
 function renderGoogleCalendarWeekView() {
   if (!state.calendarWeekStart) {
     state.calendarWeekStart = getSundayOfWeek(new Date());
@@ -3831,9 +3897,10 @@ function renderGoogleCalendarWeekView() {
       const day = String(d.getDate()).padStart(2, '0');
       const dateStr = `${year}-${month}-${day}`;
       const isToday = dateStr === todayStr;
+      const isPastDay = dateStr < todayStr;
 
       headerHtml += `
-        <div class="gcal-header-day-col ${isToday ? 'is-today' : ''}">
+        <div class="gcal-header-day-col ${isToday ? 'is-today' : ''} ${isPastDay ? 'is-past' : ''}">
           <div class="gcal-day-name">${dayNames[idx]}</div>
           <div class="gcal-day-num-wrap">
             <span class="gcal-day-num">${d.getDate()}</span>
@@ -3848,19 +3915,20 @@ function renderGoogleCalendarWeekView() {
   // 2. Render Grid Body
   const bodyContainer = document.getElementById('gcal-week-grid-body');
   if (bodyContainer) {
-    const startHour = 8;
-    const endHour = 23; // 8 AM to 11 PM
+    const startHour = 0;
+    const endHour = 23; // Full 24 hours: 12 AM to 11 PM
 
     // Time Column
     let timeColHtml = '<div class="gcal-time-col">';
     for (let h = startHour; h <= endHour; h++) {
       let label = '';
-      if (h === 12) label = '12 PM';
+      if (h === 0) label = '12 AM';
+      else if (h === 12) label = '12 PM';
       else if (h > 12) label = `${h - 12} PM`;
       else label = `${h} AM`;
 
       timeColHtml += `
-        <div class="gcal-time-cell">
+        <div class="gcal-time-cell ${h === 0 ? 'is-first-hour' : ''}">
           <span class="gcal-time-label">${label}</span>
         </div>
       `;
@@ -3875,15 +3943,19 @@ function renderGoogleCalendarWeekView() {
       const day = String(d.getDate()).padStart(2, '0');
       const dateStr = `${year}-${month}-${day}`;
       const isToday = dateStr === todayStr;
+      const isPastDay = dateStr < todayStr;
 
       let colContent = '';
 
       // Hour slots
       for (let h = startHour; h <= endHour; h++) {
         const timeStr = `${String(h).padStart(2, '0')}:00`;
-        colContent += `
-          <div class="gcal-hour-slot" onclick="openNewMeetingModal('${dateStr}', '${timeStr}')" title="Click to schedule at ${timeStr}"></div>
-        `;
+        const isPastSlot = isPastDay || (isToday && h < currentHour);
+        if (isPastSlot) {
+          colContent += `<div class="gcal-hour-slot is-past"></div>`;
+        } else {
+          colContent += `<div class="gcal-hour-slot" onclick="openNewMeetingModal('${dateStr}', '${timeStr}')" title="Click to schedule at ${timeStr}"></div>`;
+        }
       }
 
       // Red line indicator on Today
@@ -3915,21 +3987,10 @@ function renderGoogleCalendarWeekView() {
         `;
       });
 
-      // Meetings on this day
+      // Meetings on this day (with side-by-side overlap layout)
       const dayMeetings = filteredMeetings.filter(m => m.meetingDate === dateStr);
-      dayMeetings.forEach(m => {
-        const [startH, startM] = (m.startTime || '09:00').split(':').map(Number);
-        let endH = startH + 1;
-        let endM = startM || 0;
-        if (m.endTime) {
-          const parts = m.endTime.split(':').map(Number);
-          endH = parts[0];
-          endM = parts[1] || 0;
-        }
-
-        const startMinutes = (startH - startHour) * 60 + (startM || 0);
-        const endMinutes = (endH - startHour) * 60 + (endM || 0);
-        const duration = Math.max(30, endMinutes - startMinutes);
+      const laidOutMeetings = layoutDayMeetings(dayMeetings, startHour);
+      laidOutMeetings.forEach(({ m, startMinutes, duration, col, totalCols }) => {
         const topPx = Math.max(0, startMinutes * 1);
         const heightPx = Math.max(26, duration * 1 - 2);
 
@@ -3937,9 +3998,12 @@ function renderGoogleCalendarWeekView() {
         const typeClass = `event-chip-${m.type || 'discovery'}`;
         const clientName = m.client?.companyName || m.client?.contactName || '';
 
+        const leftExpr = totalCols > 1 ? `calc(${(col / totalCols) * 100}% + 2px)` : '3px';
+        const widthExpr = totalCols > 1 ? `calc(${(1 / totalCols) * 100}% - 4px)` : 'calc(100% - 7px)';
+
         colContent += `
           <div class="gcal-event-card ${typeClass} ${isCompleted ? 'is-completed' : ''}"
-               style="top: ${topPx}px; height: ${heightPx}px;"
+               style="top: ${topPx}px; height: ${heightPx}px; left: ${leftExpr}; width: ${widthExpr}; right: auto;"
                onclick="event.stopPropagation(); openMeetingDetailsModal('${m.id}')"
                title="${escapeHtml(m.title)} (${m.startTime || ''} – ${m.endTime || ''})">
             <div class="gcal-event-time">${formatTimeAmPm(m.startTime)}${m.endTime ? ' – ' + formatTimeAmPm(m.endTime) : ''}</div>
@@ -3950,7 +4014,7 @@ function renderGoogleCalendarWeekView() {
       });
 
       daysColsHtml += `
-        <div class="gcal-day-column" data-date="${dateStr}">
+        <div class="gcal-day-column ${isPastDay ? 'is-past' : ''}" data-date="${dateStr}">
           ${colContent}
         </div>
       `;
@@ -4061,10 +4125,11 @@ function renderCalendarCell(dateStr, dayNum, isOtherMonth, todayStr, meetings, d
     `;
   });
 
-  const clickHandler = `onclick="openNewMeetingModal('${dateStr}')"`;
+  const clickHandler = isPast ? '' : `onclick="openNewMeetingModal('${dateStr}')"`;
+  const titleAttr = isPast ? '' : 'title="Click to schedule meeting"';
 
   return `
-    <div class="${cellClasses.join(' ')}" ${clickHandler} title="Click to schedule meeting">
+    <div class="${cellClasses.join(' ')}" ${clickHandler} ${titleAttr}>
       <div class="calendar-cell-top">
         <span class="calendar-cell-num">${dayNum}</span>
         ${isToday ? '<span class="calendar-cell-today-pill">Today</span>' : ''}
@@ -4193,6 +4258,18 @@ function renderAgendaMeetingCard(m) {
 }
 
 function openNewMeetingModal(prefilledDate, prefilledStartTime) {
+  const todayStr = getTodayDateString();
+  const now = new Date();
+  if (prefilledDate && prefilledDate < todayStr) {
+    return;
+  }
+  if (prefilledDate === todayStr && prefilledStartTime) {
+    const [sh] = prefilledStartTime.split(':').map(Number);
+    if (!isNaN(sh) && sh < now.getHours()) {
+      return;
+    }
+  }
+
   state.currentMeetingId = null;
   const idInput = document.getElementById('meeting-form-id');
   if (idInput) idInput.value = '';
@@ -4218,7 +4295,6 @@ function openNewMeetingModal(prefilledDate, prefilledStartTime) {
   }
 
   // Date (Hidden input, automatically bound to clicked date or today)
-  const todayStr = getTodayDateString();
   const effectiveDate = prefilledDate || todayStr;
   const dateInput = document.getElementById('meeting-form-date');
   if (dateInput) {
@@ -4337,9 +4413,18 @@ async function handleMeetingSubmit(e) {
   };
 
   const todayStr = getTodayDateString();
-  if (meetingDate < todayStr && !id) {
-    showToast('Cannot schedule a meeting on a past date. Please select today or a future date.', 'error');
-    return;
+  if (!id) {
+    if (meetingDate < todayStr) {
+      showToast('Cannot schedule a meeting on a past date. Please select today or a future date.', 'error');
+      return;
+    }
+    if (meetingDate === todayStr && startTime) {
+      const [sh] = startTime.split(':').map(Number);
+      if (!isNaN(sh) && sh < new Date().getHours()) {
+        showToast('Cannot schedule a meeting in a past hour. Please select a current or future time.', 'error');
+        return;
+      }
+    }
   }
 
   try {
