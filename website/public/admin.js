@@ -12,7 +12,9 @@ let state = {
   invoices: [],
   meetings: [],
   currentMeetingId: null,
-  meetingView: 'calendar',
+  meetingView: 'week',
+  calendarMode: 'week',
+  calendarWeekStart: null,
   calendarYear: new Date().getFullYear(),
   calendarMonth: new Date().getMonth(),
   meetingsFilterStatus: 'all',
@@ -482,6 +484,7 @@ function showToast(message, type = 'success') {
 const TAB_TITLES = {
   overview: { title: "Overview", sub: "Projects pipeline and payment milestones" },
   expenses: { title: "Expenses & Cash Flow", sub: "Permanent ledger for operational expenditures and real-time net worth" },
+  outreach: { title: "Outreach & Prospecting", sub: "Spreadsheet tracker for cold outreach campaigns, prospect follow-ups, and direct WhatsApp contact" },
   projects: { title: "Projects", sub: "Development progress and milestones tracking" },
   clients: { title: "Clients", sub: "Client directory and project history" },
   leads: { title: "Leads", sub: "Incoming project inquiries from website" },
@@ -543,6 +546,10 @@ function switchTab(tabId) {
 
   if (tabId === 'expenses') {
     fetchExpenses();
+  }
+
+  if (tabId === 'outreach') {
+    fetchOutreach();
   }
 }
 
@@ -3654,55 +3661,60 @@ function getTodayDateString() {
   return `${year}-${month}-${day}`;
 }
 
-function renderMeetingsView() {
-  if (state.meetingView === 'list') {
-    const calEl = document.getElementById('meetings-calendar-view');
-    const listEl = document.getElementById('meetings-list-view');
-    if (calEl) calEl.style.display = 'none';
-    if (listEl) listEl.style.display = 'block';
+function getSundayOfWeek(d) {
+  const date = new Date(d);
+  const day = date.getDay(); // 0 is Sunday
+  date.setDate(date.getDate() - day);
+  date.setHours(0, 0, 0, 0);
+  return date;
+}
 
-    const calBtn = document.getElementById('btn-view-cal');
-    const listBtn = document.getElementById('btn-view-list');
-    if (calBtn && listBtn) {
-      calBtn.className = 'btn btn-secondary btn-sm';
-      calBtn.style.background = 'transparent';
-      calBtn.style.border = 'none';
-      listBtn.className = 'btn btn-primary btn-sm';
-      listBtn.style.background = '';
-      listBtn.style.border = '';
-    }
-    renderAgendaListView();
+function formatTimeAmPm(timeStr) {
+  if (!timeStr) return '';
+  const [hStr, mStr] = timeStr.split(':');
+  const h = parseInt(hStr, 10);
+  const m = mStr || '00';
+  if (isNaN(h)) return timeStr;
+  const period = h >= 12 ? 'PM' : 'AM';
+  const displayH = h % 12 === 0 ? 12 : h % 12;
+  return `${displayH}:${m} ${period}`;
+}
+
+function scrollCalendarToCurrentTime() {
+  setTimeout(() => {
+    const scrollEl = document.getElementById('gcal-grid-scroll');
+    if (!scrollEl) return;
+    const now = new Date();
+    const curHour = now.getHours();
+    const targetHour = Math.max(8, Math.min(20, curHour - 1));
+    const targetTop = (targetHour - 8) * 60;
+    scrollEl.scrollTop = targetTop;
+  }, 60);
+}
+
+function setCalendarMode(mode) {
+  state.calendarMode = mode;
+  ['week', 'month', 'agenda'].forEach(m => {
+    const btn = document.getElementById(`btn-view-${m}`);
+    if (btn) btn.classList.toggle('active', m === mode);
+  });
+  renderMeetingsView();
+}
+
+function changeCalendarNav(delta) {
+  if (state.calendarMode === 'month') {
+    changeCalendarMonth(delta);
   } else {
-    const calEl = document.getElementById('meetings-calendar-view');
-    const listEl = document.getElementById('meetings-list-view');
-    if (calEl) calEl.style.display = 'block';
-    if (listEl) listEl.style.display = 'none';
-
-    const calBtn = document.getElementById('btn-view-cal');
-    const listBtn = document.getElementById('btn-view-list');
-    if (calBtn && listBtn) {
-      calBtn.className = 'btn btn-primary btn-sm';
-      calBtn.style.background = '';
-      calBtn.style.border = '';
-      listBtn.className = 'btn btn-secondary btn-sm';
-      listBtn.style.background = 'transparent';
-      listBtn.style.border = 'none';
+    if (!state.calendarWeekStart) {
+      state.calendarWeekStart = getSundayOfWeek(new Date());
     }
-    renderCalendarView();
+    const cur = new Date(state.calendarWeekStart);
+    cur.setDate(cur.getDate() + delta * 7);
+    state.calendarWeekStart = cur;
+    state.calendarYear = cur.getFullYear();
+    state.calendarMonth = cur.getMonth();
+    renderMeetingsView();
   }
-}
-
-function setMeetingView(view) {
-  state.meetingView = view;
-  renderMeetingsView();
-}
-
-function handleMeetingsFilterChange() {
-  const typeSelect = document.getElementById('meetings-filter-type');
-  const statusSelect = document.getElementById('meetings-filter-status');
-  if (typeSelect) state.meetingsFilterType = typeSelect.value;
-  if (statusSelect) state.meetingsFilterStatus = statusSelect.value;
-  renderMeetingsView();
 }
 
 function changeCalendarMonth(delta) {
@@ -3719,14 +3731,239 @@ function changeCalendarMonth(delta) {
 
 function resetCalendarToToday() {
   const now = new Date();
+  state.calendarWeekStart = getSundayOfWeek(now);
   state.calendarYear = now.getFullYear();
   state.calendarMonth = now.getMonth();
   renderMeetingsView();
+  if (!state.calendarMode || state.calendarMode === 'week') {
+    scrollCalendarToCurrentTime();
+  }
+}
+
+function handleMeetingsFilterChange() {
+  const statusSelect = document.getElementById('meetings-filter-status');
+  if (statusSelect) state.meetingsFilterStatus = statusSelect.value;
+  renderMeetingsView();
+}
+
+function renderMeetingsView() {
+  const weekView = document.getElementById('gcal-week-view');
+  const monthView = document.getElementById('gcal-month-view');
+  const agendaView = document.getElementById('meetings-list-view');
+
+  if (!state.calendarMode) state.calendarMode = 'week';
+
+  if (state.calendarMode === 'agenda') {
+    if (weekView) weekView.style.display = 'none';
+    if (monthView) monthView.style.display = 'none';
+    if (agendaView) agendaView.style.display = 'block';
+    renderAgendaListView();
+  } else if (state.calendarMode === 'month') {
+    if (weekView) weekView.style.display = 'none';
+    if (monthView) monthView.style.display = 'block';
+    if (agendaView) agendaView.style.display = 'none';
+    renderCalendarView();
+  } else {
+    if (weekView) weekView.style.display = 'block';
+    if (monthView) monthView.style.display = 'none';
+    if (agendaView) agendaView.style.display = 'none';
+    renderGoogleCalendarWeekView();
+  }
+}
+
+function renderGoogleCalendarWeekView() {
+  if (!state.calendarWeekStart) {
+    state.calendarWeekStart = getSundayOfWeek(new Date());
+  }
+
+  const weekDays = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(state.calendarWeekStart);
+    d.setDate(d.getDate() + i);
+    weekDays.push(d);
+  }
+
+  const todayStr = getTodayDateString();
+  const now = new Date();
+  const currentHour = now.getHours();
+  const currentMinute = now.getMinutes();
+
+  // Range label: e.g. "November 2026" or "Nov 8 – 14, 2026"
+  const rangeLabel = document.getElementById('calendar-range-label');
+  if (rangeLabel) {
+    const first = weekDays[0];
+    const last = weekDays[6];
+    const monthNames = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    if (first.getMonth() === last.getMonth()) {
+      rangeLabel.textContent = `${monthNames[first.getMonth()]} ${first.getFullYear()}`;
+    } else {
+      rangeLabel.textContent = `${monthNames[first.getMonth()].slice(0, 3)} – ${monthNames[last.getMonth()].slice(0, 3)} ${last.getFullYear()}`;
+    }
+  }
+
+  // Filter meetings
+  const filteredMeetings = (state.meetings || []).filter(m => {
+    if (state.meetingsFilterStatus !== 'all' && m.status !== state.meetingsFilterStatus) return false;
+    return true;
+  });
+
+  // Project deadlines
+  const projectDeadlines = (state.projects || []).filter(p => {
+    return p.targetDeliveryDate && p.status !== 'cancelled' && p.stage !== 'delivered';
+  });
+
+  // 1. Render Header Row (GMT+1 + 7 days)
+  const headerContainer = document.getElementById('gcal-week-header');
+  if (headerContainer) {
+    const dayNames = ['SUN.', 'MON.', 'TUE.', 'WED.', 'THU.', 'FRI.', 'SAT.'];
+    let headerHtml = `
+      <div class="gcal-header-time-col">
+        <div class="gcal-tz-label">GMT+1</div>
+      </div>
+    `;
+
+    weekDays.forEach((d, idx) => {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
+      const isToday = dateStr === todayStr;
+
+      headerHtml += `
+        <div class="gcal-header-day-col ${isToday ? 'is-today' : ''}">
+          <div class="gcal-day-name">${dayNames[idx]}</div>
+          <div class="gcal-day-num-wrap">
+            <span class="gcal-day-num">${d.getDate()}</span>
+          </div>
+        </div>
+      `;
+    });
+
+    headerContainer.innerHTML = headerHtml;
+  }
+
+  // 2. Render Grid Body
+  const bodyContainer = document.getElementById('gcal-week-grid-body');
+  if (bodyContainer) {
+    const startHour = 8;
+    const endHour = 23; // 8 AM to 11 PM
+
+    // Time Column
+    let timeColHtml = '<div class="gcal-time-col">';
+    for (let h = startHour; h <= endHour; h++) {
+      let label = '';
+      if (h === 12) label = '12 PM';
+      else if (h > 12) label = `${h - 12} PM`;
+      else label = `${h} AM`;
+
+      timeColHtml += `
+        <div class="gcal-time-cell">
+          <span class="gcal-time-label">${label}</span>
+        </div>
+      `;
+    }
+    timeColHtml += '</div>';
+
+    // 7 Day Columns
+    let daysColsHtml = '';
+    weekDays.forEach((d) => {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
+      const isToday = dateStr === todayStr;
+
+      let colContent = '';
+
+      // Hour slots
+      for (let h = startHour; h <= endHour; h++) {
+        const timeStr = `${String(h).padStart(2, '0')}:00`;
+        colContent += `
+          <div class="gcal-hour-slot" onclick="openNewMeetingModal('${dateStr}', '${timeStr}')" title="Click to schedule at ${timeStr}"></div>
+        `;
+      }
+
+      // Red line indicator on Today
+      if (isToday && currentHour >= startHour && currentHour <= endHour) {
+        const minutesFromStart = (currentHour - startHour) * 60 + currentMinute;
+        const topPx = minutesFromStart * 1;
+        colContent += `
+          <div class="gcal-current-time-marker" style="top: ${topPx}px;">
+            <div class="gcal-current-time-dot"></div>
+          </div>
+        `;
+      }
+
+      // Project Deadlines on this day
+      const dayDeadlines = projectDeadlines.filter(p => {
+        const pd = new Date(p.targetDeliveryDate);
+        const pYear = pd.getFullYear();
+        const pMonth = String(pd.getMonth() + 1).padStart(2, '0');
+        const pDay = String(pd.getDate()).padStart(2, '0');
+        return `${pYear}-${pMonth}-${pDay}` === dateStr;
+      });
+
+      dayDeadlines.forEach((p, dIdx) => {
+        const topOffset = 4 + dIdx * 24;
+        colContent += `
+          <div class="gcal-deadline-banner" style="top: ${topOffset}px;" onclick="event.stopPropagation(); openProjectDetailsModal('${p.id}')" title="Project Deadline: ${escapeHtml(p.title)}">
+            DEADLINE: ${escapeHtml(p.title)}
+          </div>
+        `;
+      });
+
+      // Meetings on this day
+      const dayMeetings = filteredMeetings.filter(m => m.meetingDate === dateStr);
+      dayMeetings.forEach(m => {
+        const [startH, startM] = (m.startTime || '09:00').split(':').map(Number);
+        let endH = startH + 1;
+        let endM = startM || 0;
+        if (m.endTime) {
+          const parts = m.endTime.split(':').map(Number);
+          endH = parts[0];
+          endM = parts[1] || 0;
+        }
+
+        const startMinutes = (startH - startHour) * 60 + (startM || 0);
+        const endMinutes = (endH - startHour) * 60 + (endM || 0);
+        const duration = Math.max(30, endMinutes - startMinutes);
+        const topPx = Math.max(0, startMinutes * 1);
+        const heightPx = Math.max(26, duration * 1 - 2);
+
+        const isCompleted = m.status === 'completed';
+        const typeClass = `event-chip-${m.type || 'discovery'}`;
+        const clientName = m.client?.companyName || m.client?.contactName || '';
+
+        colContent += `
+          <div class="gcal-event-card ${typeClass} ${isCompleted ? 'is-completed' : ''}"
+               style="top: ${topPx}px; height: ${heightPx}px;"
+               onclick="event.stopPropagation(); openMeetingDetailsModal('${m.id}')"
+               title="${escapeHtml(m.title)} (${m.startTime || ''} – ${m.endTime || ''})">
+            <div class="gcal-event-time">${formatTimeAmPm(m.startTime)}${m.endTime ? ' – ' + formatTimeAmPm(m.endTime) : ''}</div>
+            <div class="gcal-event-title">${escapeHtml(m.title)}</div>
+            ${clientName ? `<div class="gcal-event-client">${escapeHtml(clientName)}</div>` : ''}
+          </div>
+        `;
+      });
+
+      daysColsHtml += `
+        <div class="gcal-day-column" data-date="${dateStr}">
+          ${colContent}
+        </div>
+      `;
+    });
+
+    bodyContainer.innerHTML = timeColHtml + daysColsHtml;
+    scrollCalendarToCurrentTime();
+  }
 }
 
 function renderCalendarView() {
   const container = document.getElementById('calendar-grid-cells');
-  const monthLabel = document.getElementById('calendar-month-label');
+  const monthLabel = document.getElementById('calendar-range-label');
   if (!container) return;
 
   const monthNames = [
@@ -3746,11 +3983,10 @@ function renderCalendarView() {
   // Filter meetings
   const filteredMeetings = (state.meetings || []).filter(m => {
     if (state.meetingsFilterStatus !== 'all' && m.status !== state.meetingsFilterStatus) return false;
-    if (state.meetingsFilterType !== 'all' && m.type !== state.meetingsFilterType) return false;
     return true;
   });
 
-  // Project deadlines (for founder workload awareness: winta nakhedm w winta ndiir meeting)
+  // Project deadlines
   const projectDeadlines = (state.projects || []).filter(p => {
     return p.targetDeliveryDate && p.status !== 'cancelled' && p.stage !== 'delivered';
   });
@@ -3772,7 +4008,7 @@ function renderCalendarView() {
     cellsHtml += renderCalendarCell(dateStr, day, false, todayStr, filteredMeetings, projectDeadlines);
   }
 
-  // Next month leading days (fill up to total of 35 or 42 cells)
+  // Next month leading days
   const totalCellsSoFar = firstDay + daysInMonth;
   const remainingCells = totalCellsSoFar % 7 === 0 ? 0 : 7 - (totalCellsSoFar % 7);
   for (let day = 1; day <= remainingCells; day++) {
@@ -3804,7 +4040,6 @@ function renderCalendarCell(dateStr, dayNum, isOtherMonth, todayStr, meetings, d
 
   let eventsHtml = '';
 
-  // Render project deadlines first as high-priority
   dayDeadlines.forEach(p => {
     eventsHtml += `
       <div class="event-chip event-chip-deadline" onclick="event.stopPropagation(); openProjectDetailsModal('${p.id}')" title="Delivery Deadline: ${escapeHtml(p.title)}">
@@ -3814,7 +4049,6 @@ function renderCalendarCell(dateStr, dayNum, isOtherMonth, todayStr, meetings, d
     `;
   });
 
-  // Render meetings (always visible & clickable to review details, even on past dates)
   dayMeetings.forEach(m => {
     const isCompleted = m.status === 'completed';
     const typeClass = `event-chip-${m.type || 'discovery'}`;
@@ -3827,12 +4061,10 @@ function renderCalendarCell(dateStr, dayNum, isOtherMonth, todayStr, meetings, d
     `;
   });
 
-  // Past dates cannot be clicked to schedule a new meeting
-  const clickHandler = isPast ? '' : `onclick="openNewMeetingModal('${dateStr}')"`;
-  const titleAttr = isPast ? 'title="Past date (unselectable)"' : 'title="Click to schedule meeting"';
+  const clickHandler = `onclick="openNewMeetingModal('${dateStr}')"`;
 
   return `
-    <div class="${cellClasses.join(' ')}" ${clickHandler} ${titleAttr}>
+    <div class="${cellClasses.join(' ')}" ${clickHandler} title="Click to schedule meeting">
       <div class="calendar-cell-top">
         <span class="calendar-cell-num">${dayNum}</span>
         ${isToday ? '<span class="calendar-cell-today-pill">Today</span>' : ''}
@@ -3960,7 +4192,7 @@ function renderAgendaMeetingCard(m) {
   `;
 }
 
-function openNewMeetingModal(prefilledDate) {
+function openNewMeetingModal(prefilledDate, prefilledStartTime) {
   state.currentMeetingId = null;
   const idInput = document.getElementById('meeting-form-id');
   if (idInput) idInput.value = '';
@@ -3987,7 +4219,7 @@ function openNewMeetingModal(prefilledDate) {
 
   // Date (Hidden input, automatically bound to clicked date or today)
   const todayStr = getTodayDateString();
-  const effectiveDate = (prefilledDate && prefilledDate >= todayStr) ? prefilledDate : todayStr;
+  const effectiveDate = prefilledDate || todayStr;
   const dateInput = document.getElementById('meeting-form-date');
   if (dateInput) {
     dateInput.value = effectiveDate;
@@ -4001,11 +4233,23 @@ function openNewMeetingModal(prefilledDate) {
     dateDisplay.textContent = formatted;
   }
 
-  // Times
+  // Times (Defaults or clicked slot)
   const startInput = document.getElementById('meeting-form-start-time');
   const endInput = document.getElementById('meeting-form-end-time');
-  if (startInput) startInput.value = '14:00';
-  if (endInput) endInput.value = '15:00';
+  if (prefilledStartTime) {
+    if (startInput) startInput.value = prefilledStartTime;
+    if (endInput) {
+      const [h, m] = prefilledStartTime.split(':').map(Number);
+      const nextH = (h + 1) % 24;
+      endInput.value = `${String(nextH).padStart(2, '0')}:${String(m || 0).padStart(2, '0')}`;
+    }
+  } else {
+    const curH = new Date().getHours();
+    const nextH = (curH + 1) % 24;
+    const nextH2 = (curH + 2) % 24;
+    if (startInput) startInput.value = `${String(nextH).padStart(2, '0')}:00`;
+    if (endInput) endInput.value = `${String(nextH2).padStart(2, '0')}:00`;
+  }
 
   // Fields
   document.getElementById('meeting-form-title').value = '';
@@ -4016,6 +4260,9 @@ function openNewMeetingModal(prefilledDate) {
   if (document.getElementById('meeting-form-notes')) document.getElementById('meeting-form-notes').value = '';
 
   openModal('new-meeting-modal');
+  setTimeout(() => {
+    document.getElementById('meeting-form-title')?.focus();
+  }, 100);
 }
 
 function handleMeetingClientSelectChange() {
@@ -4329,9 +4576,6 @@ function toggleExpenseForm() {
   const isHidden = container.style.display === 'none' || !container.style.display;
   container.style.display = isHidden ? 'block' : 'none';
   if (isHidden) {
-    const today = new Date().toISOString().split('T')[0];
-    const dateInput = document.getElementById('expense-date');
-    if (dateInput) dateInput.value = today;
     const titleInput = document.getElementById('expense-title');
     if (titleInput) {
       titleInput.value = '';
@@ -4339,8 +4583,6 @@ function toggleExpenseForm() {
     }
     const amtInput = document.getElementById('expense-amount');
     if (amtInput) amtInput.value = '';
-    const notesInput = document.getElementById('expense-notes');
-    if (notesInput) notesInput.value = '';
   }
 }
 
@@ -4404,7 +4646,7 @@ function renderExpensesTable(list) {
   if (!list || list.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="5" style="text-align: center; padding: 40px 20px; color: var(--ink-muted);">
+        <td colspan="4" style="text-align: center; padding: 40px 20px; color: var(--ink-muted);">
           <div style="font-size: 0.95rem; font-weight: 700; color: var(--ink); margin-bottom: 4px;">No Expenses Logged</div>
           <p style="font-size: 0.82rem; margin: 0;">No spending recorded for this filter period. Click "+ Record Expense" to log your first expenditure.</p>
         </td>
@@ -4412,49 +4654,24 @@ function renderExpensesTable(list) {
     return;
   }
 
-  const categoryNames = {
-    cloud_hosting: 'Cloud & Hosting',
-    software_tools: 'Software & Tools',
-    hardware_gear: 'Hardware & Gear',
-    marketing_ads: 'Marketing & Ads',
-    office_workspace: 'Office & Workspace',
-    general: 'General Operations',
-  };
-
-  const categoryBadges = {
-    cloud_hosting: 'background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE;',
-    software_tools: 'background: #ECFEFF; color: #0E7490; border: 1px solid #A5F3FC;',
-    hardware_gear: 'background: #F5F3FF; color: #6D28D9; border: 1px solid #DDD6FE;',
-    marketing_ads: 'background: #FFFBEB; color: #B45309; border: 1px solid #FDE68A;',
-    office_workspace: 'background: #ECFDF5; color: #047857; border: 1px solid #A7F3D0;',
-    general: 'background: #F3F4F6; color: #374151; border: 1px solid #E5E7EB;',
-  };
-
   tbody.innerHTML = list.map(item => {
     const rawDate = item.date ? new Date(item.date) : new Date(item.createdAt);
-    const dateFormatted = !isNaN(rawDate.getTime()) ? rawDate.toISOString().split('T')[0] : String(item.date || '');
-    const catLabel = categoryNames[item.category] || item.category || 'General';
-    const catStyle = categoryBadges[item.category] || categoryBadges.general;
-    const notesHtml = item.notes ? `<div style="font-size: 0.78rem; color: var(--ink-muted); margin-top: 2px;">${escapeHtml(item.notes)}</div>` : '';
+    const dateFormatted = !isNaN(rawDate.getTime()) 
+      ? rawDate.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+      : String(item.date || '');
 
     return `
       <tr>
-        <td style="font-weight: 700; color: var(--ink); white-space: nowrap;">
+        <td style="font-weight: 600; color: var(--ink-muted); font-size: 0.85rem; white-space: nowrap;">
           ${dateFormatted}
         </td>
         <td>
-          <div style="font-weight: 700; color: var(--ink); font-size: 0.92rem;">${escapeHtml(item.title)}</div>
-          ${notesHtml}
-        </td>
-        <td>
-          <span style="display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; ${catStyle}">
-            ${catLabel}
-          </span>
+          <div style="font-weight: 700; color: var(--ink); font-size: 0.95rem;">${escapeHtml(item.title)}</div>
         </td>
         <td style="text-align: right; font-weight: 800; color: #DC2626; font-size: 0.95rem; white-space: nowrap;">
           -${formatDzd(item.amountDzd)} DZD
         </td>
-        <td style="text-align: right; font-size: 0.78rem; color: #6366F1; font-weight: 600; white-space: nowrap;">
+        <td style="text-align: right; font-size: 0.8rem; color: #6366F1; font-weight: 600; white-space: nowrap;">
           Deducted from Cash
         </td>
       </tr>
@@ -4467,9 +4684,6 @@ async function handleRecordExpense(event) {
 
   const title = (document.getElementById('expense-title')?.value || '').trim();
   const amountDzd = Number(document.getElementById('expense-amount')?.value);
-  const category = document.getElementById('expense-category')?.value || 'general';
-  const date = document.getElementById('expense-date')?.value || new Date().toISOString().split('T')[0];
-  const notes = (document.getElementById('expense-notes')?.value || '').trim();
 
   if (!title) {
     showToast('Please enter an expense title / item description.', 'error');
@@ -4495,9 +4709,6 @@ async function handleRecordExpense(event) {
       body: JSON.stringify({
         title,
         amountDzd,
-        category,
-        date,
-        notes,
       }),
     });
 
@@ -4541,32 +4752,22 @@ function exportExpensesToExcel() {
   csv += `"Live Net Worth (DZD)","${netWorth}"\n`;
   csv += `"Total Historical Expenses (DZD)","${totalExpenses}"\n\n`;
 
-  csv += '"Date","Description / Item","Category","Amount (DZD)","Net Worth Impact","Notes","Recorded At"\n';
-
-  const categoryNames = {
-    cloud_hosting: 'Cloud & Hosting',
-    software_tools: 'Software & Tools',
-    hardware_gear: 'Hardware & Gear',
-    marketing_ads: 'Marketing & Ads',
-    office_workspace: 'Office & Workspace',
-    general: 'General Operations',
-  };
+  csv += '"Date & Time","Item / Description","Amount (DZD)","Net Worth Impact"\n';
 
   let totalExportedSum = 0;
   list.forEach(item => {
     const rawDate = item.date ? new Date(item.date) : new Date(item.createdAt);
-    const dateFormatted = !isNaN(rawDate.getTime()) ? rawDate.toISOString().split('T')[0] : String(item.date || '');
+    const dateFormatted = !isNaN(rawDate.getTime()) 
+      ? rawDate.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+      : String(item.date || '');
     const titleClean = String(item.title || '').replace(/"/g, '""');
-    const catLabel = categoryNames[item.category] || item.category || 'General';
     const amt = Number(item.amountDzd) || 0;
     totalExportedSum += amt;
-    const notesClean = String(item.notes || '').replace(/"/g, '""');
-    const createdClean = item.createdAt ? new Date(item.createdAt).toISOString() : '';
 
-    csv += `"${dateFormatted}","${titleClean}","${catLabel}","${amt}","Deducted from Cash","${notesClean}","${createdClean}"\n`;
+    csv += `"${dateFormatted}","${titleClean}","${amt}","Deducted from Cash"\n`;
   });
 
-  csv += `\n"TOTAL FILTERED EXPENSES (DZD)","","","${totalExportedSum}","","",""\n`;
+  csv += `\n"TOTAL FILTERED EXPENSES (DZD)","","${totalExportedSum}",""\n`;
 
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
@@ -4579,4 +4780,352 @@ function exportExpensesToExcel() {
   URL.revokeObjectURL(url);
 
   showToast('Excel report downloaded successfully.', 'success');
+}
+
+// ==========================================
+// OUTREACH SPREADSHEET LEDGER SYSTEM
+// ==========================================
+function getWhatsAppUrl(phone) {
+  if (!phone) return '#';
+  let clean = String(phone).replace(/[^\d]/g, '');
+  if (clean.startsWith('0') && clean.length === 10) {
+    clean = '213' + clean.slice(1);
+  }
+  return 'https://wa.me/' + clean;
+}
+
+function getInstagramUrl(url) {
+  if (!url) return '#';
+  let clean = String(url).trim();
+  if (clean.startsWith('@')) {
+    clean = clean.slice(1);
+  }
+  if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
+    return 'https://www.instagram.com/' + clean;
+  }
+  return clean;
+}
+
+async function fetchOutreach() {
+  try {
+    const res = await fetch('/api/outreach');
+    if (!res.ok) throw new Error('Failed to fetch outreach list');
+    const data = await res.json();
+    state.outreach = Array.isArray(data) ? data : [];
+    updateOutreachBadge();
+    renderOutreachView();
+  } catch (err) {
+    console.error('Fetch outreach error:', err);
+    showToast('Failed to load outreach records.', 'error');
+  }
+}
+
+function updateOutreachBadge() {
+  const badge = document.getElementById('nav-outreach-count');
+  if (!badge) return;
+  const count = (state.outreach || []).length;
+  if (count > 0) {
+    badge.textContent = String(count);
+    badge.style.display = 'inline-block';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function toggleOutreachForm() {
+  const container = document.getElementById('outreach-form-container');
+  if (!container) return;
+  const isHidden = container.style.display === 'none' || !container.style.display;
+  container.style.display = isHidden ? 'block' : 'none';
+  if (isHidden) {
+    const nameInput = document.getElementById('outreach-business-name');
+    if (nameInput) {
+      nameInput.value = '';
+      nameInput.focus();
+    }
+    const typeInput = document.getElementById('outreach-business-type');
+    if (typeInput) typeInput.value = '';
+    const phoneInput = document.getElementById('outreach-phone');
+    if (phoneInput) phoneInput.value = '';
+    const instaInput = document.getElementById('outreach-instagram');
+    if (instaInput) instaInput.value = '';
+    const statusInput = document.getElementById('outreach-status');
+    if (statusInput) statusInput.value = 'no_reply';
+    const notesInput = document.getElementById('outreach-notes');
+    if (notesInput) notesInput.value = '';
+  }
+}
+
+function handleOutreachFilterChange() {
+  const select = document.getElementById('outreach-filter-status');
+  if (select) state.outreachFilterStatus = select.value;
+  renderOutreachView();
+}
+
+function handleOutreachSearchInput() {
+  const input = document.getElementById('outreach-search-input');
+  if (input) state.outreachSearchQuery = (input.value || '').toLowerCase().trim();
+  renderOutreachView();
+}
+
+async function handleRecordOutreach(event) {
+  if (event) event.preventDefault();
+
+  const businessName = (document.getElementById('outreach-business-name')?.value || '').trim();
+  const businessType = (document.getElementById('outreach-business-type')?.value || '').trim();
+  const phone = (document.getElementById('outreach-phone')?.value || '').trim();
+  const instagramUrl = (document.getElementById('outreach-instagram')?.value || '').trim();
+  const status = document.getElementById('outreach-status')?.value || 'no_reply';
+  const notes = (document.getElementById('outreach-notes')?.value || '').trim();
+
+  if (!businessName) {
+    showToast('Business name is required.', 'error');
+    return;
+  }
+  if (!businessType) {
+    showToast('Business type / category is required.', 'error');
+    return;
+  }
+
+  const submitBtn = event?.target?.querySelector('button[type="submit"]');
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving...';
+  }
+
+  try {
+    const res = await fetch('/api/outreach', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        businessName,
+        businessType,
+        phone,
+        instagramUrl,
+        status,
+        notes,
+      }),
+    });
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error || 'Failed to save outreach business.');
+    }
+
+    const saved = await res.json();
+    state.outreach = [saved, ...(state.outreach || [])];
+    updateOutreachBadge();
+    renderOutreachView();
+    toggleOutreachForm();
+    showToast('Prospect saved to outreach ledger!', 'success');
+  } catch (err) {
+    console.error('Record outreach error:', err);
+    showToast(err.message || 'Error recording prospect.', 'error');
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Save Business';
+    }
+  }
+}
+
+async function updateOutreachStatus(id, newStatus) {
+  try {
+    const res = await fetch('/api/outreach/' + id, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus }),
+    });
+
+    if (!res.ok) throw new Error('Failed to update status');
+    const updated = await res.json();
+
+    const idx = (state.outreach || []).findIndex(x => x.id === id);
+    if (idx !== -1) {
+      state.outreach[idx] = updated;
+    }
+    renderOutreachView();
+    showToast('Status updated successfully.', 'success');
+  } catch (err) {
+    console.error('Update outreach status error:', err);
+    showToast('Failed to update prospect status.', 'error');
+  }
+}
+
+async function deleteOutreachBusiness(id) {
+  if (!confirm('Are you sure you want to remove this business from the outreach ledger?')) return;
+
+  try {
+    const res = await fetch('/api/outreach/' + id, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Failed to delete outreach entry');
+    state.outreach = (state.outreach || []).filter(x => x.id !== id);
+    updateOutreachBadge();
+    renderOutreachView();
+    showToast('Business removed from outreach ledger.', 'success');
+  } catch (err) {
+    console.error('Delete outreach error:', err);
+    showToast('Failed to delete outreach business.', 'error');
+  }
+}
+
+function renderOutreachView() {
+  const tbody = document.getElementById('outreach-tbody');
+  if (!tbody) return;
+
+  const rawList = state.outreach || [];
+
+  // Update Metrics
+  const totalCount = rawList.length;
+  const respondedCount = rawList.filter(x => x.status === 'responded').length;
+  const thinkingCount = rawList.filter(x => x.status === 'thinking').length;
+  const noreplyCount = rawList.filter(x => x.status === 'no_reply').length;
+  const declinedCount = rawList.filter(x => x.status === 'declined').length;
+
+  const totalEl = document.getElementById('outreach-stat-total');
+  const respondedEl = document.getElementById('outreach-stat-responded');
+  const thinkingEl = document.getElementById('outreach-stat-thinking');
+  const noreplyEl = document.getElementById('outreach-stat-noreply');
+  const declinedEl = document.getElementById('outreach-stat-declined');
+
+  if (totalEl) totalEl.textContent = String(totalCount);
+  if (respondedEl) respondedEl.textContent = String(respondedCount);
+  if (thinkingEl) thinkingEl.textContent = String(thinkingCount);
+  if (noreplyEl) noreplyEl.textContent = String(noreplyCount);
+  if (declinedEl) declinedEl.textContent = String(declinedCount);
+
+  // Apply Filter & Search
+  let list = rawList;
+  if (state.outreachFilterStatus && state.outreachFilterStatus !== 'all') {
+    list = list.filter(x => x.status === state.outreachFilterStatus);
+  }
+  if (state.outreachSearchQuery) {
+    const q = state.outreachSearchQuery;
+    list = list.filter(x => 
+      (x.businessName || '').toLowerCase().includes(q) ||
+      (x.businessType || '').toLowerCase().includes(q) ||
+      (x.phone || '').includes(q) ||
+      (x.notes || '').toLowerCase().includes(q)
+    );
+  }
+
+  const countLabel = document.getElementById('outreach-count-label');
+  if (countLabel) {
+    countLabel.textContent = `Showing ${list.length} of ${totalCount} businesses`;
+  }
+
+  if (list.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" style="text-align: center; padding: 40px 20px; color: var(--ink-muted);">
+          <div style="font-size: 0.95rem; font-weight: 700; color: var(--ink); margin-bottom: 4px;">No Outreach Records Found</div>
+          <p style="font-size: 0.82rem; margin: 0;">No businesses match the active filter. Click "+ Add Business" to log your first outreach prospect.</p>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = list.map((item, idx) => {
+    const waUrl = getWhatsAppUrl(item.phone);
+    const instaUrl = getInstagramUrl(item.instagramUrl);
+    const status = item.status || 'no_reply';
+
+    const phoneHtml = item.phone 
+      ? `<a href="${waUrl}" target="_blank" rel="noopener noreferrer" class="outreach-wa-link" title="Open chat with ${escapeHtml(item.phone)} on WhatsApp">
+           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+           <span>${escapeHtml(item.phone)}</span>
+         </a>`
+      : `<span style="color: var(--ink-muted); font-size: 0.82rem;">-</span>`;
+
+    const instaHtml = item.instagramUrl
+      ? `<a href="${instaUrl}" target="_blank" rel="noopener noreferrer" class="outreach-insta-link" title="Open ${escapeHtml(item.instagramUrl)}">
+           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+           <span>${escapeHtml(item.instagramUrl)}</span>
+         </a>`
+      : `<span style="color: var(--ink-muted); font-size: 0.82rem;">-</span>`;
+
+    const notesHtml = item.notes
+      ? `<div style="font-size: 0.8rem; color: var(--ink); max-width: 260px; line-height: 1.35;">${escapeHtml(item.notes)}</div>`
+      : `<span style="color: var(--ink-muted); font-size: 0.8rem;">-</span>`;
+
+    return `
+      <tr>
+        <td style="text-align: center; font-weight: 700; color: var(--ink-muted); font-size: 0.78rem;">
+          ${idx + 1}
+        </td>
+        <td>
+          <div style="font-weight: 800; color: var(--ink); font-size: 0.92rem;">${escapeHtml(item.businessName)}</div>
+        </td>
+        <td>
+          <span style="display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; background: #F1F5F9; color: #334155; border: 1px solid #E2E8F0;">
+            ${escapeHtml(item.businessType)}
+          </span>
+        </td>
+        <td>
+          ${phoneHtml}
+        </td>
+        <td>
+          ${instaHtml}
+        </td>
+        <td>
+          <select onchange="updateOutreachStatus('${item.id}', this.value)" class="outreach-status-select status-${status}">
+            <option value="no_reply" ${status === 'no_reply' ? 'selected' : ''}>No Reply</option>
+            <option value="responded" ${status === 'responded' ? 'selected' : ''}>Responded</option>
+            <option value="thinking" ${status === 'thinking' ? 'selected' : ''}>Thinking</option>
+            <option value="declined" ${status === 'declined' ? 'selected' : ''}>Declined</option>
+          </select>
+        </td>
+        <td>
+          ${notesHtml}
+        </td>
+        <td style="text-align: right; white-space: nowrap;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="deleteOutreachBusiness('${item.id}')" style="color: #DC2626; border-color: #FECACA; padding: 4px 8px; font-size: 0.72rem;" title="Delete prospect">
+            Delete
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function exportOutreachToExcel() {
+  const list = state.outreach || [];
+  if (list.length === 0) {
+    showToast('No outreach records to export.', 'error');
+    return;
+  }
+
+  const today = new Date().toISOString().split('T')[0];
+  let csv = '\uFEFF';
+  csv += '"VISION DIGITAL AGENCY - OUTREACH & PROSPECTING LEDGER"\n';
+  csv += `"Report Generated","${new Date().toLocaleString('en-GB')}"\n`;
+  csv += `"Filter Status","${(state.outreachFilterStatus || 'all').toUpperCase()}"\n\n`;
+
+  csv += '"#","Business Name","Business Type / Niche","Phone Number","WhatsApp Link","Instagram Link","Status","Notes","Recorded At"\n';
+
+  list.forEach((item, idx) => {
+    const num = idx + 1;
+    const name = String(item.businessName || '').replace(/"/g, '""');
+    const type = String(item.businessType || '').replace(/"/g, '""');
+    const phone = String(item.phone || '').replace(/"/g, '""');
+    const wa = item.phone ? getWhatsAppUrl(item.phone) : '';
+    const insta = item.instagramUrl ? getInstagramUrl(item.instagramUrl) : '';
+    const status = String(item.status || 'no_reply').replace('_', ' ').toUpperCase();
+    const notes = String(item.notes || '').replace(/"/g, '""');
+    const created = item.createdAt ? new Date(item.createdAt).toLocaleString('en-GB') : '';
+
+    csv += `"${num}","${name}","${type}","${phone}","${wa}","${insta}","${status}","${notes}","${created}"\n`;
+  });
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', `vision_outreach_ledger_${today}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+
+  showToast('Excel outreach report downloaded successfully.', 'success');
 }

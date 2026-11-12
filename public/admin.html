@@ -299,6 +299,15 @@
         </svg>
         <span class="nav-text">Expenses</span>
       </button>
+
+      <button class="nav-item" data-tab="outreach" title="Outreach">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 2L11 13"></path>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+        <span class="nav-text">Outreach</span>
+        <span class="badge" id="nav-outreach-count" style="display: none; background: #6366F1; color: #fff;">0</span>
+      </button>
     </nav>
 
     <!-- Sidebar Footer -->
@@ -310,9 +319,6 @@
           <span class="user-role">Founder</span>
         </div>
       </div>
-      <button type="button" class="btn btn-secondary btn-sm" onclick="lockAdminDashboard()" style="margin-top: 10px; width: 100%; font-size: 0.75rem; padding: 5px 8px; border-color: var(--border); color: var(--ink-muted);" title="Lock Admin Dashboard">
-        Lock Dashboard
-      </button>
     </div>
   </aside>
 
@@ -549,44 +555,75 @@
 
       </section>
 
-      <!-- TAB 6: MEETINGS & CALENDAR -->
+      <!-- TAB 6: MEETINGS & CALENDAR (GOOGLE CALENDAR STYLE) -->
       <section id="tab-meetings" class="tab-section">
         
-        <!-- Calendar Grid Container -->
-        <div id="meetings-calendar-view" class="calendar-container">
+        <div class="gcal-wrapper">
           
-          <!-- Integrated Header Bar -->
-          <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--border); background: var(--surface);">
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <h3 id="calendar-month-label" style="font-size: 1.2rem; font-weight: 800; color: var(--ink); margin: 0; min-width: 170px;">November 2026</h3>
-              <button type="button" class="btn btn-secondary btn-sm" onclick="changeCalendarMonth(-1)">&lt; Prev</button>
-              <button type="button" class="btn btn-secondary btn-sm" onclick="resetCalendarToToday()">Today</button>
-              <button type="button" class="btn btn-secondary btn-sm" onclick="changeCalendarMonth(1)">Next &gt;</button>
+          <!-- Top Navigation & Control Bar -->
+          <div class="gcal-topbar">
+            <div class="gcal-nav-left">
+              <button type="button" class="gcal-plus-btn" onclick="openNewMeetingModal()" title="Schedule Meeting">+</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="resetCalendarToToday()" style="font-weight: 700; padding: 7px 16px;">Today</button>
+              <div class="gcal-nav-arrows">
+                <button type="button" class="gcal-arrow-btn" onclick="changeCalendarNav(-1)" title="Previous">&lt;</button>
+                <button type="button" class="gcal-arrow-btn" onclick="changeCalendarNav(1)" title="Next">&gt;</button>
+              </div>
+              <h3 id="calendar-range-label" class="gcal-title">November 2026</h3>
             </div>
-            <button type="button" class="btn btn-primary btn-sm" style="font-weight: 700; padding: 7px 16px;" onclick="openNewMeetingModal()">
-              + Schedule Meeting
-            </button>
+
+            <div class="gcal-nav-right">
+              <div class="gcal-view-switcher">
+                <button type="button" class="gcal-view-btn active" id="btn-view-week" onclick="setCalendarMode('week')">Week</button>
+                <button type="button" class="gcal-view-btn" id="btn-view-month" onclick="setCalendarMode('month')">Month</button>
+                <button type="button" class="gcal-view-btn" id="btn-view-agenda" onclick="setCalendarMode('agenda')">Agenda</button>
+              </div>
+
+              <select id="meetings-filter-status" onchange="handleMeetingsFilterChange()" style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.8rem; font-weight: 600; background: var(--surface); color: var(--ink);">
+                <option value="all">All Statuses</option>
+                <option value="scheduled">Scheduled</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
           </div>
 
-          <div class="calendar-header-grid">
-            <div class="calendar-day-header">Sun</div>
-            <div class="calendar-day-header">Mon</div>
-            <div class="calendar-day-header">Tue</div>
-            <div class="calendar-day-header">Wed</div>
-            <div class="calendar-day-header">Thu</div>
-            <div class="calendar-day-header">Fri</div>
-            <div class="calendar-day-header">Sat</div>
-          </div>
-          <div id="calendar-grid-cells" class="calendar-grid">
-            <!-- Dynamically populated 35-42 day cells -->
-          </div>
-        </div>
+          <!-- Week View Container (Default: Google Calendar Style) -->
+          <div id="gcal-week-view" class="gcal-week-container">
+            <div class="gcal-header-row" id="gcal-week-header">
+              <!-- Dynamically populated day columns with GMT+1 and date badges -->
+            </div>
 
-        <!-- Agenda / List View Container (Hidden by default) -->
-        <div id="meetings-list-view" style="display: none;">
-          <div id="agenda-groups-container">
-            <!-- Dynamically grouped meetings -->
+            <div class="gcal-grid-scroll" id="gcal-grid-scroll">
+              <div class="gcal-grid-body" id="gcal-week-grid-body">
+                <!-- Dynamically populated time labels, day columns, slots, meetings, red line -->
+              </div>
+            </div>
           </div>
+
+          <!-- Month View Container -->
+          <div id="gcal-month-view" class="calendar-container" style="display: none; border: none; box-shadow: none; border-radius: 0;">
+            <div class="calendar-header-grid">
+              <div class="calendar-day-header">Sun</div>
+              <div class="calendar-day-header">Mon</div>
+              <div class="calendar-day-header">Tue</div>
+              <div class="calendar-day-header">Wed</div>
+              <div class="calendar-day-header">Thu</div>
+              <div class="calendar-day-header">Fri</div>
+              <div class="calendar-day-header">Sat</div>
+            </div>
+            <div id="calendar-grid-cells" class="calendar-grid">
+              <!-- Dynamically populated 35-42 day cells -->
+            </div>
+          </div>
+
+          <!-- Agenda / List View Container -->
+          <div id="meetings-list-view" style="display: none; padding: 20px;">
+            <div id="agenda-groups-container">
+              <!-- Dynamically grouped meetings -->
+            </div>
+          </div>
+
         </div>
 
       </section>
@@ -668,38 +705,16 @@
           </div>
           <div style="padding: 20px 24px;">
             <form id="record-expense-form" onsubmit="handleRecordExpense(event); return false;">
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+              <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 16px;">
                 <div class="form-group" style="margin-bottom: 0;">
                   <label style="font-size: 0.8rem; font-weight: 700;">Item / Description</label>
-                  <input type="text" id="expense-title" placeholder="Ex: Cloud hosting renewal, Domain name, Equipment..." required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.85rem;">
+                  <input type="text" id="expense-title" placeholder="Ex: Cloud server, Domain renewal, Laptop charger..." required style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
                 </div>
 
                 <div class="form-group" style="margin-bottom: 0;">
                   <label style="font-size: 0.8rem; font-weight: 700;">Amount (DZD)</label>
-                  <input type="number" id="expense-amount" placeholder="Ex: 5000" min="1" step="1" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.85rem;">
+                  <input type="number" id="expense-amount" placeholder="Ex: 5000" min="1" step="1" required style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
                 </div>
-
-                <div class="form-group" style="margin-bottom: 0;">
-                  <label style="font-size: 0.8rem; font-weight: 700;">Category</label>
-                  <select id="expense-category" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.85rem;">
-                    <option value="cloud_hosting">Cloud, Hosting & Domains</option>
-                    <option value="software_tools">Software, APIs & Tools</option>
-                    <option value="hardware_gear">Hardware & Equipment</option>
-                    <option value="marketing_ads">Marketing & Advertising</option>
-                    <option value="office_workspace">Office & Workspace</option>
-                    <option value="general">General Operations</option>
-                  </select>
-                </div>
-
-                <div class="form-group" style="margin-bottom: 0;">
-                  <label style="font-size: 0.8rem; font-weight: 700;">Date</label>
-                  <input type="date" id="expense-date" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.85rem;">
-                </div>
-              </div>
-
-              <div class="form-group" style="margin-top: 14px; margin-bottom: 16px;">
-                <label style="font-size: 0.8rem; font-weight: 700;">Notes <small style="color: var(--ink-muted); font-weight: normal;">(Optional)</small></label>
-                <input type="text" id="expense-notes" placeholder="Optional details or receipt reference..." style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.85rem;">
               </div>
 
               <div style="display: flex; justify-content: flex-end; gap: 10px;">
@@ -725,21 +740,179 @@
             <table>
               <thead>
                 <tr>
-                  <th style="width: 130px;">Date</th>
-                  <th>Description</th>
-                  <th style="width: 180px;">Category</th>
-                  <th style="text-align: right; width: 150px;">Amount</th>
-                  <th style="text-align: right; width: 160px;">Net Worth Impact</th>
+                  <th style="width: 160px;">Date & Time</th>
+                  <th>Item / Description</th>
+                  <th style="text-align: right; width: 160px;">Amount</th>
+                  <th style="text-align: right; width: 170px;">Net Worth Impact</th>
                 </tr>
               </thead>
               <tbody id="expenses-tbody">
-                <tr><td colspan="5" style="text-align: center; color: var(--ink-muted); padding: 30px;">Loading expenses...</td></tr>
+                <tr><td colspan="4" style="text-align: center; color: var(--ink-muted); padding: 30px;">Loading expenses...</td></tr>
               </tbody>
             </table>
           </div>
         </div>
 
       </section>
+
+      <!-- TAB 8: OUTREACH & PROSPECTING (EXCEL SPREADSHEET LEDGER) -->
+      <section id="tab-outreach" class="tab-section">
+        
+        <!-- Header Card & Overview Metrics -->
+        <div class="card" style="margin-bottom: 24px;">
+          <div class="card-header" style="flex-wrap: wrap; gap: 14px;">
+            <div>
+              <div class="card-title" style="font-size: 1.15rem; font-weight: 800; color: var(--ink);">
+                Outreach & Prospecting Ledger
+              </div>
+              <p style="font-size: 0.8rem; color: var(--ink-muted); margin-top: 2px;">
+                Spreadsheet tracker for cold outreach campaigns, prospect follow-ups, and direct WhatsApp contact.
+              </p>
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <!-- Status Filter -->
+              <select id="outreach-filter-status" onchange="handleOutreachFilterChange()" style="padding: 7px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.82rem; font-weight: 600; background: var(--surface); color: var(--ink);">
+                <option value="all">All Statuses</option>
+                <option value="no_reply">No Reply (Pending)</option>
+                <option value="responded">Responded</option>
+                <option value="thinking">Thinking</option>
+                <option value="declined">Declined</option>
+              </select>
+
+              <button type="button" class="btn btn-secondary btn-sm" onclick="exportOutreachToExcel()" style="font-weight: 700; padding: 7px 14px;">
+                Export to Excel
+              </button>
+
+              <button type="button" class="btn btn-primary btn-sm" onclick="toggleOutreachForm()" style="font-weight: 700; padding: 7px 16px;">
+                + Add Business
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Metric Badges -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; padding: 0 24px 20px;">
+            <div style="padding: 12px; background: #F8FAFC; border: 1px solid var(--border); border-radius: 8px;">
+              <div style="font-size: 0.72rem; font-weight: 700; color: var(--ink-muted); text-transform: uppercase;">Total Contacted</div>
+              <div id="outreach-stat-total" style="font-size: 1.3rem; font-weight: 800; color: var(--ink); margin-top: 2px;">0</div>
+            </div>
+            <div style="padding: 12px; background: #ECFDF5; border: 1px solid #A7F3D0; border-radius: 8px;">
+              <div style="font-size: 0.72rem; font-weight: 700; color: #047857; text-transform: uppercase;">Responded</div>
+              <div id="outreach-stat-responded" style="font-size: 1.3rem; font-weight: 800; color: #047857; margin-top: 2px;">0</div>
+            </div>
+            <div style="padding: 12px; background: #F5F3FF; border: 1px solid #DDD6FE; border-radius: 8px;">
+              <div style="font-size: 0.72rem; font-weight: 700; color: #6D28D9; text-transform: uppercase;">Thinking</div>
+              <div id="outreach-stat-thinking" style="font-size: 1.3rem; font-weight: 800; color: #6D28D9; margin-top: 2px;">0</div>
+            </div>
+            <div style="padding: 12px; background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 8px;">
+              <div style="font-size: 0.72rem; font-weight: 700; color: #B45309; text-transform: uppercase;">No Reply</div>
+              <div id="outreach-stat-noreply" style="font-size: 1.3rem; font-weight: 800; color: #B45309; margin-top: 2px;">0</div>
+            </div>
+            <div style="padding: 12px; background: #FEF2F2; border: 1px solid #FECACA; border-radius: 8px;">
+              <div style="font-size: 0.72rem; font-weight: 700; color: #B91C1C; text-transform: uppercase;">Declined</div>
+              <div id="outreach-stat-declined" style="font-size: 1.3rem; font-weight: 800; color: #B91C1C; margin-top: 2px;">0</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add Outreach Business Form (Collapsible) -->
+        <div class="card" id="outreach-form-container" style="display: none; margin-bottom: 24px; border: 1px solid #6366F1; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.08);">
+          <div class="card-header" style="background: #EEF2FF; border-bottom: 1px solid #E0E7FF;">
+            <div>
+              <div class="card-title" style="font-size: 0.95rem; font-weight: 800; color: #3730A3;">
+                Add Outreach Prospect
+              </div>
+              <p style="font-size: 0.78rem; color: #4338CA; margin-top: 2px;">
+                Enter business details. Phone numbers automatically convert to one-click WhatsApp chats.
+              </p>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="toggleOutreachForm()" style="padding: 4px 10px; font-size: 0.75rem;">
+              Cancel
+            </button>
+          </div>
+          <div style="padding: 20px 24px;">
+            <form id="record-outreach-form" onsubmit="handleRecordOutreach(event); return false;">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 0.8rem; font-weight: 700;">Business Name</label>
+                  <input type="text" id="outreach-business-name" placeholder="Ex: Bella Mode, Clinique Chifa, HK Store..." required style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 0.8rem; font-weight: 700;">Business Type / Niche</label>
+                  <input type="text" id="outreach-business-type" placeholder="Ex: Women Fashion, Dental Clinic, Restaurant..." required style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 0.8rem; font-weight: 700;">Phone Number</label>
+                  <input type="tel" id="outreach-phone" placeholder="Ex: 0550123456" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 0.8rem; font-weight: 700;">Instagram Link / Handle</label>
+                  <input type="text" id="outreach-instagram" placeholder="Ex: @bellamode or https://instagram.com/..." style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 16px; margin-top: 14px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 0.8rem; font-weight: 700;">Initial Status</label>
+                  <select id="outreach-status" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 600;">
+                    <option value="no_reply">No Reply (Pending)</option>
+                    <option value="responded">Responded</option>
+                    <option value="thinking">Thinking</option>
+                    <option value="declined">Declined</option>
+                  </select>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 0.8rem; font-weight: 700;">Notes <small style="color: var(--ink-muted); font-weight: normal;">(Optional details, pitch angle...)</small></label>
+                  <input type="text" id="outreach-notes" placeholder="Ex: Sent DM with website audit proposal..." style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.85rem;">
+                </div>
+              </div>
+
+              <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px;">
+                <button type="button" class="btn btn-secondary" onclick="toggleOutreachForm()">Cancel</button>
+                <button type="submit" class="btn btn-primary" style="font-weight: 700; padding: 9px 24px;">Save Business</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Excel-Style Spreadsheet Table Card -->
+        <div class="card">
+          <div class="card-header" style="padding: 14px 20px; border-bottom: 1px solid var(--border); background: var(--surface);">
+            <div style="display: flex; align-items: center; gap: 12px; flex: 1; max-width: 420px;">
+              <input type="text" id="outreach-search-input" oninput="handleOutreachSearchInput()" placeholder="Search business, type, or phone..." style="width: 100%; padding: 7px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.82rem;">
+            </div>
+            <div id="outreach-count-label" style="font-size: 0.8rem; font-weight: 700; color: var(--ink-muted);">
+              Showing 0 businesses
+            </div>
+          </div>
+
+          <div class="table-container" style="overflow-x: auto;">
+            <table class="outreach-excel-table">
+              <thead>
+                <tr>
+                  <th style="width: 45px; text-align: center;">#</th>
+                  <th>Business Name</th>
+                  <th style="width: 180px;">Type / Niche</th>
+                  <th style="width: 180px;">Phone (WhatsApp)</th>
+                  <th style="width: 170px;">Instagram</th>
+                  <th style="width: 160px;">Status</th>
+                  <th>Notes</th>
+                  <th style="width: 70px; text-align: right;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="outreach-tbody">
+                <tr><td colspan="8" style="text-align: center; color: var(--ink-muted); padding: 40px;">Loading outreach ledger...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
 
       <!-- Hidden Printable Area for PDF exports -->
       <div style="display: none;">
@@ -1489,6 +1662,6 @@
 
 <div class="toast-container" id="toast-container"></div>
 <script src="/html2pdf.bundle.min.js"></script>
-<script src="/admin.js?v=107"></script>
+<script src="/admin.js?v=111"></script>
 </body>
 </html>

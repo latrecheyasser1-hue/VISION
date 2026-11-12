@@ -1228,6 +1228,131 @@ app.patch('/api/expenses/:id', requireAdminAuth, (req, res) => {
 });
 
 // ==========================================
+// 9. Outreach (Cold Outreach & Prospecting)
+// ==========================================
+app.get('/api/outreach', requireAdminAuth, async (req, res) => {
+  try {
+    const status = String(req.query.status || 'all');
+    const query = String(req.query.q || '').toLowerCase().trim();
+
+    const all = await db.select().from(schema.outreach).orderBy(desc(schema.outreach.createdAt));
+
+    let filtered = all;
+    if (status !== 'all') {
+      filtered = filtered.filter(item => item.status === status);
+    }
+    if (query) {
+      filtered = filtered.filter(item => 
+        (item.businessName || '').toLowerCase().includes(query) ||
+        (item.businessType || '').toLowerCase().includes(query) ||
+        (item.phone || '').includes(query) ||
+        (item.notes || '').toLowerCase().includes(query)
+      );
+    }
+
+    res.json(filtered);
+  } catch (err: any) {
+    console.error('Fetch outreach error:', err);
+    res.status(500).json({ error: 'Failed to fetch outreach list.' });
+  }
+});
+
+app.post('/api/outreach', requireAdminAuth, async (req, res) => {
+  try {
+    const { businessName, businessType, phone, instagramUrl, status, notes } = req.body || {};
+    const cleanName = (businessName || '').trim();
+    const cleanType = (businessType || '').trim();
+
+    if (!cleanName) {
+      return res.status(400).json({ error: 'Business name is required.' });
+    }
+    if (!cleanType) {
+      return res.status(400).json({ error: 'Business type / category is required.' });
+    }
+
+    const validStatuses = ['no_reply', 'responded', 'thinking', 'declined'];
+    const finalStatus = validStatuses.includes(status) ? status : 'no_reply';
+
+    const [inserted] = await db.insert(schema.outreach).values({
+      businessName: cleanName,
+      businessType: cleanType,
+      phone: phone ? String(phone).trim() : null,
+      instagramUrl: instagramUrl ? String(instagramUrl).trim() : null,
+      status: finalStatus,
+      notes: notes ? String(notes).trim() : null,
+    }).returning();
+
+    broadcastEvent('new_outreach', inserted);
+
+    res.status(201).json(inserted);
+  } catch (err: any) {
+    console.error('Create outreach error:', err);
+    res.status(500).json({ error: 'Failed to record outreach business.' });
+  }
+});
+
+app.patch('/api/outreach/:id', requireAdminAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { businessName, businessType, phone, instagramUrl, status, notes } = req.body || {};
+
+    const updateData: any = {
+      updatedAt: new Date(),
+    };
+
+    if (businessName !== undefined) updateData.businessName = String(businessName).trim();
+    if (businessType !== undefined) updateData.businessType = String(businessType).trim();
+    if (phone !== undefined) updateData.phone = phone ? String(phone).trim() : null;
+    if (instagramUrl !== undefined) updateData.instagramUrl = instagramUrl ? String(instagramUrl).trim() : null;
+    if (notes !== undefined) updateData.notes = notes ? String(notes).trim() : null;
+
+    if (status !== undefined) {
+      const validStatuses = ['no_reply', 'responded', 'thinking', 'declined'];
+      if (validStatuses.includes(status)) {
+        updateData.status = status;
+      }
+    }
+
+    const [updated] = await db.update(schema.outreach)
+      .set(updateData)
+      .where(eq(schema.outreach.id as any, id))
+      .returning();
+
+    if (!updated) {
+      return res.status(404).json({ error: 'Outreach business not found.' });
+    }
+
+    broadcastEvent('update_outreach', updated);
+
+    res.json(updated);
+  } catch (err: any) {
+    console.error('Update outreach error:', err);
+    res.status(500).json({ error: 'Failed to update outreach record.' });
+  }
+});
+
+app.delete('/api/outreach/:id', requireAdminAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const [deleted] = await db.delete(schema.outreach)
+      .where(eq(schema.outreach.id as any, id))
+      .returning();
+
+    if (!deleted) {
+      return res.status(404).json({ error: 'Outreach business not found.' });
+    }
+
+    broadcastEvent('delete_outreach', { id });
+
+    res.json({ success: true, id });
+  } catch (err: any) {
+    console.error('Delete outreach error:', err);
+    res.status(500).json({ error: 'Failed to delete outreach entry.' });
+  }
+});
+
+
+// ==========================================
 // STATIC FRONTEND SERVING
 // ==========================================
 
