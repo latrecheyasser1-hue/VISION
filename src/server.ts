@@ -1235,7 +1235,7 @@ app.get('/api/outreach', requireAdminAuth, async (req, res) => {
     const status = String(req.query.status || 'all');
     const query = String(req.query.q || '').toLowerCase().trim();
 
-    const all = await db.select().from(schema.outreach).orderBy(desc(schema.outreach.createdAt));
+    const all = await db.select().from(schema.outreach).orderBy(asc(schema.outreach.createdAt));
 
     let filtered = all;
     if (status !== 'all') {
@@ -1260,14 +1260,14 @@ app.get('/api/outreach', requireAdminAuth, async (req, res) => {
 app.post('/api/outreach', requireAdminAuth, async (req, res) => {
   try {
     const { businessName, businessType, phone, instagramUrl, status, notes } = req.body || {};
-    const cleanName = (businessName || '').trim();
-    const cleanType = (businessType || '').trim();
+    const cleanName = String(businessName ?? '').trim();
+    const cleanType = String(businessType ?? '').trim();
+    const cleanPhone = phone ? String(phone).trim() : null;
+    const cleanInsta = instagramUrl ? String(instagramUrl).trim() : null;
+    const cleanNotes = notes ? String(notes).trim() : null;
 
-    if (!cleanName) {
-      return res.status(400).json({ error: 'Business name is required.' });
-    }
-    if (!cleanType) {
-      return res.status(400).json({ error: 'Business type / category is required.' });
+    if (!cleanName && !cleanType && !cleanPhone && !cleanInsta && !cleanNotes) {
+      return res.status(400).json({ error: 'Enter at least one field to create an outreach row.' });
     }
 
     const validStatuses = ['no_reply', 'responded', 'thinking', 'declined'];
@@ -1276,10 +1276,10 @@ app.post('/api/outreach', requireAdminAuth, async (req, res) => {
     const [inserted] = await db.insert(schema.outreach).values({
       businessName: cleanName,
       businessType: cleanType,
-      phone: phone ? String(phone).trim() : null,
-      instagramUrl: instagramUrl ? String(instagramUrl).trim() : null,
+      phone: cleanPhone,
+      instagramUrl: cleanInsta,
       status: finalStatus,
-      notes: notes ? String(notes).trim() : null,
+      notes: cleanNotes,
     }).returning();
 
     broadcastEvent('new_outreach', inserted);

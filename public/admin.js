@@ -4840,27 +4840,13 @@ function updateOutreachBadge() {
   }
 }
 
-function toggleOutreachForm() {
-  const container = document.getElementById('outreach-form-container');
-  if (!container) return;
-  const isHidden = container.style.display === 'none' || !container.style.display;
-  container.style.display = isHidden ? 'block' : 'none';
-  if (isHidden) {
-    const nameInput = document.getElementById('outreach-business-name');
-    if (nameInput) {
-      nameInput.value = '';
-      nameInput.focus();
-    }
-    const typeInput = document.getElementById('outreach-business-type');
-    if (typeInput) typeInput.value = '';
-    const phoneInput = document.getElementById('outreach-phone');
-    if (phoneInput) phoneInput.value = '';
-    const instaInput = document.getElementById('outreach-instagram');
-    if (instaInput) instaInput.value = '';
-    const statusInput = document.getElementById('outreach-status');
-    if (statusInput) statusInput.value = 'no_reply';
-    const notesInput = document.getElementById('outreach-notes');
-    if (notesInput) notesInput.value = '';
+let isSavingOutreachDraft = false;
+
+function focusNewOutreachRow() {
+  const draftInput = document.querySelector('#outreach-draft-row input[data-draft-field="businessName"]');
+  if (draftInput) {
+    draftInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    draftInput.focus();
   }
 }
 
@@ -4876,64 +4862,129 @@ function handleOutreachSearchInput() {
   renderOutreachView();
 }
 
-async function handleRecordOutreach(event) {
-  if (event) event.preventDefault();
-
-  const businessName = (document.getElementById('outreach-business-name')?.value || '').trim();
-  const businessType = (document.getElementById('outreach-business-type')?.value || '').trim();
-  const phone = (document.getElementById('outreach-phone')?.value || '').trim();
-  const instagramUrl = (document.getElementById('outreach-instagram')?.value || '').trim();
-  const status = document.getElementById('outreach-status')?.value || 'no_reply';
-  const notes = (document.getElementById('outreach-notes')?.value || '').trim();
-
-  if (!businessName) {
-    showToast('Business name is required.', 'error');
+function syncCellActionLink(inputEl, kind) {
+  const wrap = inputEl?.parentElement;
+  if (!wrap) return;
+  const link = wrap.querySelector('.sheet-action-pill');
+  if (!link) return;
+  const val = (inputEl.value || '').trim();
+  if (!val) {
+    link.style.display = 'none';
+    link.href = '#';
     return;
   }
-  if (!businessType) {
-    showToast('Business type / category is required.', 'error');
-    return;
-  }
+  link.href = kind === 'wa' ? getWhatsAppUrl(val) : getInstagramUrl(val);
+  link.style.display = 'inline-block';
+}
 
-  const submitBtn = event?.target?.querySelector('button[type="submit"]');
-  if (submitBtn) {
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Saving...';
-  }
+function getDraftRowPayload() {
+  const row = document.getElementById('outreach-draft-row');
+  if (!row) return null;
+  const businessName = (row.querySelector('[data-draft-field="businessName"]')?.value || '').trim();
+  const businessType = (row.querySelector('[data-draft-field="businessType"]')?.value || '').trim();
+  const phone = (row.querySelector('[data-draft-field="phone"]')?.value || '').trim();
+  const instagramUrl = (row.querySelector('[data-draft-field="instagramUrl"]')?.value || '').trim();
+  const status = row.querySelector('[data-draft-field="status"]')?.value || 'no_reply';
+  const notes = (row.querySelector('[data-draft-field="notes"]')?.value || '').trim();
+  return { businessName, businessType, phone, instagramUrl, status, notes };
+}
 
+function hasAnyDraftValue(payload) {
+  if (!payload) return false;
+  return Boolean(payload.businessName || payload.businessType || payload.phone || payload.instagramUrl || payload.notes);
+}
+
+async function commitOutreachDraftRow(focusNext = false) {
+  if (isSavingOutreachDraft) return;
+  const payload = getDraftRowPayload();
+  if (!hasAnyDraftValue(payload)) return;
+
+  isSavingOutreachDraft = true;
   try {
     const res = await fetch('/api/outreach', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        businessName,
-        businessType,
-        phone,
-        instagramUrl,
-        status,
-        notes,
-      }),
+      body: JSON.stringify(payload),
     });
-
     if (!res.ok) {
       const errData = await res.json().catch(() => ({}));
-      throw new Error(errData.error || 'Failed to save outreach business.');
+      throw new Error(errData.error || 'Failed to save row.');
     }
-
     const saved = await res.json();
-    state.outreach = [saved, ...(state.outreach || [])];
+    state.outreach = [...(state.outreach || []), saved];
     updateOutreachBadge();
     renderOutreachView();
-    toggleOutreachForm();
-    showToast('Prospect saved to outreach ledger!', 'success');
-  } catch (err) {
-    console.error('Record outreach error:', err);
-    showToast(err.message || 'Error recording prospect.', 'error');
-  } finally {
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Save Business';
+    if (focusNext) {
+      focusNewOutreachRow();
     }
+  } catch (err) {
+    console.error('Save outreach draft error:', err);
+    showToast(err.message || 'Error saving row.', 'error');
+  } finally {
+    isSavingOutreachDraft = false;
+  }
+}
+
+function commitDraftRowAndFocusNext() {
+  const payload = getDraftRowPayload();
+  if (!hasAnyDraftValue(payload)) {
+    focusNewOutreachRow();
+    return;
+  }
+  commitOutreachDraftRow(true);
+}
+
+function handleDraftRowKeydown(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    commitOutreachDraftRow(true);
+  }
+}
+
+function handleDraftRowBlur() {
+  setTimeout(() => {
+    const draftRow = document.getElementById('outreach-draft-row');
+    if (!draftRow) return;
+    if (draftRow.contains(document.activeElement)) {
+      return;
+    }
+    const payload = getDraftRowPayload();
+    if (hasAnyDraftValue(payload)) {
+      commitOutreachDraftRow(false);
+    }
+  }, 90);
+}
+
+function handleOutreachCellKeydown(e, id) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    e.target.blur();
+  }
+}
+
+async function saveOutreachCell(inputEl, id) {
+  const field = inputEl.getAttribute('data-field');
+  if (!field || !id) return;
+  const newVal = (inputEl.value || '').trim();
+  const item = (state.outreach || []).find(x => x.id === id);
+  if (!item) return;
+
+  const prevVal = String(item[field] || '').trim();
+  if (newVal === prevVal) return;
+
+  try {
+    const res = await fetch('/api/outreach/' + id, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ [field]: newVal }),
+    });
+    if (!res.ok) throw new Error('Failed to save cell');
+    const updated = await res.json();
+    const idx = (state.outreach || []).findIndex(x => x.id === id);
+    if (idx !== -1) state.outreach[idx] = updated;
+  } catch (err) {
+    console.error('Save outreach cell error:', err);
+    showToast('Failed to save change.', 'error');
   }
 }
 
@@ -4953,7 +5004,6 @@ async function updateOutreachStatus(id, newStatus) {
       state.outreach[idx] = updated;
     }
     renderOutreachView();
-    showToast('Status updated successfully.', 'success');
   } catch (err) {
     console.error('Update outreach status error:', err);
     showToast('Failed to update prospect status.', 'error');
@@ -4961,7 +5011,7 @@ async function updateOutreachStatus(id, newStatus) {
 }
 
 async function deleteOutreachBusiness(id) {
-  if (!confirm('Are you sure you want to remove this business from the outreach ledger?')) return;
+  if (!confirm('Delete this row from the outreach sheet?')) return;
 
   try {
     const res = await fetch('/api/outreach/' + id, { method: 'DELETE' });
@@ -4969,20 +5019,14 @@ async function deleteOutreachBusiness(id) {
     state.outreach = (state.outreach || []).filter(x => x.id !== id);
     updateOutreachBadge();
     renderOutreachView();
-    showToast('Business removed from outreach ledger.', 'success');
   } catch (err) {
     console.error('Delete outreach error:', err);
-    showToast('Failed to delete outreach business.', 'error');
+    showToast('Failed to delete row.', 'error');
   }
 }
 
-function renderOutreachView() {
-  const tbody = document.getElementById('outreach-tbody');
-  if (!tbody) return;
-
+function updateOutreachMetrics() {
   const rawList = state.outreach || [];
-
-  // Update Metrics
   const totalCount = rawList.length;
   const respondedCount = rawList.filter(x => x.status === 'responded').length;
   const thinkingCount = rawList.filter(x => x.status === 'thinking').length;
@@ -5000,6 +5044,16 @@ function renderOutreachView() {
   if (thinkingEl) thinkingEl.textContent = String(thinkingCount);
   if (noreplyEl) noreplyEl.textContent = String(noreplyCount);
   if (declinedEl) declinedEl.textContent = String(declinedCount);
+
+  return totalCount;
+}
+
+function renderOutreachView() {
+  const tbody = document.getElementById('outreach-tbody');
+  if (!tbody) return;
+
+  const rawList = state.outreach || [];
+  const totalCount = updateOutreachMetrics();
 
   // Apply Filter & Search
   let list = rawList;
@@ -5021,62 +5075,36 @@ function renderOutreachView() {
     countLabel.textContent = `Showing ${list.length} of ${totalCount} businesses`;
   }
 
-  if (list.length === 0) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="8" style="text-align: center; padding: 40px 20px; color: var(--ink-muted);">
-          <div style="font-size: 0.95rem; font-weight: 700; color: var(--ink); margin-bottom: 4px;">No Outreach Records Found</div>
-          <p style="font-size: 0.82rem; margin: 0;">No businesses match the active filter. Click "+ Add Business" to log your first outreach prospect.</p>
-        </td>
-      </tr>
-    `;
-    return;
-  }
-
-  tbody.innerHTML = list.map((item, idx) => {
+  const savedRowsHtml = list.map((item, idx) => {
     const waUrl = getWhatsAppUrl(item.phone);
     const instaUrl = getInstagramUrl(item.instagramUrl);
     const status = item.status || 'no_reply';
 
-    const phoneHtml = item.phone 
-      ? `<a href="${waUrl}" target="_blank" rel="noopener noreferrer" class="outreach-wa-link" title="Open chat with ${escapeHtml(item.phone)} on WhatsApp">
-           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-           <span>${escapeHtml(item.phone)}</span>
-         </a>`
-      : `<span style="color: var(--ink-muted); font-size: 0.82rem;">-</span>`;
-
-    const instaHtml = item.instagramUrl
-      ? `<a href="${instaUrl}" target="_blank" rel="noopener noreferrer" class="outreach-insta-link" title="Open ${escapeHtml(item.instagramUrl)}">
-           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
-           <span>${escapeHtml(item.instagramUrl)}</span>
-         </a>`
-      : `<span style="color: var(--ink-muted); font-size: 0.82rem;">-</span>`;
-
-    const notesHtml = item.notes
-      ? `<div style="font-size: 0.8rem; color: var(--ink); max-width: 260px; line-height: 1.35;">${escapeHtml(item.notes)}</div>`
-      : `<span style="color: var(--ink-muted); font-size: 0.8rem;">-</span>`;
-
     return `
-      <tr>
-        <td style="text-align: center; font-weight: 700; color: var(--ink-muted); font-size: 0.78rem;">
+      <tr data-row-id="${item.id}">
+        <td style="text-align: center; font-weight: 700; color: var(--ink-muted); font-size: 0.78rem; background: #F8FAFC;">
           ${idx + 1}
         </td>
         <td>
-          <div style="font-weight: 800; color: var(--ink); font-size: 0.92rem;">${escapeHtml(item.businessName)}</div>
+          <input type="text" class="sheet-cell-input is-bold" value="${escapeHtml(item.businessName || '')}" placeholder="Business name..." data-field="businessName" onblur="saveOutreachCell(this, '${item.id}')" onkeydown="handleOutreachCellKeydown(event, '${item.id}')">
         </td>
         <td>
-          <span style="display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; background: #F1F5F9; color: #334155; border: 1px solid #E2E8F0;">
-            ${escapeHtml(item.businessType)}
-          </span>
+          <input type="text" class="sheet-cell-input" value="${escapeHtml(item.businessType || '')}" placeholder="Type / niche..." data-field="businessType" onblur="saveOutreachCell(this, '${item.id}')" onkeydown="handleOutreachCellKeydown(event, '${item.id}')">
         </td>
         <td>
-          ${phoneHtml}
+          <div class="sheet-cell-with-action">
+            <input type="tel" class="sheet-cell-input" value="${escapeHtml(item.phone || '')}" placeholder="0550..." data-field="phone" oninput="syncCellActionLink(this, 'wa')" onblur="saveOutreachCell(this, '${item.id}')" onkeydown="handleOutreachCellKeydown(event, '${item.id}')">
+            <a href="${waUrl}" target="_blank" rel="noopener noreferrer" class="sheet-action-pill wa" style="${item.phone ? '' : 'display:none;'}" title="Open WhatsApp chat">WhatsApp</a>
+          </div>
         </td>
         <td>
-          ${instaHtml}
+          <div class="sheet-cell-with-action">
+            <input type="text" class="sheet-cell-input" value="${escapeHtml(item.instagramUrl || '')}" placeholder="@handle or URL..." data-field="instagramUrl" oninput="syncCellActionLink(this, 'ig')" onblur="saveOutreachCell(this, '${item.id}')" onkeydown="handleOutreachCellKeydown(event, '${item.id}')">
+            <a href="${instaUrl}" target="_blank" rel="noopener noreferrer" class="sheet-action-pill ig" style="${item.instagramUrl ? '' : 'display:none;'}" title="Open Instagram profile">IG</a>
+          </div>
         </td>
         <td>
-          <select onchange="updateOutreachStatus('${item.id}', this.value)" class="outreach-status-select status-${status}">
+          <select onchange="updateOutreachStatus('${item.id}', this.value)" class="outreach-status-select status-${status}" style="width: calc(100% - 12px); margin: 0 6px;">
             <option value="no_reply" ${status === 'no_reply' ? 'selected' : ''}>No Reply</option>
             <option value="responded" ${status === 'responded' ? 'selected' : ''}>Responded</option>
             <option value="thinking" ${status === 'thinking' ? 'selected' : ''}>Thinking</option>
@@ -5084,16 +5112,60 @@ function renderOutreachView() {
           </select>
         </td>
         <td>
-          ${notesHtml}
+          <input type="text" class="sheet-cell-input" value="${escapeHtml(item.notes || '')}" placeholder="Notes..." data-field="notes" onblur="saveOutreachCell(this, '${item.id}')" onkeydown="handleOutreachCellKeydown(event, '${item.id}')">
         </td>
         <td style="text-align: right; white-space: nowrap;">
-          <button type="button" class="btn btn-secondary btn-sm" onclick="deleteOutreachBusiness('${item.id}')" style="color: #DC2626; border-color: #FECACA; padding: 4px 8px; font-size: 0.72rem;" title="Delete prospect">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="deleteOutreachBusiness('${item.id}')" style="color: #DC2626; border-color: #FECACA; padding: 3px 8px; font-size: 0.72rem; margin-right: 6px;">
             Delete
           </button>
         </td>
       </tr>
     `;
   }).join('');
+
+  const draftRowHtml = `
+    <tr id="outreach-draft-row" class="outreach-draft-row">
+      <td style="text-align: center; font-weight: 800; color: #1A73E8; font-size: 0.85rem; background: #EFF6FF;">
+        +
+      </td>
+      <td>
+        <input type="text" class="sheet-cell-input is-bold" data-draft-field="businessName" placeholder="Type business name..." onkeydown="handleDraftRowKeydown(event)" onblur="handleDraftRowBlur()">
+      </td>
+      <td>
+        <input type="text" class="sheet-cell-input" data-draft-field="businessType" placeholder="Type / niche..." onkeydown="handleDraftRowKeydown(event)" onblur="handleDraftRowBlur()">
+      </td>
+      <td>
+        <div class="sheet-cell-with-action">
+          <input type="tel" class="sheet-cell-input" data-draft-field="phone" placeholder="0550..." oninput="syncCellActionLink(this, 'wa')" onkeydown="handleDraftRowKeydown(event)" onblur="handleDraftRowBlur()">
+          <a href="#" target="_blank" rel="noopener noreferrer" class="sheet-action-pill wa" style="display:none;">WhatsApp</a>
+        </div>
+      </td>
+      <td>
+        <div class="sheet-cell-with-action">
+          <input type="text" class="sheet-cell-input" data-draft-field="instagramUrl" placeholder="@handle or URL..." oninput="syncCellActionLink(this, 'ig')" onkeydown="handleDraftRowKeydown(event)" onblur="handleDraftRowBlur()">
+          <a href="#" target="_blank" rel="noopener noreferrer" class="sheet-action-pill ig" style="display:none;">IG</a>
+        </div>
+      </td>
+      <td>
+        <select data-draft-field="status" class="outreach-status-select status-no_reply" style="width: calc(100% - 12px); margin: 0 6px;" onchange="this.className='outreach-status-select status-' + this.value" onblur="handleDraftRowBlur()">
+          <option value="no_reply">No Reply</option>
+          <option value="responded">Responded</option>
+          <option value="thinking">Thinking</option>
+          <option value="declined">Declined</option>
+        </select>
+      </td>
+      <td>
+        <input type="text" class="sheet-cell-input" data-draft-field="notes" placeholder="Notes..." onkeydown="handleDraftRowKeydown(event)" onblur="handleDraftRowBlur()">
+      </td>
+      <td style="text-align: right; white-space: nowrap;">
+        <button type="button" class="btn btn-primary btn-sm" onclick="commitDraftRowAndFocusNext()" style="padding: 3px 10px; font-size: 0.72rem; margin-right: 6px; font-weight: 700;">
+          Save
+        </button>
+      </td>
+    </tr>
+  `;
+
+  tbody.innerHTML = savedRowsHtml + draftRowHtml;
 }
 
 function exportOutreachToExcel() {

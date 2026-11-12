@@ -10,7 +10,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>VISION - Founder Dashboard</title>
-  <link rel="stylesheet" href="/admin.css?v=22">
+  <link rel="stylesheet" href="/admin.css?v=23">
   <style>
     .tab-section { display: none; }
     .tab-section.active { display: block; }
@@ -784,8 +784,8 @@
                 Export to Excel
               </button>
 
-              <button type="button" class="btn btn-primary btn-sm" onclick="toggleOutreachForm()" style="font-weight: 700; padding: 7px 16px;">
-                + Add Business
+              <button type="button" class="btn btn-primary btn-sm" onclick="focusNewOutreachRow()" style="font-weight: 700; padding: 7px 16px;">
+                + Add Row
               </button>
             </div>
           </div>
@@ -815,71 +815,7 @@
           </div>
         </div>
 
-        <!-- Add Outreach Business Form (Collapsible) -->
-        <div class="card" id="outreach-form-container" style="display: none; margin-bottom: 24px; border: 1px solid #6366F1; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.08);">
-          <div class="card-header" style="background: #EEF2FF; border-bottom: 1px solid #E0E7FF;">
-            <div>
-              <div class="card-title" style="font-size: 0.95rem; font-weight: 800; color: #3730A3;">
-                Add Outreach Prospect
-              </div>
-              <p style="font-size: 0.78rem; color: #4338CA; margin-top: 2px;">
-                Enter business details. Phone numbers automatically convert to one-click WhatsApp chats.
-              </p>
-            </div>
-            <button type="button" class="btn btn-secondary btn-sm" onclick="toggleOutreachForm()" style="padding: 4px 10px; font-size: 0.75rem;">
-              Cancel
-            </button>
-          </div>
-          <div style="padding: 20px 24px;">
-            <form id="record-outreach-form" onsubmit="handleRecordOutreach(event); return false;">
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
-                <div class="form-group" style="margin-bottom: 0;">
-                  <label style="font-size: 0.8rem; font-weight: 700;">Business Name</label>
-                  <input type="text" id="outreach-business-name" placeholder="Ex: Bella Mode, Clinique Chifa, HK Store..." required style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
-                </div>
-
-                <div class="form-group" style="margin-bottom: 0;">
-                  <label style="font-size: 0.8rem; font-weight: 700;">Business Type / Niche</label>
-                  <input type="text" id="outreach-business-type" placeholder="Ex: Women Fashion, Dental Clinic, Restaurant..." required style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
-                </div>
-
-                <div class="form-group" style="margin-bottom: 0;">
-                  <label style="font-size: 0.8rem; font-weight: 700;">Phone Number</label>
-                  <input type="tel" id="outreach-phone" placeholder="Ex: 0550123456" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
-                </div>
-
-                <div class="form-group" style="margin-bottom: 0;">
-                  <label style="font-size: 0.8rem; font-weight: 700;">Instagram Link / Handle</label>
-                  <input type="text" id="outreach-instagram" placeholder="Ex: @bellamode or https://instagram.com/..." style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
-                </div>
-              </div>
-
-              <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 16px; margin-top: 14px;">
-                <div class="form-group" style="margin-bottom: 0;">
-                  <label style="font-size: 0.8rem; font-weight: 700;">Initial Status</label>
-                  <select id="outreach-status" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 600;">
-                    <option value="no_reply">No Reply (Pending)</option>
-                    <option value="responded">Responded</option>
-                    <option value="thinking">Thinking</option>
-                    <option value="declined">Declined</option>
-                  </select>
-                </div>
-
-                <div class="form-group" style="margin-bottom: 0;">
-                  <label style="font-size: 0.8rem; font-weight: 700;">Notes <small style="color: var(--ink-muted); font-weight: normal;">(Optional details, pitch angle...)</small></label>
-                  <input type="text" id="outreach-notes" placeholder="Ex: Sent DM with website audit proposal..." style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.85rem;">
-                </div>
-              </div>
-
-              <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px;">
-                <button type="button" class="btn btn-secondary" onclick="toggleOutreachForm()">Cancel</button>
-                <button type="submit" class="btn btn-primary" style="font-weight: 700; padding: 9px 24px;">Save Business</button>
-              </div>
-            </form>
-          </div>
-        </div>
-
-        <!-- Excel-Style Spreadsheet Table Card -->
+        <!-- Excel-Style Inline Editable Spreadsheet Table Card -->
         <div class="card">
           <div class="card-header" style="padding: 14px 20px; border-bottom: 1px solid var(--border); background: var(--surface);">
             <div style="display: flex; align-items: center; gap: 12px; flex: 1; max-width: 420px;">
@@ -891,21 +827,21 @@
           </div>
 
           <div class="table-container" style="overflow-x: auto;">
-            <table class="outreach-excel-table">
+            <table class="outreach-excel-table outreach-sheet-mode">
               <thead>
                 <tr>
                   <th style="width: 45px; text-align: center;">#</th>
-                  <th>Business Name</th>
-                  <th style="width: 180px;">Type / Niche</th>
-                  <th style="width: 180px;">Phone (WhatsApp)</th>
-                  <th style="width: 170px;">Instagram</th>
-                  <th style="width: 160px;">Status</th>
-                  <th>Notes</th>
-                  <th style="width: 70px; text-align: right;">Action</th>
+                  <th style="min-width: 180px;">Business Name</th>
+                  <th style="min-width: 160px;">Type / Niche</th>
+                  <th style="min-width: 210px;">Phone (WhatsApp)</th>
+                  <th style="min-width: 210px;">Instagram</th>
+                  <th style="width: 145px;">Status</th>
+                  <th style="min-width: 180px;">Notes</th>
+                  <th style="width: 68px; text-align: right;">Action</th>
                 </tr>
               </thead>
               <tbody id="outreach-tbody">
-                <tr><td colspan="8" style="text-align: center; color: var(--ink-muted); padding: 40px;">Loading outreach ledger...</td></tr>
+                <tr><td colspan="8" style="text-align: center; color: var(--ink-muted); padding: 40px;">Loading outreach sheet...</td></tr>
               </tbody>
             </table>
           </div>
@@ -1616,6 +1552,6 @@
 
 <div class="toast-container" id="toast-container"></div>
 <script src="/html2pdf.bundle.min.js"></script>
-<script src="/admin.js?v=113"></script>
+<script src="/admin.js?v=114"></script>
 </body>
 </html>
