@@ -4899,16 +4899,17 @@ function getRowPayloadFromDom(tr) {
   if (!tr) return null;
   const businessName = (tr.querySelector('[data-field="businessName"]')?.value || '').trim();
   const businessType = (tr.querySelector('[data-field="businessType"]')?.value || '').trim();
+  const wilaya = (tr.querySelector('[data-field="wilaya"]')?.value || '').trim();
   const phone = (tr.querySelector('[data-field="phone"]')?.value || '').trim();
   const instagramUrl = (tr.querySelector('[data-field="instagramUrl"]')?.value || '').trim();
   const status = tr.querySelector('[data-field="status"]')?.value || 'no_reply';
   const notes = (tr.querySelector('[data-field="notes"]')?.value || '').trim();
-  return { businessName, businessType, phone, instagramUrl, status, notes };
+  return { businessName, businessType, wilaya, phone, instagramUrl, status, notes };
 }
 
 function hasAnyRowValue(payload) {
   if (!payload) return false;
-  return Boolean(payload.businessName || payload.businessType || payload.phone || payload.instagramUrl || payload.notes);
+  return Boolean(payload.businessName || payload.businessType || payload.wilaya || payload.phone || payload.instagramUrl || payload.notes);
 }
 
 function syncDraftStateFromDom(tr) {
@@ -4929,6 +4930,7 @@ function addOutreachRowAndFocus() {
     tempId,
     businessName: '',
     businessType: '',
+    wilaya: '',
     phone: '',
     instagramUrl: '',
     status: 'no_reply',
@@ -5052,6 +5054,7 @@ async function persistOutreachRow(tr) {
       const changed =
         latest.businessName !== payload.businessName ||
         latest.businessType !== payload.businessType ||
+        latest.wilaya !== payload.wilaya ||
         latest.phone !== payload.phone ||
         latest.instagramUrl !== payload.instagramUrl ||
         latest.status !== payload.status ||
@@ -5078,6 +5081,7 @@ async function persistOutreachRow(tr) {
     const unchanged =
       String(cached.businessName || '').trim() === payload.businessName &&
       String(cached.businessType || '').trim() === payload.businessType &&
+      String(cached.wilaya || '').trim() === payload.wilaya &&
       String(cached.phone || '').trim() === payload.phone &&
       String(cached.instagramUrl || '').trim() === payload.instagramUrl &&
       String(cached.status || 'no_reply') === payload.status &&
@@ -5224,6 +5228,7 @@ function getFilteredOutreachList() {
     list = list.filter(x =>
       (x.businessName || '').toLowerCase().includes(q) ||
       (x.businessType || '').toLowerCase().includes(q) ||
+      (x.wilaya || '').toLowerCase().includes(q) ||
       (x.phone || '').includes(q) ||
       (x.notes || '').toLowerCase().includes(q)
     );
@@ -5257,6 +5262,9 @@ function renderSheetRowHtml(rowObj, rowIndex, isDraft) {
       </td>
       <td>
         <input type="text" class="sheet-cell-input" value="${escapeHtml(rowObj.businessType || '')}" placeholder="Type / niche..." data-field="businessType" oninput="handleSheetInput(this)" onblur="handleSheetBlur(this)" onkeydown="handleSheetKeydown(event, this)">
+      </td>
+      <td>
+        <input type="text" class="sheet-cell-input" value="${escapeHtml(rowObj.wilaya || '')}" placeholder="Wilaya..." data-field="wilaya" oninput="handleSheetInput(this)" onblur="handleSheetBlur(this)" onkeydown="handleSheetKeydown(event, this)">
       </td>
       <td>
         <div class="sheet-cell-with-action">
@@ -5302,6 +5310,7 @@ function renderOutreachView() {
       tempId: 'draft-' + (++outreachDraftSeq),
       businessName: '',
       businessType: '',
+      wilaya: '',
       phone: '',
       instagramUrl: '',
       status: 'no_reply',
@@ -5317,7 +5326,7 @@ function renderOutreachView() {
   if (!savedRowsHtml && !draftRowsHtml) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="7" style="text-align: center; padding: 36px 20px; color: var(--ink-muted);">
+        <td colspan="8" style="text-align: center; padding: 36px 20px; color: var(--ink-muted);">
           No businesses match the current filter.
         </td>
       </tr>
@@ -5341,12 +5350,13 @@ function exportOutreachToExcel() {
   csv += `"Report Generated","${new Date().toLocaleString('en-GB')}"\n`;
   csv += `"Filter Status","${(state.outreachFilterStatus || 'all').toUpperCase()}"\n\n`;
 
-  csv += '"#","Business Name","Business Type / Niche","Phone Number","WhatsApp Link","Instagram Link","Status","Notes","Recorded At"\n';
+  csv += '"#","Business Name","Business Type / Niche","Wilaya","Phone Number","WhatsApp Link","Instagram Link","Status","Notes","Recorded At"\n';
 
   list.forEach((item, idx) => {
     const num = idx + 1;
     const name = String(item.businessName || '').replace(/"/g, '""');
     const type = String(item.businessType || '').replace(/"/g, '""');
+    const wilaya = String(item.wilaya || '').replace(/"/g, '""');
     const phone = String(item.phone || '').replace(/"/g, '""');
     const wa = item.phone ? getWhatsAppUrl(item.phone) : '';
     const insta = item.instagramUrl ? getInstagramUrl(item.instagramUrl) : '';
@@ -5354,7 +5364,7 @@ function exportOutreachToExcel() {
     const notes = String(item.notes || '').replace(/"/g, '""');
     const created = item.createdAt ? new Date(item.createdAt).toLocaleString('en-GB') : '';
 
-    csv += `"${num}","${name}","${type}","${phone}","${wa}","${insta}","${status}","${notes}","${created}"\n`;
+    csv += `"${num}","${name}","${type}","${wilaya}","${phone}","${wa}","${insta}","${status}","${notes}","${created}"\n`;
   });
 
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });

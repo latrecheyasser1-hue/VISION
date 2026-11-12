@@ -1245,6 +1245,7 @@ app.get('/api/outreach', requireAdminAuth, async (req, res) => {
       filtered = filtered.filter(item => 
         (item.businessName || '').toLowerCase().includes(query) ||
         (item.businessType || '').toLowerCase().includes(query) ||
+        (item.wilaya || '').toLowerCase().includes(query) ||
         (item.phone || '').includes(query) ||
         (item.notes || '').toLowerCase().includes(query)
       );
@@ -1259,14 +1260,15 @@ app.get('/api/outreach', requireAdminAuth, async (req, res) => {
 
 app.post('/api/outreach', requireAdminAuth, async (req, res) => {
   try {
-    const { businessName, businessType, phone, instagramUrl, status, notes } = req.body || {};
+    const { businessName, businessType, wilaya, phone, instagramUrl, status, notes } = req.body || {};
     const cleanName = String(businessName ?? '').trim();
     const cleanType = String(businessType ?? '').trim();
+    const cleanWilaya = wilaya ? String(wilaya).trim() : null;
     const cleanPhone = phone ? String(phone).trim() : null;
     const cleanInsta = instagramUrl ? String(instagramUrl).trim() : null;
     const cleanNotes = notes ? String(notes).trim() : null;
 
-    if (!cleanName && !cleanType && !cleanPhone && !cleanInsta && !cleanNotes) {
+    if (!cleanName && !cleanType && !cleanWilaya && !cleanPhone && !cleanInsta && !cleanNotes) {
       return res.status(400).json({ error: 'Enter at least one field to create an outreach row.' });
     }
 
@@ -1276,6 +1278,7 @@ app.post('/api/outreach', requireAdminAuth, async (req, res) => {
     const [inserted] = await db.insert(schema.outreach).values({
       businessName: cleanName,
       businessType: cleanType,
+      wilaya: cleanWilaya,
       phone: cleanPhone,
       instagramUrl: cleanInsta,
       status: finalStatus,
@@ -1294,7 +1297,7 @@ app.post('/api/outreach', requireAdminAuth, async (req, res) => {
 app.patch('/api/outreach/:id', requireAdminAuth, async (req, res) => {
   try {
     const { id } = req.params;
-    const { businessName, businessType, phone, instagramUrl, status, notes } = req.body || {};
+    const { businessName, businessType, wilaya, phone, instagramUrl, status, notes } = req.body || {};
 
     const updateData: any = {
       updatedAt: new Date(),
@@ -1302,6 +1305,7 @@ app.patch('/api/outreach/:id', requireAdminAuth, async (req, res) => {
 
     if (businessName !== undefined) updateData.businessName = String(businessName).trim();
     if (businessType !== undefined) updateData.businessType = String(businessType).trim();
+    if (wilaya !== undefined) updateData.wilaya = wilaya ? String(wilaya).trim() : null;
     if (phone !== undefined) updateData.phone = phone ? String(phone).trim() : null;
     if (instagramUrl !== undefined) updateData.instagramUrl = instagramUrl ? String(instagramUrl).trim() : null;
     if (notes !== undefined) updateData.notes = notes ? String(notes).trim() : null;

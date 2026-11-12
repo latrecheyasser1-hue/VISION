@@ -815,7 +815,7 @@
         <div class="card">
           <div class="card-header" style="padding: 14px 20px; border-bottom: 1px solid var(--border); background: var(--surface);">
             <div style="display: flex; align-items: center; gap: 12px; flex: 1; max-width: 420px;">
-              <input type="text" id="outreach-search-input" oninput="handleOutreachSearchInput()" placeholder="Search business, type, or phone..." style="width: 100%; padding: 7px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.82rem;">
+              <input type="text" id="outreach-search-input" oninput="handleOutreachSearchInput()" placeholder="Search business, type, wilaya, or phone..." style="width: 100%; padding: 7px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.82rem;">
             </div>
             <div id="outreach-count-label" style="font-size: 0.8rem; font-weight: 700; color: var(--ink-muted);">
               Showing 0 businesses
@@ -829,6 +829,7 @@
                   <th style="width: 45px; text-align: center;">#</th>
                   <th style="min-width: 180px;">Business Name</th>
                   <th style="min-width: 160px;">Type / Niche</th>
+                  <th style="min-width: 130px;">Wilaya</th>
                   <th style="min-width: 210px;">Phone (WhatsApp)</th>
                   <th style="min-width: 210px;">Instagram</th>
                   <th style="width: 150px;">Status</th>
@@ -836,7 +837,7 @@
                 </tr>
               </thead>
               <tbody id="outreach-tbody">
-                <tr><td colspan="7" style="text-align: center; color: var(--ink-muted); padding: 40px;">Loading outreach sheet...</td></tr>
+                <tr><td colspan="8" style="text-align: center; color: var(--ink-muted); padding: 40px;">Loading outreach sheet...</td></tr>
               </tbody>
             </table>
           </div>
@@ -1563,6 +1564,6 @@
 
 <div class="toast-container" id="toast-container"></div>
 <script src="/html2pdf.bundle.min.js"></script>
-<script src="/admin.js?v=115"></script>
+<script src="/admin.js?v=116"></script>
 </body>
 </html>

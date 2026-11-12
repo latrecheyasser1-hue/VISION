@@ -177,6 +177,7 @@ export const outreach = pgTable('outreach', {
   id: uuid('id').defaultRandom().primaryKey(),
   businessName: varchar('business_name', { length: 250 }).notNull(),
   businessType: varchar('business_type', { length: 150 }).notNull(),
+  wilaya: varchar('wilaya', { length: 100 }),
   phone: varchar('phone', { length: 50 }),
   instagramUrl: varchar('instagram_url', { length: 500 }),
   status: varchar('status', { length: 50 }).default('no_reply').notNull(), // 'no_reply', 'responded', 'thinking', 'declined'

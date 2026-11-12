@@ -81,7 +81,13 @@ async function migrate() {
     );
   `;
 
-  console.log('✓ Migration completed successfully!');
+  // Update outreach table with wilaya
+  await sql`
+    ALTER TABLE outreach
+    ADD COLUMN IF NOT EXISTS wilaya VARCHAR(100);
+  `;
+
+  console.log('Migration completed successfully!');
 }
 
 migrate()
