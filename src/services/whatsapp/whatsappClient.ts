@@ -26,6 +26,7 @@ export class WhatsAppClient {
   private isConnecting: boolean = false;
   private reconnectAttempts: number = 0;
   private logger = pino({ level: 'silent' });
+  private messageCache = new Map<string, any>();
 
   private constructor() {
     // On Vercel / AWS Lambda, process.cwd() is read-only (/var/task).
@@ -225,7 +226,13 @@ export class WhatsAppClient {
         auth: state,
         browser: ['VISION Digital Agency', 'Chrome', '1.0.0'],
         syncFullHistory: false,
-        markOnlineOnConnect: true
+        markOnlineOnConnect: true,
+        getMessage: async (key: any) => {
+          if (key?.id && this.messageCache.has(key.id)) {
+            return this.messageCache.get(key.id);
+          }
+          return undefined;
+        }
       });
 
       this.sock.ev.on('creds.update', async () => {
@@ -411,8 +418,11 @@ export class WhatsAppClient {
       await this.sock.sendPresenceUpdate('composing', jid);
       await delay(chunk.typingDelayMs);
 
-      await this.sock.sendMessage(jid, { text: chunk.text });
+      const sent = await this.sock.sendMessage(jid, { text: chunk.text });
       chunksSent++;
+      if (sent?.key?.id && sent.message) {
+        this.messageCache.set(sent.key.id, sent.message);
+      }
 
       if (onProgress) {
         onProgress(chunk.partIndex, chunk.totalParts);

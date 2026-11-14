@@ -11,11 +11,11 @@ interface ProspectData {
 
 /**
  * Calculates human-like typing delay based on chunk length in Arabic/French characters.
- * Average human types 35-50 words per minute (~25-45ms per character) plus thinking pauses.
+ * Calibrated for reliable serverless delivery without hitting execution timeouts.
  */
 function calculateTypingDelay(text: string): number {
-  const base = Math.min(8500, Math.max(3000, text.length * 42));
-  const jitter = Math.floor(Math.random() * 1500);
+  const base = Math.min(1200, Math.max(600, text.length * 10));
+  const jitter = Math.floor(Math.random() * 300);
   return base + jitter;
 }
 
@@ -111,7 +111,7 @@ export function generateChunkedProposal(prospect: ProspectData): GeneratedOutrea
         partName: item.name,
         text: item.text,
         typingDelayMs: calculateTypingDelay(item.text),
-        pauseAfterMs: idx === customParts.length - 1 ? 0 : 4000 + Math.floor(Math.random() * 3500)
+        pauseAfterMs: idx === customParts.length - 1 ? 0 : 700 + Math.floor(Math.random() * 400)
       }));
       return {
         chunks,
@@ -136,7 +136,7 @@ export function generateChunkedProposal(prospect: ProspectData): GeneratedOutrea
     partName: item.name,
     text: item.text,
     typingDelayMs: calculateTypingDelay(item.text),
-    pauseAfterMs: idx === rawParts.length - 1 ? 0 : 4500 + Math.floor(Math.random() * 3500)
+    pauseAfterMs: idx === rawParts.length - 1 ? 0 : 700 + Math.floor(Math.random() * 400)
   }));
 
   return {
@@ -168,7 +168,7 @@ export function generateFollowUp1(prospect: ProspectData): GeneratedOutreachCont
     partName: item.name,
     text: item.text,
     typingDelayMs: calculateTypingDelay(item.text),
-    pauseAfterMs: idx === rawParts.length - 1 ? 0 : 4000 + Math.floor(Math.random() * 3000)
+    pauseAfterMs: idx === rawParts.length - 1 ? 0 : 700 + Math.floor(Math.random() * 400)
   }));
 
   return {
@@ -196,7 +196,7 @@ export function generateFollowUp2(prospect: ProspectData): GeneratedOutreachCont
     partName: item.name,
     text: item.text,
     typingDelayMs: calculateTypingDelay(item.text),
-    pauseAfterMs: idx === rawParts.length - 1 ? 0 : 3500 + Math.floor(Math.random() * 2500)
+    pauseAfterMs: idx === rawParts.length - 1 ? 0 : 600 + Math.floor(Math.random() * 300)
   }));
 
   return {
