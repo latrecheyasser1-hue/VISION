@@ -5398,6 +5398,14 @@ function exportOutreachToExcel() {
 let waPollingTimer = null;
 let currentWhatsAppStats = null;
 
+function getAuthHeaders(extra = {}) {
+  const token = currentAuthToken || sessionStorage.getItem('vision_admin_token') || '';
+  return {
+    ...(token ? { 'Authorization': 'Bearer ' + token } : {}),
+    ...extra
+  };
+}
+
 async function refreshWhatsAppAgentStats() {
   try {
     const res = await fetch('/api/whatsapp/agent-stats', {
