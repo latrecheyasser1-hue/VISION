@@ -20,6 +20,44 @@ function calculateTypingDelay(text: string): number {
 }
 
 /**
+ * Splits a continuous customized proposal text into 4 natural conversational chunks
+ */
+function splitCustomProposalIntoChunks(text: string): { name: string; text: string }[] {
+  const trimmed = text.trim();
+  if (trimmed.includes('\n\n')) {
+    return trimmed.split(/\n\n+/).filter(Boolean).map((t, i) => ({ name: `الجزء ${i + 1}`, text: t.trim() }));
+  }
+
+  // Detect the 4 natural sections by key semantic markers
+  const visionIndex = trimmed.indexOf('حنا شركة VISION');
+  const linkIndex = trimmed.search(/(تفرج le site|رابطنا|تفضل|تفرج موقعنا|تفرج الموقع)/);
+  const firstDot = trimmed.indexOf('. ');
+
+  if (visionIndex > 0 && linkIndex > visionIndex && firstDot > 0 && firstDot < visionIndex) {
+    const part1 = trimmed.substring(0, firstDot + 1).trim();
+    const part2 = trimmed.substring(firstDot + 1, visionIndex).trim();
+    const part3 = trimmed.substring(visionIndex, linkIndex).trim();
+    const part4 = trimmed.substring(linkIndex).trim();
+
+    return [
+      { name: 'التحية والمدح', text: part1 },
+      { name: 'نقطة الألم وحساب الخسارة', text: part2 },
+      { name: 'التعريف بـ VISION والحل', text: part3 },
+      { name: 'رابط الموقع والواتساب', text: part4 }
+    ];
+  }
+
+  // Fallback: split by sentences
+  const sentences = trimmed.split(/(?<=\.)\s+/).filter(Boolean);
+  if (sentences.length >= 2) {
+    return sentences.map((s, i) => ({ name: `الجزء ${i + 1}`, text: s.trim() }));
+  }
+
+  return [{ name: 'الرسالة كاملة', text: trimmed }];
+}
+
+
+/**
  * Generates the tailored 4-part Proposal message strictly adhering to our agreed standards:
  * - Arabic script with French commercial/tech loanwords
  * - Specific pain point with real money/time loss calculations
@@ -59,22 +97,21 @@ export function generateChunkedProposal(prospect: ProspectData): GeneratedOutrea
     part3 = `حنا شركة VISION لتطوير les sites web وأنظمة l'intelligence artificielle، نخدمولكم boutique en ligne سريعة تخلي الكليون يشري مباشرة في 10 ثواني، توفر التعب وتضاعف مبيعاتك بنظام أوتوماتيكي كامل.`;
   }
 
-  // If a custom proposal was manually written/stored for this prospect, use it if it exists
+  // If a custom proposal was manually written/stored for this prospect, split into natural chunks
   if (prospect.customProposal && prospect.customProposal.trim()) {
-    // If it has multiple paragraphs or lines, split it into chunks
-    const customChunks = prospect.customProposal.split(/\n\n+/).filter(c => c.trim().length > 0);
-    if (customChunks.length >= 2) {
-      const chunks: ChunkedMessage[] = customChunks.map((chunk, idx) => ({
+    const customParts = splitCustomProposalIntoChunks(prospect.customProposal);
+    if (customParts.length >= 2) {
+      const chunks: ChunkedMessage[] = customParts.map((item, idx) => ({
         partIndex: idx + 1,
-        totalParts: customChunks.length,
-        partName: `Part ${idx + 1}`,
-        text: chunk.trim(),
-        typingDelayMs: calculateTypingDelay(chunk),
-        pauseAfterMs: 4000 + Math.floor(Math.random() * 4000)
+        totalParts: customParts.length,
+        partName: item.name,
+        text: item.text,
+        typingDelayMs: calculateTypingDelay(item.text),
+        pauseAfterMs: idx === customParts.length - 1 ? 0 : 4000 + Math.floor(Math.random() * 3500)
       }));
       return {
         chunks,
-        fullText: customChunks.join('\n\n')
+        fullText: customParts.map(p => p.text).join('\n\n')
       };
     }
   }
