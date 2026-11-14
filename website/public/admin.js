@@ -5653,7 +5653,28 @@ async function handleSendWhatsAppTest() {
   }
 }
 
+let isBatchRunning = false;
+let batchCountdownTimer = null;
+
 async function handleSendNextNewProspect() {
+  const btn = document.getElementById('wa-send-new-btn');
+
+  // If already running, clicking it PAUSES the batch!
+  if (isBatchRunning) {
+    isBatchRunning = false;
+    if (batchCountdownTimer) {
+      clearInterval(batchCountdownTimer);
+      batchCountdownTimer = null;
+    }
+    showToast('Batch sending paused.', 'info');
+    if (btn) {
+      btn.style.background = '#059669';
+      btn.style.borderColor = '#047857';
+      btn.textContent = `Resume Sending New (${currentWhatsAppStats?.queuedInitialTotal || 0})`;
+    }
+    return;
+  }
+
   if (!currentWhatsAppStats || currentWhatsAppStats.connection.status !== 'connected') {
     showToast('Please connect WhatsApp first before dispatching.', 'error');
     return;
@@ -5666,46 +5687,99 @@ async function handleSendNextNewProspect() {
   }
 
   const confirmed = confirm(
-    `You have ${count} new uncontacted prospects.\n\nDo you want to send the personalized 4-chunk proposal to the next prospect in queue?\n\n(It will simulate authentic typing for ~30s, send ONLY to this new prospect, and set their status to "Message Sent" without touching any already contacted prospects).`
+    `You have ${count} new uncontacted prospects.\n\nStart sending to them sequentially with human delays?\n\n- Each prospect gets 4 personalized chunks with typing simulation (~30s).\n- Safe human pause of 3 to 5 minutes between each prospect to protect your SIM.\n- Stops automatically when all new prospects are completed.\n- You can click Pause at any time.`
   );
   if (!confirmed) return;
 
+  isBatchRunning = true;
+  await runBatchSequenceLoop();
+}
+
+async function runBatchSequenceLoop() {
   const btn = document.getElementById('wa-send-new-btn');
-  const originalText = btn ? btn.textContent : '';
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = 'Typing & Sending...';
-  }
 
-  showToast('Dispatching 4 chunks with typing simulation to next new prospect...', 'info');
+  while (isBatchRunning) {
+    if (btn) {
+      btn.disabled = false;
+      btn.style.background = '#D97706';
+      btn.style.borderColor = '#B45309';
+      btn.textContent = 'Typing & Sending Chunks... (Click to Pause)';
+    }
 
-  try {
-    const res = await fetch('/api/whatsapp/dispatch-next-new', {
-      method: 'POST',
-      headers: getAuthHeaders({ 'Content-Type': 'application/json' })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Failed to dispatch to new prospect.');
+    try {
+      const res = await fetch('/api/whatsapp/dispatch-next-new', {
+        method: 'POST',
+        headers: getAuthHeaders({ 'Content-Type': 'application/json' })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to dispatch to prospect.');
 
-    if (data.success) {
-      showToast(`Success! Sent 4 chunks to "${data.prospectName}". Remaining new: ${data.remainingCount}`, 'success');
-      if (typeof loadOutreachData === 'function') {
-        loadOutreachData();
-      } else if (typeof renderOutreachView === 'function') {
+      if (!data.success || data.remainingCount === 0) {
+        showToast(data.success ? `Batch completed! Sent to "${data.prospectName}".` : 'No more new prospects in queue.', 'success');
+        isBatchRunning = false;
+        break;
+      }
+
+      showToast(`Sent 4 chunks to "${data.prospectName}". Remaining new: ${data.remainingCount}`, 'success');
+
+      if (typeof renderOutreachView === 'function') {
         renderOutreachView();
       }
       await refreshWhatsAppAgentStats();
-    } else {
-      showToast('No new uncontacted prospects found in queue.', 'info');
-    }
-  } catch (err) {
-    showToast(err.message, 'error');
-  } finally {
-    if (btn) {
-      btn.disabled = false;
-      btn.textContent = originalText;
+
+      if (!isBatchRunning) break;
+
+      // Human delay countdown between prospects (180s - 300s = 3 to 5 mins)
+      const delaySeconds = Math.floor(180 + Math.random() * 120);
+      let secondsLeft = delaySeconds;
+
+      await new Promise((resolve) => {
+        batchCountdownTimer = setInterval(() => {
+          if (!isBatchRunning) {
+            clearInterval(batchCountdownTimer);
+            batchCountdownTimer = null;
+            resolve();
+            return;
+          }
+
+          secondsLeft--;
+          const mins = Math.floor(secondsLeft / 60);
+          const secs = secondsLeft % 60;
+          const timeStr = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+
+          if (btn) {
+            btn.style.background = '#2563EB';
+            btn.style.borderColor = '#1D4ED8';
+            btn.textContent = `Next in ${timeStr} (Click to Pause) · ${data.remainingCount} left`;
+          }
+
+          if (secondsLeft <= 0) {
+            clearInterval(batchCountdownTimer);
+            batchCountdownTimer = null;
+            resolve();
+          }
+        }, 1000);
+      });
+
+    } catch (err) {
+      showToast('Error dispatching batch: ' + err.message, 'error');
+      isBatchRunning = false;
+      break;
     }
   }
+
+  isBatchRunning = false;
+  if (batchCountdownTimer) {
+    clearInterval(batchCountdownTimer);
+    batchCountdownTimer = null;
+  }
+  if (btn) {
+    btn.disabled = false;
+    btn.style.background = '#059669';
+    btn.style.borderColor = '#047857';
+    btn.textContent = `Send to New Only (${currentWhatsAppStats?.queuedInitialTotal || 0})`;
+  }
+  await refreshWhatsAppAgentStats();
 }
 
 
