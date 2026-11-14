@@ -59,6 +59,53 @@ export class WhatsAppClient {
   }
 
   /**
+   * Checks if a persistent WhatsApp session exists in Neon Postgres
+   */
+  public async hasSavedSessionInDb(): Promise<boolean> {
+    try {
+      const rows: any[] = await sql.query(`
+        SELECT 1 FROM whatsapp_settings WHERE key = 'session_auth_data' AND value IS NOT NULL AND LENGTH(value) > 100 LIMIT 1
+      `);
+      return Boolean(rows && rows.length > 0);
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Ensures the WhatsApp socket is active and connected.
+   * If credentials exist in DB or local disk, it restores and connects automatically.
+   */
+  public async ensureConnected(): Promise<void> {
+    if (this.sock && this.status === 'connected') {
+      return;
+    }
+
+    console.log('[WhatsApp] ensureConnected triggered. Current status:', this.status);
+    await this.connect();
+
+    // If currently connecting, wait up to 12 seconds for the connection to finalize
+    if (this.status === 'connecting') {
+      await new Promise<void>((resolve) => {
+        const start = Date.now();
+        const check = setInterval(() => {
+          if (this.status === 'connected' || this.status === 'disconnected' || this.status === 'qr_ready' || Date.now() - start > 12000) {
+            clearInterval(check);
+            resolve();
+          }
+        }, 300);
+      });
+    }
+
+    if (this.status !== 'connected') {
+      if (this.status === 'qr_ready') {
+        throw new Error('يرجى مسح رمز QR Code في لوحة التحكم لربط الواتساب أولاً.');
+      }
+      throw new Error('تعذر إكمال الاتصال بـ WhatsApp. يرجى الضغط على Connect WhatsApp والتأكد من فتح تطبيق الواتساب.');
+    }
+  }
+
+  /**
    * Restores Baileys session files from Neon Postgres into local session directory
    */
   private async restoreSessionFromDb(): Promise<void> {
@@ -343,6 +390,10 @@ export class WhatsAppClient {
     chunks: ChunkedMessage[],
     onProgress?: (partIndex: number, totalParts: number) => void
   ): Promise<{ success: boolean; jid: string; totalChunksSent: number }> {
+    if (!this.sock || this.status !== 'connected') {
+      await this.ensureConnected();
+    }
+
     if (!this.sock || this.status !== 'connected') {
       throw new Error('WhatsApp Bot is not connected. Please scan the QR Code first.');
     }

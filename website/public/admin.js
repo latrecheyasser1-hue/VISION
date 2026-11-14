@@ -5505,7 +5505,13 @@ async function refreshWhatsAppAgentStats() {
     const repliesEl = document.getElementById('wa-stat-replies');
 
     if (phoneEl) {
-      phoneEl.textContent = data.connection.connectedPhone ? ('+213 ' + data.connection.connectedPhone.substring(1)) : 'Not Connected';
+      if (data.connection.connectedPhone) {
+        let p = data.connection.connectedPhone;
+        if (p.startsWith('213')) p = '0' + p.substring(3);
+        phoneEl.textContent = p;
+      } else {
+        phoneEl.textContent = 'Not Connected';
+      }
     }
     if (queueEl) {
       queueEl.textContent = `${data.queuedInitialTotal} waiting`;
@@ -5518,7 +5524,7 @@ async function refreshWhatsAppAgentStats() {
       followupEl.textContent = `${data.queuedFollowUpTotal} scheduled`;
     }
     if (sentTodayEl) {
-      sentTodayEl.textContent = `${data.sentToday} / ${data.dailyLimit}`;
+      sentTodayEl.textContent = `${data.sentToday} sent`;
     }
     if (repliesEl) {
       repliesEl.textContent = `${data.respondedTotal} closed`;
@@ -5691,11 +5697,6 @@ async function handleSendNextNewProspect() {
     return;
   }
 
-  const confirmed = confirm(
-    `You have ${count} new uncontacted prospects.\n\nStart sending to them sequentially with human delays?\n\n- Each prospect gets 4 personalized chunks with typing simulation (~30s).\n- Safe human pause of 3 to 5 minutes between each prospect to protect your SIM.\n- Stops automatically when all new prospects are completed.\n- You can click Pause at any time.`
-  );
-  if (!confirmed) return;
-
   isBatchRunning = true;
   await runBatchSequenceLoop();
 }
@@ -5727,10 +5728,31 @@ async function runBatchSequenceLoop() {
 
       showToast(`Sent 4 chunks to "${data.prospectName}". Remaining new: ${data.remainingCount}`, 'success');
 
-      if (typeof renderOutreachView === 'function') {
-        renderOutreachView();
+      // Update that prospect's table row to Message Sent immediately
+      if (data.prospectId) {
+        const row = (state.outreach || []).find(r => String(r.id) === String(data.prospectId));
+        if (row) {
+          row.status = 'message_sent';
+          row.lastContactedAt = new Date().toISOString();
+        }
+        const selectEl = document.querySelector(`tr[data-row-id="${data.prospectId}"] select[data-field="status"]`);
+        if (selectEl) {
+          selectEl.value = 'message_sent';
+          selectEl.className = 'outreach-status-select status-message_sent';
+        }
+        const rowBtn = document.querySelector(`.wa-send-btn-${data.prospectId}`);
+        if (rowBtn) {
+          rowBtn.textContent = 'Sent';
+          rowBtn.style.background = '#10B981';
+          rowBtn.style.borderColor = '#10B981';
+          rowBtn.disabled = false;
+        }
       }
+
       await refreshWhatsAppAgentStats();
+      if (typeof updateOutreachMetrics === 'function') {
+        updateOutreachMetrics();
+      }
 
       if (!isBatchRunning) break;
 
@@ -5795,9 +5817,6 @@ async function sendSingleWhatsAppProposal(outreachId, prospectName, btnEl) {
   if (!outreachId) return;
 
   const name = prospectName || 'هذا العميل';
-  const confirmed = confirm(`هل تريد إرسال العرض المخصص المكون من 4 أجزاء إلى "${name}" الآن عبر واتساب؟`);
-  if (!confirmed) return;
-
   const originalContent = btnEl ? btnEl.innerHTML : 'Send';
   if (btnEl) {
     btnEl.disabled = true;

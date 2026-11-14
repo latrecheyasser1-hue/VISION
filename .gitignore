@@ -22,3 +22,4 @@ debug.log
 .system_generated/
 .DS_Store
 Thumbs.db
+data/

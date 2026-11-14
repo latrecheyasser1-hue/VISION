@@ -33,7 +33,7 @@ export class WhatsAppOutreachAgent {
     return {
       executionEnabled: map.get('execution_enabled') === 'true',
       testPhone: map.get('test_phone') || '0771335039',
-      dailyLimit: parseInt(map.get('daily_limit') || '30', 10),
+      dailyLimit: parseInt(map.get('daily_limit') || '9999', 10),
       workHoursStart: parseInt(map.get('work_hours_start') || '10', 10),
       workHoursEnd: parseInt(map.get('work_hours_end') || '21', 10),
       minDelayProspectSeconds: parseInt(map.get('min_delay_prospect_seconds') || '180', 10),
@@ -134,7 +134,7 @@ export class WhatsAppOutreachAgent {
   /**
    * Dispatches the next uncontacted prospect immediately without touching any already contacted accounts
    */
-  public async dispatchNextNewProspect(): Promise<{ success: boolean; prospectName?: string; remainingCount: number }> {
+  public async dispatchNextNewProspect(): Promise<{ success: boolean; prospectId?: string; prospectName?: string; remainingCount: number }> {
     const candidateRows: any[] = await sql.query(`
       SELECT id, business_name, business_type, wilaya, phone, instagram_url, custom_proposal
       FROM outreach
@@ -182,6 +182,7 @@ export class WhatsAppOutreachAgent {
 
     return {
       success: true,
+      prospectId: prospect.id,
       prospectName: prospect.business_name,
       remainingCount: remaining
     };
@@ -190,7 +191,7 @@ export class WhatsAppOutreachAgent {
   /**
    * Dispatches the 4-part chunked proposal to a single specific prospect by ID
    */
-  public async dispatchSingleProspect(outreachId: string): Promise<{ success: boolean; prospectName: string; phone: string }> {
+  public async dispatchSingleProspect(outreachId: string): Promise<{ success: boolean; prospectId: string; prospectName: string; phone: string }> {
     const rows: any[] = await sql.query(`
       SELECT id, business_name, business_type, wilaya, phone, instagram_url, custom_proposal
       FROM outreach
@@ -235,6 +236,7 @@ export class WhatsAppOutreachAgent {
 
     return {
       success: true,
+      prospectId: prospect.id,
       prospectName: prospect.business_name,
       phone: prospect.phone
     };

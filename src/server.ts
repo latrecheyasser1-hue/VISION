@@ -1365,6 +1365,13 @@ app.delete('/api/outreach/:id', requireAdminAuth, async (req, res) => {
 // Get real-time agent status & statistics
 app.get('/api/whatsapp/agent-stats', requireAdminAuth, async (req, res) => {
   try {
+    const client = WhatsAppClient.getInstance();
+    if (client.getStatus().status === 'disconnected') {
+      const hasSaved = await client.hasSavedSessionInDb();
+      if (hasSaved) {
+        client.connect().catch((err: any) => console.log('[WhatsApp] Auto-reconnect in stats:', err.message));
+      }
+    }
     const agent = WhatsAppOutreachAgent.getInstance();
     const stats = await agent.getAgentStats();
     res.json(stats);
@@ -1608,5 +1615,13 @@ if (!process.env.VERCEL) {
     }
   });
 }
+
+// Auto-connect WhatsApp if saved credentials exist in database
+WhatsAppClient.getInstance().hasSavedSessionInDb().then((hasSaved) => {
+  if (hasSaved) {
+    console.log('[Startup] Found saved WhatsApp credentials in Postgres, auto-connecting...');
+    WhatsAppClient.getInstance().connect().catch((err: any) => console.log('[Startup] WhatsApp connect:', err.message));
+  }
+}).catch(() => {});
 
 export default app;
