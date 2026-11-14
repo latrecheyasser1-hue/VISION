@@ -1464,6 +1464,19 @@ app.post('/api/whatsapp/dispatch-next-new', requireAdminAuth, async (req, res) =
   }
 });
 
+// Dispatch proposal to a single specific prospect by ID
+app.post('/api/whatsapp/send-single/:outreachId', requireAdminAuth, async (req, res) => {
+  try {
+    const outreachId = String(req.params.outreachId);
+    const agent = WhatsAppOutreachAgent.getInstance();
+    const result = await agent.dispatchSingleProspect(outreachId);
+    res.json(result);
+  } catch (err: any) {
+    console.error('Error dispatching to single prospect:', err);
+    res.status(500).json({ error: err.message || 'Failed to send proposal to this prospect.' });
+  }
+});
+
 
 // Retrieve WhatsApp communication logs
 app.get('/api/whatsapp/logs', requireAdminAuth, async (req, res) => {

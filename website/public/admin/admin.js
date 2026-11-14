@@ -5293,11 +5293,16 @@ function renderSheetRowHtml(rowObj, rowIndex, isDraft) {
       <td>
         <input type="text" class="sheet-cell-input" value="${escapeHtml(rowObj.notes || '')}" placeholder="Notes..." data-field="notes" oninput="handleSheetInput(this)" onblur="handleSheetBlur(this)" onkeydown="handleSheetKeydown(event, this)">
       </td>
-      <td style="text-align: center; vertical-align: middle;">
+      <td style="text-align: center; vertical-align: middle; white-space: nowrap;">
         ${!isDraft && rowObj.id ? `
-          <button type="button" class="btn btn-secondary btn-xs" onclick="openWhatsAppPreview('${rowObj.id}')" style="font-size: 0.72rem; padding: 3px 8px; font-weight: 700;" title="Preview Arabic/French chunks">
-            Preview
-          </button>
+          <div style="display: inline-flex; align-items: center; gap: 5px; justify-content: center;">
+            <button type="button" class="btn btn-primary btn-xs wa-send-btn-${rowObj.id}" onclick="sendSingleWhatsAppProposal('${rowObj.id}', '${escapeHtml(rowObj.businessName || 'هذا العميل')}', this)" style="font-size: 0.72rem; padding: 3px 8px; font-weight: 700; background: #25D366; border-color: #25D366; color: #fff;" title="إرسال العرض المخصص لهذا العميل فقط عبر واتساب">
+              Send
+            </button>
+            <button type="button" class="btn btn-secondary btn-xs" onclick="openWhatsAppPreview('${rowObj.id}')" style="font-size: 0.72rem; padding: 3px 8px; font-weight: 700;" title="معاينة أجزاء الرسالة">
+              Preview
+            </button>
+          </div>
         ` : `<span style="font-size: 0.72rem; color: var(--ink-muted);">-</span>`}
       </td>
     </tr>
@@ -5783,12 +5788,103 @@ async function runBatchSequenceLoop() {
 }
 
 
+let currentPreviewOutreachId = null;
+let currentPreviewProspectName = '';
+
+async function sendSingleWhatsAppProposal(outreachId, prospectName, btnEl) {
+  if (!outreachId) return;
+
+  const name = prospectName || 'هذا العميل';
+  const confirmed = confirm(`هل تريد إرسال العرض المخصص المكون من 4 أجزاء إلى "${name}" الآن عبر واتساب؟`);
+  if (!confirmed) return;
+
+  const originalContent = btnEl ? btnEl.innerHTML : 'Send';
+  if (btnEl) {
+    btnEl.disabled = true;
+    btnEl.innerHTML = '<span style="display:inline-block; width:8px; height:8px; border:2px solid #fff; border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite;"></span> Sending...';
+  }
+
+  showToast(`جاري إرسال العرض المخصص إلى ${name} بمحاكاة الكتابة البشرية...`, 'info');
+
+  try {
+    const res = await fetch(`/api/whatsapp/send-single/${outreachId}`, {
+      method: 'POST',
+      headers: getAuthHeaders({ 'Content-Type': 'application/json' })
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'فشل إرسال الرسالة.');
+
+    showToast(`تم إرسال العرض بنجاح إلى ${data.prospectName || name}`, 'success');
+
+    // Update state locally
+    const row = (state.outreach || []).find(r => String(r.id) === String(outreachId));
+    if (row) {
+      row.status = 'message_sent';
+      row.lastContactedAt = new Date().toISOString();
+    }
+
+    // Update DOM select
+    const selectEl = document.querySelector(`tr[data-row-id="${outreachId}"] select[data-field="status"]`);
+    if (selectEl) {
+      selectEl.value = 'message_sent';
+      selectEl.className = 'outreach-status-select status-message_sent';
+    }
+
+    // Update row button
+    const rowBtn = document.querySelector(`.wa-send-btn-${outreachId}`);
+    if (rowBtn) {
+      rowBtn.textContent = 'Sent';
+      rowBtn.style.background = '#10B981';
+      rowBtn.style.borderColor = '#10B981';
+      rowBtn.disabled = false;
+    }
+
+    if (btnEl && btnEl !== rowBtn) {
+      btnEl.textContent = 'Sent';
+      btnEl.style.background = '#10B981';
+      btnEl.style.borderColor = '#10B981';
+      btnEl.disabled = false;
+    }
+
+    await refreshWhatsAppAgentStats();
+    updateOutreachMetrics();
+
+    // Close preview modal if it was open
+    closeModal('wa-preview-modal');
+  } catch (err) {
+    console.error('Failed to send single whatsapp:', err);
+    showToast(err.message || 'حدث خطأ أثناء الإرسال', 'error');
+    if (btnEl) {
+      btnEl.disabled = false;
+      btnEl.innerHTML = originalContent;
+    }
+  }
+}
+
+async function sendWhatsAppFromPreviewModal() {
+  if (!currentPreviewOutreachId) return;
+  const sendBtn = document.getElementById('wa-preview-send-btn');
+  const targetRowBtn = document.querySelector(`.wa-send-btn-${currentPreviewOutreachId}`);
+  await sendSingleWhatsAppProposal(currentPreviewOutreachId, currentPreviewProspectName, sendBtn || targetRowBtn);
+}
+
 async function openWhatsAppPreview(outreachId) {
   const modalBody = document.getElementById('wa-preview-body');
   const modalTitle = document.getElementById('wa-preview-title');
   const modalDuration = document.getElementById('wa-preview-total-duration');
+  const previewSendBtn = document.getElementById('wa-preview-send-btn');
 
   if (!modalBody) return;
+
+  currentPreviewOutreachId = outreachId;
+  const targetRow = (state.outreach || []).find(r => String(r.id) === String(outreachId));
+  currentPreviewProspectName = targetRow ? (targetRow.businessName || 'هذا العميل') : 'هذا العميل';
+
+  if (previewSendBtn) {
+    previewSendBtn.disabled = false;
+    previewSendBtn.textContent = `Send to ${currentPreviewProspectName}`;
+  }
 
   modalBody.innerHTML = '<div style="text-align: center; color: var(--ink-muted); padding: 30px;">Generating 4-chunk proposal preview...</div>';
   openModal('wa-preview-modal');
@@ -5800,7 +5896,7 @@ async function openWhatsAppPreview(outreachId) {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Failed to preview proposal.');
 
-    if (modalTitle) modalTitle.textContent = 'Personalized Proposal Preview (4 Chunks)';
+    if (modalTitle) modalTitle.textContent = `Personalized Proposal Preview: ${currentPreviewProspectName}`;
 
     let totalDurationMs = 0;
     const bubblesHtml = (data.chunks || []).map((chunk, idx) => {

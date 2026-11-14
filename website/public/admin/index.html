@@ -935,7 +935,7 @@
                   <th style="min-width: 210px;">Instagram</th>
                   <th style="width: 150px;">Status</th>
                   <th style="min-width: 200px;">Notes</th>
-                  <th style="width: 105px; text-align: center;">WhatsApp</th>
+                  <th style="min-width: 140px; text-align: center;">WhatsApp</th>
                 </tr>
               </thead>
               <tbody id="outreach-tbody">
@@ -1679,13 +1679,18 @@
     </div>
     <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
       <div style="font-size: 0.78rem; font-weight: 700; color: var(--ink-muted);" id="wa-preview-total-duration">Est. Total Typing Duration: ~32s</div>
-      <button type="button" class="btn btn-secondary" onclick="closeModal('wa-preview-modal')">Close Preview</button>
+      <div style="display: flex; gap: 8px;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('wa-preview-modal')">Close Preview</button>
+        <button type="button" class="btn btn-primary" id="wa-preview-send-btn" onclick="sendWhatsAppFromPreviewModal()" style="background: #25D366; border-color: #25D366; color: #fff; font-weight: 700;">
+          Send to This Prospect
+        </button>
+      </div>
     </div>
   </div>
 </div>
 
 <div class="toast-container" id="toast-container"></div>
 <script src="/html2pdf.bundle.min.js"></script>
-<script src="/admin.js?v=119"></script>
+<script src="/admin.js?v=120"></script>
 </body>
 </html>

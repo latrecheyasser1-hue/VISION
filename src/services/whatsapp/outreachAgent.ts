@@ -188,6 +188,59 @@ export class WhatsAppOutreachAgent {
   }
 
   /**
+   * Dispatches the 4-part chunked proposal to a single specific prospect by ID
+   */
+  public async dispatchSingleProspect(outreachId: string): Promise<{ success: boolean; prospectName: string; phone: string }> {
+    const rows: any[] = await sql.query(`
+      SELECT id, business_name, business_type, wilaya, phone, instagram_url, custom_proposal
+      FROM outreach
+      WHERE id = $1
+    `, [outreachId]);
+
+    if (!rows || rows.length === 0) {
+      throw new Error('Prospect not found');
+    }
+
+    const prospect = rows[0];
+    if (!prospect.phone || prospect.phone.trim().length < 8) {
+      throw new Error(`Prospect "${prospect.business_name}" does not have a valid phone number.`);
+    }
+
+    const generated = generateChunkedProposal({
+      businessName: prospect.business_name,
+      businessType: prospect.business_type,
+      wilaya: prospect.wilaya,
+      phone: prospect.phone,
+      instagramUrl: prospect.instagram_url,
+      customProposal: prospect.custom_proposal
+    });
+
+    console.log(`[MANUAL SINGLE DISPATCH] Sending proposal to: ${prospect.business_name} (${prospect.phone})`);
+    const result = await this.client.sendChunkedMessage(prospect.phone, generated.chunks);
+
+    await sql.query(`
+      UPDATE outreach
+      SET status = 'message_sent',
+          last_contacted_at = NOW(),
+          follow_up_count = 0,
+          whatsapp_chat_jid = $1,
+          updated_at = NOW()
+      WHERE id = $2
+    `, [result.jid, prospect.id]);
+
+    await sql.query(`
+      INSERT INTO whatsapp_logs (outreach_id, phone, direction, message_type, content, status, created_at)
+      VALUES ($1, $2, 'outbound', 'proposal', $3, 'sent', NOW())
+    `, [prospect.id, prospect.phone, generated.fullText]);
+
+    return {
+      success: true,
+      prospectName: prospect.business_name,
+      phone: prospect.phone
+    };
+  }
+
+  /**
    * Summary metrics for the WhatsApp agent dashboard
    */
   public async getAgentStats() {
