@@ -161,31 +161,49 @@ export class WhatsAppOutreachAgent {
     });
 
     console.log(`[MANUAL BATCH DISPATCH] Sending to new prospect: ${prospect.business_name} (${prospect.phone})`);
-    const result = await this.client.sendChunkedMessage(prospect.phone, generated.chunks);
+    try {
+      const result = await this.client.sendChunkedMessage(prospect.phone, generated.chunks);
 
-    await sql.query(`
-      UPDATE outreach
-      SET status = 'message_sent',
-          last_contacted_at = NOW(),
-          follow_up_count = 0,
-          whatsapp_chat_jid = $1,
-          updated_at = NOW()
-      WHERE id = $2
-    `, [result.jid, prospect.id]);
+      await sql.query(`
+        UPDATE outreach
+        SET status = 'message_sent',
+            last_contacted_at = NOW(),
+            follow_up_count = 0,
+            whatsapp_chat_jid = $1,
+            updated_at = NOW()
+        WHERE id = $2
+      `, [result.jid, prospect.id]);
 
-    await sql.query(`
-      INSERT INTO whatsapp_logs (outreach_id, phone, direction, message_type, content, status, created_at)
-      VALUES ($1, $2, 'outbound', 'proposal', $3, 'sent', NOW())
-    `, [prospect.id, prospect.phone, generated.fullText]);
+      await sql.query(`
+        INSERT INTO whatsapp_logs (outreach_id, phone, direction, message_type, content, status, created_at)
+        VALUES ($1, $2, 'outbound', 'proposal', $3, 'sent', NOW())
+      `, [prospect.id, prospect.phone, generated.fullText]);
 
-    const remaining = await this.getNewProspectsCount();
+      const remaining = await this.getNewProspectsCount();
 
-    return {
-      success: true,
-      prospectId: prospect.id,
-      prospectName: prospect.business_name,
-      remainingCount: remaining
-    };
+      return {
+        success: true,
+        prospectId: prospect.id,
+        prospectName: prospect.business_name,
+        remainingCount: remaining
+      };
+    } catch (err: any) {
+      console.error(`[MANUAL BATCH DISPATCH] Delivery failed for ${prospect.business_name}:`, err?.message || err);
+      const isInvalidRecipient = (err?.message || '').toLowerCase().includes('invalid phone') ||
+        (err?.message || '').toLowerCase().includes('not-found') ||
+        (err?.message || '').toLowerCase().includes('404');
+
+      if (isInvalidRecipient) {
+        await sql.query(`
+          UPDATE outreach
+          SET status = 'failed_delivery',
+              notes = COALESCE(notes || E'\n', '') || '[Delivery Failed: ' || $1 || ']',
+              updated_at = NOW()
+          WHERE id = $2
+        `, [err.message, prospect.id]);
+      }
+      throw err;
+    }
   }
 
   /**

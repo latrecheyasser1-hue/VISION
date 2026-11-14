@@ -5703,6 +5703,7 @@ async function handleSendNextNewProspect() {
 
 async function runBatchSequenceLoop() {
   const btn = document.getElementById('wa-send-new-btn');
+  let consecutiveErrors = 0;
 
   while (isBatchRunning) {
     if (btn) {
@@ -5726,6 +5727,7 @@ async function runBatchSequenceLoop() {
         break;
       }
 
+      consecutiveErrors = 0;
       showToast(`Sent 4 chunks to "${data.prospectName}". Remaining new: ${data.remainingCount}`, 'success');
 
       // Update that prospect's table row to Message Sent immediately
@@ -5756,8 +5758,8 @@ async function runBatchSequenceLoop() {
 
       if (!isBatchRunning) break;
 
-      // Human delay countdown between prospects (180s - 300s = 3 to 5 mins)
-      const delaySeconds = Math.floor(180 + Math.random() * 120);
+      // Human delay countdown between prospects (25s - 45s)
+      const delaySeconds = Math.floor(25 + Math.random() * 20);
       let secondsLeft = delaySeconds;
 
       await new Promise((resolve) => {
@@ -5789,9 +5791,18 @@ async function runBatchSequenceLoop() {
       });
 
     } catch (err) {
-      showToast('Error dispatching batch: ' + err.message, 'error');
-      isBatchRunning = false;
-      break;
+      consecutiveErrors++;
+      console.error('Batch dispatch error:', err);
+      showToast(`Warning on prospect: ${err.message}. Continuing in 10s...`, 'warning');
+
+      if (consecutiveErrors >= 5) {
+        showToast('Batch stopped after 5 consecutive errors: ' + err.message, 'error');
+        isBatchRunning = false;
+        break;
+      }
+
+      // Wait 10s before picking up the next prospect so transient glitches don't break the loop
+      await new Promise(r => setTimeout(r, 10000));
     }
   }
 

@@ -74,23 +74,46 @@ export class WhatsAppClient {
   }
 
   /**
+   * Checks whether the WhatsApp socket is alive and ready
+   */
+  public isSocketAlive(): boolean {
+    return Boolean(
+      this.sock &&
+      (this.sock as any).ws &&
+      (this.sock as any).ws.readyState === 1 &&
+      this.status === 'connected'
+    );
+  }
+
+  /**
    * Ensures the WhatsApp socket is active and connected.
    * If credentials exist in DB or local disk, it restores and connects automatically.
    */
-  public async ensureConnected(): Promise<void> {
-    if (this.sock && this.status === 'connected') {
+  public async ensureConnected(force = false): Promise<void> {
+    if (!force && this.isSocketAlive()) {
       return;
     }
 
-    console.log('[WhatsApp] ensureConnected triggered. Current status:', this.status);
+    console.log('[WhatsApp] ensureConnected triggered. Current status:', this.status, 'Force:', force);
+
+    if (this.sock && force) {
+      try {
+        this.sock.end(undefined);
+      } catch (e) {
+        // ignore
+      }
+      this.sock = null;
+      this.status = 'disconnected';
+    }
+
     await this.connect();
 
-    // If currently connecting, wait up to 12 seconds for the connection to finalize
+    // If currently connecting, wait up to 15 seconds for the connection to finalize
     if (this.status === 'connecting') {
       await new Promise<void>((resolve) => {
         const start = Date.now();
         const check = setInterval(() => {
-          if (this.status === 'connected' || this.status === 'disconnected' || this.status === 'qr_ready' || Date.now() - start > 12000) {
+          if (this.status === 'connected' || this.status === 'disconnected' || this.status === 'qr_ready' || Date.now() - start > 15000) {
             clearInterval(check);
             resolve();
           }
@@ -397,7 +420,7 @@ export class WhatsAppClient {
     chunks: ChunkedMessage[],
     onProgress?: (partIndex: number, totalParts: number) => void
   ): Promise<{ success: boolean; jid: string; totalChunksSent: number }> {
-    if (!this.sock || this.status !== 'connected') {
+    if (!this.isSocketAlive()) {
       await this.ensureConnected();
     }
 
@@ -414,26 +437,64 @@ export class WhatsAppClient {
 
     for (let i = 0; i < chunks.length; i++) {
       const chunk = chunks[i];
+      let chunkSent = false;
+      let retries = 0;
 
-      await this.sock.sendPresenceUpdate('composing', jid);
-      await delay(chunk.typingDelayMs);
+      while (!chunkSent && retries < 3) {
+        try {
+          if (!this.isSocketAlive()) {
+            console.log(`[WhatsAppClient] Socket disconnected before chunk ${i + 1}/${chunks.length}. Reconnecting...`);
+            await this.ensureConnected(true);
+          }
 
-      const sent = await this.sock.sendMessage(jid, { text: chunk.text });
-      chunksSent++;
-      if (sent?.key?.id && sent.message) {
-        this.messageCache.set(sent.key.id, sent.message);
-      }
+          try {
+            await this.sock.sendPresenceUpdate('composing', jid);
+          } catch (e) {
+            // Ignore presence errors, do not fail message send
+          }
 
-      if (onProgress) {
-        onProgress(chunk.partIndex, chunk.totalParts);
-      }
+          await delay(chunk.typingDelayMs);
 
-      await this.sock.sendPresenceUpdate('paused', jid);
+          const sent = await this.sock.sendMessage(jid, { text: chunk.text });
+          chunksSent++;
+          chunkSent = true;
 
-      if (i < chunks.length - 1 && chunk.pauseAfterMs > 0) {
-        await delay(chunk.pauseAfterMs);
+          if (sent?.key?.id && sent.message) {
+            this.messageCache.set(sent.key.id, sent.message);
+          }
+
+          if (onProgress) {
+            onProgress(chunk.partIndex, chunk.totalParts);
+          }
+
+          try {
+            await this.sock.sendPresenceUpdate('paused', jid);
+          } catch (e) {
+            // Ignore presence errors
+          }
+
+          if (i < chunks.length - 1 && chunk.pauseAfterMs > 0) {
+            await delay(chunk.pauseAfterMs);
+          }
+        } catch (err: any) {
+          retries++;
+          console.error(`[WhatsAppClient] Error delivering chunk ${i + 1}/${chunks.length} to ${targetPhone} (attempt ${retries}/3):`, err?.message || err);
+          if (retries >= 3) {
+            throw new Error(`Failed to deliver chunk ${i + 1} after 3 attempts: ${err?.message || err}`);
+          }
+          try {
+            await this.ensureConnected(true);
+          } catch (connErr) {
+            console.error('[WhatsAppClient] Reconnection failed during chunk retry:', connErr);
+          }
+          await delay(1500);
+        }
       }
     }
+
+    // Wait 3 seconds after the final chunk to allow Signal Protocol handshake & delivery receipts to settle
+    await delay(3000);
+    await this.persistSessionToDb();
 
     return {
       success: true,

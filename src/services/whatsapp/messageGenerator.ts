@@ -34,7 +34,7 @@ function splitCustomProposalIntoChunks(text: string): { name: string; text: stri
 
   // Detect the 4 natural sections by key semantic markers
   const visionIndex = sanitized.indexOf('حنا شركة VISION');
-  const linkIndex = sanitized.search(/(تفرج le site|رابطنا|تفضل|تفرج موقعنا|تفرج الموقع)/);
+  const linkIndex = sanitized.search(/(تفرج le site|رابطنا|تفضل|تفرج موقعنا|تفرج الموقع|شوف خدمتنا|شوف le site|الموقع|رابط المتجر|رابط الموقع|الرابط|تفاصيل أكثر)/i);
   const firstDot = sanitized.indexOf('. ');
 
   if (visionIndex > 0 && linkIndex > visionIndex && firstDot > 0 && firstDot < visionIndex) {
