@@ -23,37 +23,41 @@ function calculateTypingDelay(text: string): number {
  * Splits a continuous customized proposal text into 4 natural conversational chunks
  */
 function splitCustomProposalIntoChunks(text: string): { name: string; text: string }[] {
-  const trimmed = text.trim();
-  if (trimmed.includes('\n\n')) {
-    return trimmed.split(/\n\n+/).filter(Boolean).map((t, i) => ({ name: `الجزء ${i + 1}`, text: t.trim() }));
+  // Strip redundant WhatsApp contact mentions since we are already inside WhatsApp
+  const sanitized = text
+    .replace(/\s*(وتواصل معايا في WhatsApp|وتتواصل معايا في WhatsApp|وللتواصل في WhatsApp|و WhatsApp)\s*:\s*0771335039/g, '')
+    .trim();
+
+  if (sanitized.includes('\n\n')) {
+    return sanitized.split(/\n\n+/).filter(Boolean).map((t, i) => ({ name: `الجزء ${i + 1}`, text: t.trim() }));
   }
 
   // Detect the 4 natural sections by key semantic markers
-  const visionIndex = trimmed.indexOf('حنا شركة VISION');
-  const linkIndex = trimmed.search(/(تفرج le site|رابطنا|تفضل|تفرج موقعنا|تفرج الموقع)/);
-  const firstDot = trimmed.indexOf('. ');
+  const visionIndex = sanitized.indexOf('حنا شركة VISION');
+  const linkIndex = sanitized.search(/(تفرج le site|رابطنا|تفضل|تفرج موقعنا|تفرج الموقع)/);
+  const firstDot = sanitized.indexOf('. ');
 
   if (visionIndex > 0 && linkIndex > visionIndex && firstDot > 0 && firstDot < visionIndex) {
-    const part1 = trimmed.substring(0, firstDot + 1).trim();
-    const part2 = trimmed.substring(firstDot + 1, visionIndex).trim();
-    const part3 = trimmed.substring(visionIndex, linkIndex).trim();
-    const part4 = trimmed.substring(linkIndex).trim();
+    const part1 = sanitized.substring(0, firstDot + 1).trim();
+    const part2 = sanitized.substring(firstDot + 1, visionIndex).trim();
+    const part3 = sanitized.substring(visionIndex, linkIndex).trim();
+    const part4 = sanitized.substring(linkIndex).trim();
 
     return [
       { name: 'التحية والمدح', text: part1 },
       { name: 'نقطة الألم وحساب الخسارة', text: part2 },
       { name: 'التعريف بـ VISION والحل', text: part3 },
-      { name: 'رابط الموقع والواتساب', text: part4 }
+      { name: 'رابط الموقع والدعوة', text: part4 }
     ];
   }
 
   // Fallback: split by sentences
-  const sentences = trimmed.split(/(?<=\.)\s+/).filter(Boolean);
+  const sentences = sanitized.split(/(?<=\.)\s+/).filter(Boolean);
   if (sentences.length >= 2) {
     return sentences.map((s, i) => ({ name: `الجزء ${i + 1}`, text: s.trim() }));
   }
 
-  return [{ name: 'الرسالة كاملة', text: trimmed }];
+  return [{ name: 'الرسالة كاملة', text: sanitized }];
 }
 
 
@@ -116,14 +120,14 @@ export function generateChunkedProposal(prospect: ProspectData): GeneratedOutrea
     }
   }
 
-  // Part 4: Official Portfolio Link & WhatsApp & Closing
-  const part4 = `تفرج le site تاعنا: digitalvisiondz.com وتواصل معايا في WhatsApp: 0771335039 بالتوفيق خويا العزيز.`;
+  // Part 4: Official Portfolio Link & Closing
+  const part4 = `تفرج le site تاعنا: digitalvisiondz.com بالتوفيق خويا العزيز.`;
 
   const rawParts = [
     { name: 'التحية والمدح', text: part1 },
     { name: 'نقطة الألم وحساب الخسارة', text: part2 },
     { name: 'التعريف بـ VISION والحل', text: part3 },
-    { name: 'رابط الموقع والواتساب', text: part4 }
+    { name: 'رابط الموقع والدعوة', text: part4 }
   ];
 
   const chunks: ChunkedMessage[] = rawParts.map((item, idx) => ({
@@ -150,7 +154,7 @@ export function generateFollowUp1(prospect: ProspectData): GeneratedOutreachCont
 
   const part1 = `السلام عليكم خويا، إن شاء الله راك مليح وصحتك بخير.`;
   const part2 = `حبيت نسقسيك برك إذا لحقك الميساج اللي فات وكان عندك وقت تشوف كيفاش نقصو ضياع الوقت في les messages ونرفعو les ventes في ${businessName}.`;
-  const part3 = `تفضل تفرج خدمتنا هنا في الموقع: digitalvisiondz.com وراني متوفر في أي وقت هنا في WhatsApp خويا العزيز.`;
+  const part3 = `تفضل تفرج خدمتنا هنا في الموقع: digitalvisiondz.com بالتوفيق خويا العزيز.`;
 
   const rawParts = [
     { name: 'سلام ومتابعة', text: part1 },
@@ -179,7 +183,7 @@ export function generateFollowUp1(prospect: ProspectData): GeneratedOutreachCont
  */
 export function generateFollowUp2(prospect: ProspectData): GeneratedOutreachContent {
   const part1 = `صحا خويا العزيز، ربي يعاونك ويسهل لك في خدمتك ومشاريعك.`;
-  const part2 = `أنا ما نحبش نبرزيك بكثرة الرسائل، حبيت برك نخليلك رابط الموقع تاعنا digitalvisiondz.com ورقمي إذا حبيت في أي وقت نطلعو لك boutique en ligne ولا سيستيم ذكي لخدمتك. بالتوفيق خويا.`;
+  const part2 = `أنا ما نحبش نبرزيك بكثرة الرسائل، حبيت برك نخليلك رابط الموقع تاعنا digitalvisiondz.com إذا حبيت في أي وقت نطلعو لك boutique en ligne ولا سيستيم ذكي لخدمتك. بالتوفيق خويا.`;
 
   const rawParts = [
     { name: 'تحية ودعاء', text: part1 },
