@@ -80,21 +80,33 @@ export function generateChunkedProposal(prospect: ProspectData): GeneratedOutrea
   let part2 = '';
   let part3 = '';
 
-  if (type.includes('streetwear') || type.includes('sportswear') || type.includes('clothing') || type.includes('vetement') || type.includes('fashion') || type.includes('men')) {
+  if (type.includes('femme') || type.includes('robe') || type.includes('outfit') || type.includes('hijab') || type.includes('abaya') || type.includes('fille')) {
+    part2 = `المشكل في les tenues والموضة النسائية أن الزبونات يسقسوا بكثرة في les messages على المقاسات والألوان المتوفرة، والانتظار يخليهم يشوفوا باجات أخرى وتضيعلك ما لا يقل عن 3 ملايين كل سهرة.`;
+    part3 = `حنا شركة VISION لتطوير les sites web وأنظمة l'intelligence artificielle، نخدمولكم boutique en ligne أنيقة تعرض كل tenue بالمقاس واللون المتوفر، توفر تعب الرد وترفع les ventes بـ 30%.`;
+  } else if (type.includes('streetwear') || type.includes('sportswear') || type.includes('hoodie')) {
     part2 = `علابالي بلي streetwear يتباع بالسرعة و l'impulsion، وتأخر الرد في les messages بساعتين يخلي le client يبرد ويروح يشري من عند باج أخرى، وتضيعلك ما لا يقل عن 2 إلى 3 ملايين مبيعات كل سهرة.`;
     part3 = `حنا شركة VISION لتطوير les sites web وأنظمة l'intelligence artificielle، نخدمولكم boutique en ligne ذكية تخلي le client يشوف les tailles disponibles ويكوموندي فالحين، توفر 3 سوايع كل ليلة وترفع les ventes تاعك بـ 30%.`;
   } else if (type.includes('chaussure') || type.includes('sneaker') || type.includes('shoe') || type.includes('basket')) {
-    part2 = `أكبر مشكل في les chaussures هو تكرار les questions على les pointures و les retours كي تجيه ماشي قيسو، والرد اليدوي في les messages يدي 4 سوايع في النهار ويطيحلك الكليون في الشك وتخسر حق التوصيل.`;
-    part3 = `حنا شركة VISION لتطوير les sites web وأنظمة l'intelligence artificielle، نخدمولكم plateforme خاصة بالأحذية تخلي الزبون يختر la pointure المتوفرة في le stock بالضبط، تقضي على les retours وترفع les ventes تاعك بـ 35%.`;
+    part2 = `أكبر مشكل في الأحذية و les chaussures هو تكرار les questions على les pointures و les retours كي تجيه ماشي قيسو، والرد اليدوي في les messages يدي 4 سوايع في النهار وتخسرو حق التوصيل.`;
+    part3 = `حنا شركة VISION لتطوير les sites web وأنظمة l'intelligence artificielle، نخدمولكم plateforme خاصة بالأحذية تخلي الزبون يخير la pointure المتوفرة في le stock بالضبط، تقضي على les retours وترفع مبيعاتكم بـ 35%.`;
   } else if (type.includes('cosmet') || type.includes('beaute') || type.includes('skin') || type.includes('parfum')) {
     part2 = `في le domaine تاع cosmétique أكبر ضياع وقت في les messages هو تكرار نفس الأسئلة على نوع البشرة و mode d'utilisation، و le client إذا ما لقاش رد فوري يتردد وما يشريش.`;
     part3 = `حنا شركة VISION لتطوير les sites web وأنظمة l'intelligence artificielle، نخدمولكم boutique en ligne ذكية تعرض كل produit مع les bienfaits وطريقة الاستعمال وفورمير كوند سريعة، ترفع نسبة الثقة و les commandes بـ 40%.`;
-  } else if (type.includes('femme') || type.includes('robe') || type.includes('outfit') || type.includes('hijab') || type.includes('abaya')) {
-    part2 = `المشكل في les tenues والموضة النسائية أن الزبونات يسقسوا بكثرة في les messages على المقاسات والألوان المتوفرة، والانتظار يخليهم يشوفوا باجات أخرى وتضيعلك ما لا يقل عن 3 ملايين كل سهرة.`;
-    part3 = `حنا شركة VISION لتطوير les sites web وأنظمة l'intelligence artificielle، نخدمولكم boutique en ligne أنيقة تعرض كل tenue بالمقاس واللون المتوفر، توفر تعب الرد وترفع les ventes بـ 30%.`;
+  } else if (type.includes('cadeau') || type.includes('gift') || type.includes('box')) {
+    part2 = `في مجال الهدايا و les cadeaux، أكثر حاجة تدي الوقت في les messages هي شرح محتوى الباقات وتأكيد التوصيل في المناسبة، وتأخر الرد يخلي الزبون يروح يشري من بلاصة أخرى.`;
+    part3 = `حنا شركة VISION لتطوير les sites web وأنظمة l'intelligence artificielle، نخدمولكم متجر إلكتروني راقي يعرض كل باقة هدايا بسعرها وخيارات التخصيص وفورمير طلب سريعة، تريحكم من الشات وتضاعف مبيعاتكم.`;
+  } else if (type.includes('dish') || type.includes('vaisselle') || type.includes('maison') || type.includes('cuisine')) {
+    part2 = `في مستلزمات البيت والأواني، الزبونات يسقسوا بكثرة على الأسعار والتوصيل للولايات، والرد اليدوي في les messages يدي نص نهار ويخلط الطلبيات.`;
+    part3 = `حنا شركة VISION لتطوير les sites web وأنظمة l'intelligence artificielle، نخدمولكم boutique en ligne واضحة تعرض كل منتج بسعره والتوصيل لـ 58 ولاية، توفر عليكم تعب الرد وتضاعف الطلبيات.`;
+  } else if (type.includes('accessoire') || type.includes('bijoux') || type.includes('montre') || type.includes('watch')) {
+    part2 = `في les accessoires الزبائن يسقسوا بزاف على صور حقيقية للسلعة والسعر ومدة التوصيل، والتأخر في الرد يخلي le client يتردد ويروح لباجات منافسة.`;
+    part3 = `حنا شركة VISION لتطوير les sites web وأنظمة l'intelligence artificielle، نخدمولكم boutique en ligne أنيقة تعرض كل أكسسوار بتفاصيله، تزرع ثقة كبيرة وتسرع les commandes.`;
   } else if (type.includes('phone') || type.includes('tech') || type.includes('electron') || type.includes('ipad') || type.includes('informatique')) {
     part2 = `في les appareils الإلكترونية الزبون يخاف ويبعث 40 سؤال في les messages على l'état و la garantie و الدفع، والرد اليدوي يدي نص نهار ويبقى الكليون متردد.`;
     part3 = `حنا شركة VISION لتطوير les sites web وأنظمة l'intelligence artificielle، نخدمولكم plateforme احترافية تعرض الأجهزة بـ fiche technique وفاتورة واضحة، تزرع ثقة عمياء وتسرع les ventes بـ 50%.`;
+  } else if (type.includes('vetement') || type.includes('clothing') || type.includes('fashion') || type.includes('men')) {
+    part2 = `علابالي بلي تجارة الملابس أصعب حاجة فيها هي كثرة رسائل الزبائن على المقاسات والألوان المتوفرة، والرد اليدوي يدي ساعات ويخلي الزبون المستعجل يروح يشري من عند المنافسين.`;
+    part3 = `حنا شركة VISION لتطوير les sites web وأنظمة l'intelligence artificielle، نخدمولكم boutique en ligne ذكية تعرض السلعة بالمقاسات والأسعار وفورمير طلب سريعة في 10 ثواني، ترفع مبيعاتكم بـ 30%.`;
   } else {
     // General E-commerce / retail
     part2 = `علابالي بلي خدمة les messages وضياع الوقت في شرح الأسعار وتأكيد طلبيات التوصيل تدي ما لا يقل عن 3 إلى 4 سوايع كل يوم وتضيعلك زبائن مستعجلين يروحوا للمنافسين.`;
