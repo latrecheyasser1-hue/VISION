@@ -5197,18 +5197,21 @@ document.addEventListener('keydown', (e) => {
 function updateOutreachMetrics() {
   const rawList = state.outreach || [];
   const totalCount = rawList.length;
+  const sentCount = rawList.filter(x => x.status === 'message_sent').length;
   const respondedCount = rawList.filter(x => x.status === 'responded').length;
   const thinkingCount = rawList.filter(x => x.status === 'thinking').length;
   const noreplyCount = rawList.filter(x => x.status === 'no_reply').length;
   const declinedCount = rawList.filter(x => x.status === 'declined').length;
 
   const totalEl = document.getElementById('outreach-stat-total');
+  const sentEl = document.getElementById('outreach-stat-sent');
   const respondedEl = document.getElementById('outreach-stat-responded');
   const thinkingEl = document.getElementById('outreach-stat-thinking');
   const noreplyEl = document.getElementById('outreach-stat-noreply');
   const declinedEl = document.getElementById('outreach-stat-declined');
 
   if (totalEl) totalEl.textContent = String(totalCount);
+  if (sentEl) sentEl.textContent = String(sentCount);
   if (respondedEl) respondedEl.textContent = String(respondedCount);
   if (thinkingEl) thinkingEl.textContent = String(thinkingCount);
   if (noreplyEl) noreplyEl.textContent = String(noreplyCount);
@@ -5281,6 +5284,7 @@ function renderSheetRowHtml(rowObj, rowIndex, isDraft) {
       <td>
         <select data-field="status" onchange="handleSheetStatusChange(this)" class="outreach-status-select status-${status}" style="width: calc(100% - 12px); margin: 0 6px;">
           <option value="no_reply" ${status === 'no_reply' ? 'selected' : ''}>No Reply</option>
+          <option value="message_sent" ${status === 'message_sent' ? 'selected' : ''}>Message Sent</option>
           <option value="responded" ${status === 'responded' ? 'selected' : ''}>Responded</option>
           <option value="thinking" ${status === 'thinking' ? 'selected' : ''}>Thinking</option>
           <option value="declined" ${status === 'declined' ? 'selected' : ''}>Declined</option>

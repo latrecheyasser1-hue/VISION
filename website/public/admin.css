@@ -2176,6 +2176,12 @@ tr:hover td {
   border-color: #FDE68A;
 }
 
+.outreach-status-select.status-message_sent {
+  background: #EFF6FF;
+  color: #1D4ED8;
+  border-color: #BFDBFE;
+}
+
 .outreach-status-select.status-responded {
   background: #ECFDF5;
   color: #047857;

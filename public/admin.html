@@ -780,6 +780,7 @@
               <select id="outreach-filter-status" onchange="handleOutreachFilterChange()" style="padding: 7px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.82rem; font-weight: 600; background: var(--surface); color: var(--ink);">
                 <option value="all">All Statuses</option>
                 <option value="no_reply">No Reply (Pending)</option>
+                <option value="message_sent">Message Sent</option>
                 <option value="responded">Responded</option>
                 <option value="thinking">Thinking</option>
                 <option value="declined">Declined</option>
@@ -796,6 +797,10 @@
             <div style="padding: 12px; background: #F8FAFC; border: 1px solid var(--border); border-radius: 8px;">
               <div style="font-size: 0.72rem; font-weight: 700; color: var(--ink-muted); text-transform: uppercase;">Total Contacted</div>
               <div id="outreach-stat-total" style="font-size: 1.3rem; font-weight: 800; color: var(--ink); margin-top: 2px;">0</div>
+            </div>
+            <div style="padding: 12px; background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 8px;">
+              <div style="font-size: 0.72rem; font-weight: 700; color: #1D4ED8; text-transform: uppercase;">Message Sent</div>
+              <div id="outreach-stat-sent" style="font-size: 1.3rem; font-weight: 800; color: #1D4ED8; margin-top: 2px;">0</div>
             </div>
             <div style="padding: 12px; background: #ECFDF5; border: 1px solid #A7F3D0; border-radius: 8px;">
               <div style="font-size: 0.72rem; font-weight: 700; color: #047857; text-transform: uppercase;">Responded</div>

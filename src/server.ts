@@ -1272,7 +1272,7 @@ app.post('/api/outreach', requireAdminAuth, async (req, res) => {
       return res.status(400).json({ error: 'Enter at least one field to create an outreach row.' });
     }
 
-    const validStatuses = ['no_reply', 'responded', 'thinking', 'declined'];
+    const validStatuses = ['no_reply', 'message_sent', 'responded', 'thinking', 'declined'];
     const finalStatus = validStatuses.includes(status) ? status : 'no_reply';
 
     const [inserted] = await db.insert(schema.outreach).values({
@@ -1311,7 +1311,7 @@ app.patch('/api/outreach/:id', requireAdminAuth, async (req, res) => {
     if (notes !== undefined) updateData.notes = notes ? String(notes).trim() : null;
 
     if (status !== undefined) {
-      const validStatuses = ['no_reply', 'responded', 'thinking', 'declined'];
+      const validStatuses = ['no_reply', 'message_sent', 'responded', 'thinking', 'declined'];
       if (validStatuses.includes(status)) {
         updateData.status = status;
       }

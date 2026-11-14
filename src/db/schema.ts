@@ -180,7 +180,7 @@ export const outreach = pgTable('outreach', {
   wilaya: varchar('wilaya', { length: 100 }),
   phone: varchar('phone', { length: 50 }),
   instagramUrl: varchar('instagram_url', { length: 500 }),
-  status: varchar('status', { length: 50 }).default('no_reply').notNull(), // 'no_reply', 'responded', 'thinking', 'declined'
+  status: varchar('status', { length: 50 }).default('no_reply').notNull(), // 'no_reply', 'message_sent', 'responded', 'thinking', 'declined'
   notes: text('notes'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
