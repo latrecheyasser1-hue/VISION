@@ -821,6 +821,91 @@
           </div>
         </div>
 
+        <!-- WHATSAPP AI OUTREACH AGENT HUB -->
+        <div class="card" style="margin-bottom: 24px; border: 1px solid #CBD5E1; border-radius: 12px; overflow: hidden; background: #FFFFFF;">
+          <div style="background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); padding: 18px 24px; color: #FFFFFF; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <span style="font-size: 1.15rem; font-weight: 800; letter-spacing: -0.01em;">WhatsApp AI Outreach Agent</span>
+                <span id="wa-connection-badge" style="padding: 3px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; background: #334155; color: #94A3B8;">Disconnected</span>
+                <span id="wa-safety-badge" style="padding: 3px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D;">SAFETY GATE ACTIVE (Execution Paused)</span>
+              </div>
+              <p style="font-size: 0.8rem; color: #94A3B8; margin-top: 5px; margin-bottom: 0;">
+                Personalized 4-chunk messages with human typing simulation, auto follow-up sequence, and automatic handoff when prospects reply.
+              </p>
+            </div>
+
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <button id="wa-connect-btn" type="button" class="btn btn-primary btn-sm" onclick="handleWhatsAppConnect()" style="font-weight: 700; padding: 7px 16px;">
+                Connect WhatsApp
+              </button>
+              <button id="wa-disconnect-btn" type="button" class="btn btn-secondary btn-sm" onclick="handleWhatsAppDisconnect()" style="display: none; font-weight: 700; padding: 7px 16px; color: #EF4444;">
+                Disconnect
+              </button>
+            </div>
+          </div>
+
+          <!-- QR Code Display Box (Shown when QR Ready) -->
+          <div id="wa-qr-container" style="display: none; padding: 24px; text-align: center; background: #F8FAFC; border-bottom: 1px solid #E2E8F0;">
+            <div style="font-size: 0.95rem; font-weight: 700; color: #0F172A; margin-bottom: 6px;">Scan QR Code with WhatsApp</div>
+            <p style="font-size: 0.82rem; color: #64748B; margin-bottom: 16px;">
+              Open WhatsApp on your outreach phone &gt; Settings &gt; Linked Devices &gt; Link a Device, then point your camera at this QR code.
+            </p>
+            <div style="display: inline-block; padding: 12px; background: #FFFFFF; border: 1px solid #CBD5E1; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+              <img id="wa-qr-img" src="" alt="WhatsApp QR Code" style="width: 220px; height: 220px; display: block;">
+            </div>
+          </div>
+
+          <!-- Safety Gate & Testing Bar -->
+          <div style="padding: 16px 24px; background: #F8FAFC; border-bottom: 1px solid #E2E8F0; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px;">
+            <!-- Safety Execution Gate Toggle -->
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <div style="font-size: 0.82rem; font-weight: 700; color: #334155;">
+                Automated Queue Execution:
+              </div>
+              <button id="wa-toggle-exec-btn" type="button" class="btn btn-secondary btn-sm" onclick="handleToggleWhatsAppExecution()" style="font-weight: 700; padding: 6px 14px; background: #FEF3C7; color: #92400E; border-color: #FCD34D;">
+                Status: PAUSED (Click to Enable)
+              </button>
+              <span style="font-size: 0.74rem; color: #64748B;">
+                (Safety Gate: Background queue will not dispatch messages to real prospects while paused)
+              </span>
+            </div>
+
+            <!-- Test Sandbox -->
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 0.8rem; font-weight: 700; color: #334155;">Test on your phone:</span>
+              <input type="text" id="wa-test-phone-input" value="0771335039" placeholder="0771335039" style="width: 120px; padding: 6px 10px; border: 1px solid #CBD5E1; border-radius: 6px; font-size: 0.8rem; font-weight: 600;">
+              <button id="wa-send-test-btn" type="button" class="btn btn-primary btn-sm" onclick="handleSendWhatsAppTest()" style="font-weight: 700; padding: 6px 14px; background: #2563EB; border-color: #1D4ED8;">
+                Send Test Chunks
+              </button>
+            </div>
+          </div>
+
+          <!-- Agent Metrics Summary Bar -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; padding: 16px 24px; background: #FFFFFF;">
+            <div>
+              <div style="font-size: 0.7rem; font-weight: 700; color: #64748B; text-transform: uppercase;">Active WhatsApp Phone</div>
+              <div id="wa-stat-connected-phone" style="font-size: 1.05rem; font-weight: 800; color: #0F172A; margin-top: 2px;">Not Connected</div>
+            </div>
+            <div>
+              <div style="font-size: 0.7rem; font-weight: 700; color: #64748B; text-transform: uppercase;">Initial Outreach Queue</div>
+              <div id="wa-stat-queue-count" style="font-size: 1.05rem; font-weight: 800; color: #0F172A; margin-top: 2px;">0 waiting</div>
+            </div>
+            <div>
+              <div style="font-size: 0.7rem; font-weight: 700; color: #64748B; text-transform: uppercase;">Pending Follow-ups</div>
+              <div id="wa-stat-followup-count" style="font-size: 1.05rem; font-weight: 800; color: #6D28D9; margin-top: 2px;">0 scheduled</div>
+            </div>
+            <div>
+              <div style="font-size: 0.7rem; font-weight: 700; color: #64748B; text-transform: uppercase;">Sent Today (Daily Cap: 30)</div>
+              <div id="wa-stat-sent-today" style="font-size: 1.05rem; font-weight: 800; color: #1D4ED8; margin-top: 2px;">0 / 30</div>
+            </div>
+            <div>
+              <div style="font-size: 0.7rem; font-weight: 700; color: #64748B; text-transform: uppercase;">Replies &amp; Handoffs</div>
+              <div id="wa-stat-replies" style="font-size: 1.05rem; font-weight: 800; color: #047857; margin-top: 2px;">0 closed</div>
+            </div>
+          </div>
+        </div>
+
         <!-- Excel-Style Inline Editable Spreadsheet Table Card -->
         <div class="card">
           <div class="card-header" style="padding: 14px 20px; border-bottom: 1px solid var(--border); background: var(--surface);">
@@ -844,10 +929,11 @@
                   <th style="min-width: 210px;">Instagram</th>
                   <th style="width: 150px;">Status</th>
                   <th style="min-width: 200px;">Notes</th>
+                  <th style="width: 105px; text-align: center;">WhatsApp</th>
                 </tr>
               </thead>
               <tbody id="outreach-tbody">
-                <tr><td colspan="8" style="text-align: center; color: var(--ink-muted); padding: 40px;">Loading outreach sheet...</td></tr>
+                <tr><td colspan="9" style="text-align: center; color: var(--ink-muted); padding: 40px;">Loading outreach sheet...</td></tr>
               </tbody>
             </table>
           </div>
@@ -1568,6 +1654,26 @@
       <button type="button" class="btn btn-secondary" onclick="closeModal('project-devis-modal')">Cancel</button>
       <button type="button" class="btn btn-secondary" onclick="exportModalDevisPdf()">Save PDF</button>
       <button type="button" class="btn btn-primary" id="modal-devis-save-btn" onclick="saveModalDevis()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- WhatsApp Proposal Chunks Preview Modal -->
+<div class="modal-overlay" id="wa-preview-modal">
+  <div class="modal-content" style="max-width: 680px; width: 92vw; max-height: 90vh; overflow-y: auto;">
+    <div class="modal-header">
+      <div>
+        <h3 class="modal-title" id="wa-preview-title">Proposal Chunks Preview</h3>
+        <p id="wa-preview-subtitle" style="font-size: 0.8rem; color: var(--ink-muted); margin-top: 2px;">4-chunk human outreach simulation with typing delay</p>
+      </div>
+      <button class="modal-close" onclick="closeModal('wa-preview-modal')">&times;</button>
+    </div>
+    <div class="modal-body" id="wa-preview-body" style="display: flex; flex-direction: column; gap: 14px; padding: 20px;">
+      <!-- Populated dynamically -->
+    </div>
+    <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+      <div style="font-size: 0.78rem; font-weight: 700; color: var(--ink-muted);" id="wa-preview-total-duration">Est. Total Typing Duration: ~32s</div>
+      <button type="button" class="btn btn-secondary" onclick="closeModal('wa-preview-modal')">Close Preview</button>
     </div>
   </div>
 </div>

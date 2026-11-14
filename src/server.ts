@@ -10,6 +10,9 @@ import { eq, desc, asc, sql } from 'drizzle-orm';
 import { db } from './db/client.js';
 import * as schema from './db/schema.js';
 import { uploadToR2 } from './services/storage.js';
+import { WhatsAppClient } from './services/whatsapp/whatsappClient.js';
+import { WhatsAppOutreachAgent } from './services/whatsapp/outreachAgent.js';
+
 
 dotenv.config({ path: '.env.local' });
 dotenv.config({ path: '.env' });
@@ -1355,6 +1358,102 @@ app.delete('/api/outreach/:id', requireAdminAuth, async (req, res) => {
   }
 });
 
+// ==========================================
+// WHATSAPP OUTREACH AI AGENT ENDPOINTS
+// ==========================================
+
+// Get real-time agent status & statistics
+app.get('/api/whatsapp/agent-stats', requireAdminAuth, async (req, res) => {
+  try {
+    const agent = WhatsAppOutreachAgent.getInstance();
+    const stats = await agent.getAgentStats();
+    res.json(stats);
+  } catch (err: any) {
+    console.error('Error fetching WhatsApp agent stats:', err);
+    res.status(500).json({ error: 'Failed to fetch WhatsApp agent stats' });
+  }
+});
+
+// Connect WhatsApp Web & generate QR Code
+app.post('/api/whatsapp/connect', requireAdminAuth, async (req, res) => {
+  try {
+    const client = WhatsAppClient.getInstance();
+    await client.connect();
+    const status = client.getStatus();
+    res.json(status);
+  } catch (err: any) {
+    console.error('Error connecting WhatsApp:', err);
+    res.status(500).json({ error: err.message || 'Failed to initiate WhatsApp connection.' });
+  }
+});
+
+// Disconnect WhatsApp session
+app.post('/api/whatsapp/disconnect', requireAdminAuth, async (req, res) => {
+  try {
+    const client = WhatsAppClient.getInstance();
+    await client.disconnect();
+    res.json({ success: true, status: 'disconnected' });
+  } catch (err: any) {
+    console.error('Error disconnecting WhatsApp:', err);
+    res.status(500).json({ error: 'Failed to disconnect WhatsApp.' });
+  }
+});
+
+// Toggle Execution Safety Gate (Strictly gated by default)
+app.post('/api/whatsapp/toggle-execution', requireAdminAuth, async (req, res) => {
+  try {
+    const { enabled } = req.body || {};
+    const agent = WhatsAppOutreachAgent.getInstance();
+    const valStr = enabled ? 'true' : 'false';
+    await agent.updateSetting('execution_enabled', valStr);
+    const updatedStats = await agent.getAgentStats();
+    res.json({ success: true, executionEnabled: updatedStats.executionEnabled });
+  } catch (err: any) {
+    console.error('Error toggling WhatsApp execution:', err);
+    res.status(500).json({ error: 'Failed to toggle execution state.' });
+  }
+});
+
+// Preview the 4-part Arabic/French chunked proposal for a specific prospect
+app.get('/api/whatsapp/preview/:outreachId', requireAdminAuth, async (req, res) => {
+  try {
+    const outreachId = String(req.params.outreachId);
+    const agent = WhatsAppOutreachAgent.getInstance();
+    const preview = await agent.previewProposal(outreachId);
+    res.json(preview);
+  } catch (err: any) {
+    console.error('Error previewing proposal:', err);
+    res.status(500).json({ error: err.message || 'Failed to preview proposal.' });
+  }
+});
+
+// Send a test message with real chunking, typing indicators, and delays to test phone
+app.post('/api/whatsapp/test', requireAdminAuth, async (req, res) => {
+  try {
+    const { phone } = req.body || {};
+    const agent = WhatsAppOutreachAgent.getInstance();
+    const result = await agent.sendTestMessage(phone);
+    res.json(result);
+  } catch (err: any) {
+    console.error('Error sending test WhatsApp message:', err);
+    res.status(500).json({ error: err.message || 'Failed to send test message.' });
+  }
+});
+
+// Retrieve WhatsApp communication logs
+app.get('/api/whatsapp/logs', requireAdminAuth, async (req, res) => {
+  try {
+    const logs = await db.select().from(schema.whatsappLogs)
+      .orderBy(desc(schema.whatsappLogs.createdAt))
+      .limit(50);
+    res.json(logs);
+  } catch (err: any) {
+    console.error('Error fetching WhatsApp logs:', err);
+    res.status(500).json({ error: 'Failed to fetch WhatsApp logs.' });
+  }
+});
+
+
 
 // ==========================================
 // STATIC FRONTEND SERVING
@@ -1462,6 +1561,13 @@ if (!process.env.VERCEL) {
     console.log(`Admin Portal:          https://admin.digitalvisiondz.com/`);
     console.log(`Security:              Strict CORS, Rate Limiting, Signed Tokens`);
     console.log(`======================================================\n`);
+
+    // Initialize WhatsApp Outreach Agent Worker (Safety Gate strictly active by default)
+    try {
+      WhatsAppOutreachAgent.getInstance().startBackgroundWorker(60000);
+    } catch (e) {
+      console.error('Failed to initialize WhatsApp Outreach Worker:', e);
+    }
   });
 }
 

@@ -5293,6 +5293,13 @@ function renderSheetRowHtml(rowObj, rowIndex, isDraft) {
       <td>
         <input type="text" class="sheet-cell-input" value="${escapeHtml(rowObj.notes || '')}" placeholder="Notes..." data-field="notes" oninput="handleSheetInput(this)" onblur="handleSheetBlur(this)" onkeydown="handleSheetKeydown(event, this)">
       </td>
+      <td style="text-align: center; vertical-align: middle;">
+        ${!isDraft && rowObj.id ? `
+          <button type="button" class="btn btn-secondary btn-xs" onclick="openWhatsAppPreview('${rowObj.id}')" style="font-size: 0.72rem; padding: 3px 8px; font-weight: 700;" title="Preview Arabic/French chunks">
+            Preview
+          </button>
+        ` : `<span style="font-size: 0.72rem; color: var(--ink-muted);">-</span>`}
+      </td>
     </tr>
   `;
 }
@@ -5303,6 +5310,7 @@ function renderOutreachView() {
 
   updateOutreachMetrics();
   updateOutreachCountLabel();
+  refreshWhatsAppAgentStats();
 
   const list = getFilteredOutreachList();
   if (!Array.isArray(state.outreachDrafts)) state.outreachDrafts = [];
@@ -5330,7 +5338,7 @@ function renderOutreachView() {
   if (!savedRowsHtml && !draftRowsHtml) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="8" style="text-align: center; padding: 36px 20px; color: var(--ink-muted);">
+        <td colspan="9" style="text-align: center; padding: 36px 20px; color: var(--ink-muted);">
           No businesses match the current filter.
         </td>
       </tr>
@@ -5383,3 +5391,307 @@ function exportOutreachToExcel() {
 
   showToast('Excel outreach report downloaded successfully.', 'success');
 }
+
+// ==========================================
+// WHATSAPP AI OUTREACH AGENT CLIENT LOGIC
+// ==========================================
+let waPollingTimer = null;
+let currentWhatsAppStats = null;
+
+async function refreshWhatsAppAgentStats() {
+  try {
+    const res = await fetch('/api/whatsapp/agent-stats', {
+      headers: getAuthHeaders()
+    });
+    if (!res.ok) return;
+
+    const data = await res.json();
+    currentWhatsAppStats = data;
+
+    // 1. Connection Status Badge
+    const connBadge = document.getElementById('wa-connection-badge');
+    const connectBtn = document.getElementById('wa-connect-btn');
+    const disconnectBtn = document.getElementById('wa-disconnect-btn');
+    const qrContainer = document.getElementById('wa-qr-container');
+    const qrImg = document.getElementById('wa-qr-img');
+
+    if (connBadge) {
+      if (data.connection.status === 'connected') {
+        connBadge.textContent = 'Connected';
+        connBadge.style.background = '#DCFCE7';
+        connBadge.style.color = '#15803D';
+      } else if (data.connection.status === 'qr_ready') {
+        connBadge.textContent = 'QR Ready - Scan Now';
+        connBadge.style.background = '#DBEAFE';
+        connBadge.style.color = '#1E40AF';
+      } else if (data.connection.status === 'connecting') {
+        connBadge.textContent = 'Connecting...';
+        connBadge.style.background = '#FEF3C7';
+        connBadge.style.color = '#B45309';
+      } else {
+        connBadge.textContent = 'Disconnected';
+        connBadge.style.background = '#334155';
+        connBadge.style.color = '#94A3B8';
+      }
+    }
+
+    if (connectBtn) {
+      connectBtn.style.display = data.connection.status === 'connected' ? 'none' : 'inline-block';
+    }
+    if (disconnectBtn) {
+      disconnectBtn.style.display = data.connection.status === 'connected' ? 'inline-block' : 'none';
+    }
+
+    // QR Code display handling
+    if (qrContainer && qrImg) {
+      if (data.connection.status === 'qr_ready' && data.connection.qrCodeDataUrl) {
+        qrImg.src = data.connection.qrCodeDataUrl;
+        qrContainer.style.display = 'block';
+      } else {
+        qrContainer.style.display = 'none';
+      }
+    }
+
+    // 2. Safety Gate Badge & Execution Button
+    const safetyBadge = document.getElementById('wa-safety-badge');
+    const toggleExecBtn = document.getElementById('wa-toggle-exec-btn');
+
+    if (safetyBadge) {
+      if (data.executionEnabled) {
+        safetyBadge.textContent = 'LIVE EXECUTION ACTIVE';
+        safetyBadge.style.background = '#DCFCE7';
+        safetyBadge.style.color = '#15803D';
+        safetyBadge.style.borderColor = '#86EFAC';
+      } else {
+        safetyBadge.textContent = 'SAFETY GATE ACTIVE (Execution Paused)';
+        safetyBadge.style.background = '#FEF3C7';
+        safetyBadge.style.color = '#92400E';
+        safetyBadge.style.borderColor = '#FCD34D';
+      }
+    }
+
+    if (toggleExecBtn) {
+      if (data.executionEnabled) {
+        toggleExecBtn.textContent = 'Status: RUNNING (Click to Pause)';
+        toggleExecBtn.style.background = '#DCFCE7';
+        toggleExecBtn.style.color = '#15803D';
+        toggleExecBtn.style.borderColor = '#86EFAC';
+      } else {
+        toggleExecBtn.textContent = 'Status: PAUSED (Click to Enable)';
+        toggleExecBtn.style.background = '#FEF3C7';
+        toggleExecBtn.style.color = '#92400E';
+        toggleExecBtn.style.borderColor = '#FCD34D';
+      }
+    }
+
+    // 3. Metrics Summary Values
+    const phoneEl = document.getElementById('wa-stat-connected-phone');
+    const queueEl = document.getElementById('wa-stat-queue-count');
+    const followupEl = document.getElementById('wa-stat-followup-count');
+    const sentTodayEl = document.getElementById('wa-stat-sent-today');
+    const repliesEl = document.getElementById('wa-stat-replies');
+
+    if (phoneEl) {
+      phoneEl.textContent = data.connection.connectedPhone ? ('+213 ' + data.connection.connectedPhone.substring(1)) : 'Not Connected';
+    }
+    if (queueEl) {
+      queueEl.textContent = `${data.queuedInitialTotal} waiting`;
+    }
+    if (followupEl) {
+      followupEl.textContent = `${data.queuedFollowUpTotal} scheduled`;
+    }
+    if (sentTodayEl) {
+      sentTodayEl.textContent = `${data.sentToday} / ${data.dailyLimit}`;
+    }
+    if (repliesEl) {
+      repliesEl.textContent = `${data.respondedTotal} closed`;
+    }
+
+    // If waiting for QR scan, poll more frequently
+    if (data.connection.status === 'qr_ready' || data.connection.status === 'connecting') {
+      if (!waPollingTimer) {
+        waPollingTimer = setInterval(refreshWhatsAppAgentStats, 3000);
+      }
+    } else {
+      if (waPollingTimer) {
+        clearInterval(waPollingTimer);
+        waPollingTimer = null;
+      }
+    }
+  } catch (err) {
+    console.error('Error refreshing WhatsApp stats:', err);
+  }
+}
+
+async function handleWhatsAppConnect() {
+  const btn = document.getElementById('wa-connect-btn');
+  const originalText = btn ? btn.textContent : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Initializing...';
+  }
+
+  try {
+    const res = await fetch('/api/whatsapp/connect', {
+      method: 'POST',
+      headers: getAuthHeaders()
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to connect WhatsApp.');
+
+    showToast('WhatsApp session started. Please scan QR Code.', 'info');
+    await refreshWhatsAppAgentStats();
+  } catch (err) {
+    showToast(err.message, 'error');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = originalText;
+    }
+  }
+}
+
+async function handleWhatsAppDisconnect() {
+  if (!confirm('Are you sure you want to disconnect this WhatsApp session?')) {
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/whatsapp/disconnect', {
+      method: 'POST',
+      headers: getAuthHeaders()
+    });
+    if (!res.ok) throw new Error('Failed to disconnect WhatsApp');
+
+    showToast('WhatsApp session disconnected.', 'info');
+    await refreshWhatsAppAgentStats();
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+async function handleToggleWhatsAppExecution() {
+  const current = currentWhatsAppStats ? currentWhatsAppStats.executionEnabled : false;
+  const target = !current;
+
+  if (target) {
+    const confirmed = confirm(
+      'WARNING: Activating automated execution will allow the background queue to dispatch real personalized proposals to waiting prospects according to human intervals.\n\nMake sure you have tested first using the Test Sandbox!\n\nDo you want to enable execution?'
+    );
+    if (!confirmed) return;
+  }
+
+  try {
+    const res = await fetch('/api/whatsapp/toggle-execution', {
+      method: 'POST',
+      headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ enabled: target })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to toggle execution.');
+
+    if (data.executionEnabled) {
+      showToast('Automated WhatsApp outreach execution is now ACTIVE.', 'success');
+    } else {
+      showToast('Automated WhatsApp outreach execution is PAUSED (Safety Gate Active).', 'info');
+    }
+
+    await refreshWhatsAppAgentStats();
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+async function handleSendWhatsAppTest() {
+  const phoneInput = document.getElementById('wa-test-phone-input');
+  const phone = phoneInput ? phoneInput.value.trim() : '0771335039';
+
+  if (!phone) {
+    showToast('Please enter a phone number to test.', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('wa-send-test-btn');
+  const originalText = btn ? btn.textContent : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Simulating typing & sending...';
+  }
+
+  showToast('Starting test: sending 4 chunks with typing simulation to ' + phone + '...', 'info');
+
+  try {
+    const res = await fetch('/api/whatsapp/test', {
+      method: 'POST',
+      headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ phone })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to send test message.');
+
+    showToast(`Test success! Sent ${data.chunksSent || 4} chunks with typing simulation to ${phone}.`, 'success');
+    await refreshWhatsAppAgentStats();
+  } catch (err) {
+    showToast(err.message, 'error');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = originalText;
+    }
+  }
+}
+
+async function openWhatsAppPreview(outreachId) {
+  const modalBody = document.getElementById('wa-preview-body');
+  const modalTitle = document.getElementById('wa-preview-title');
+  const modalDuration = document.getElementById('wa-preview-total-duration');
+
+  if (!modalBody) return;
+
+  modalBody.innerHTML = '<div style="text-align: center; color: var(--ink-muted); padding: 30px;">Generating 4-chunk proposal preview...</div>';
+  openModal('wa-preview-modal');
+
+  try {
+    const res = await fetch(`/api/whatsapp/preview/${outreachId}`, {
+      headers: getAuthHeaders()
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to preview proposal.');
+
+    if (modalTitle) modalTitle.textContent = 'Personalized Proposal Preview (4 Chunks)';
+
+    let totalDurationMs = 0;
+    const bubblesHtml = (data.chunks || []).map((chunk, idx) => {
+      totalDurationMs += chunk.typingDelayMs + (chunk.pauseAfterMs || 0);
+      const typingSec = (chunk.typingDelayMs / 1000).toFixed(1);
+      const pauseSec = (chunk.pauseAfterMs / 1000).toFixed(1);
+
+      return `
+        <div style="display: flex; flex-direction: column; align-items: flex-end; margin-bottom: 8px;">
+          <div style="font-size: 0.72rem; font-weight: 700; color: #64748B; margin-bottom: 3px; display: flex; align-items: center; gap: 8px;">
+            <span>Part ${chunk.partIndex}/${chunk.totalParts}: ${escapeHtml(chunk.partName)}</span>
+            <span style="background: #E2E8F0; padding: 2px 6px; border-radius: 4px;">Typing duration: ${typingSec}s</span>
+          </div>
+          <div style="max-width: 88%; background: #E7FED6; border: 1px solid #C4F3A5; border-radius: 12px 12px 2px 12px; padding: 12px 16px; font-size: 0.88rem; line-height: 1.5; color: #0F172A; text-align: right; direction: rtl; box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-family: system-ui, -apple-system, sans-serif;">
+            ${escapeHtml(chunk.text)}
+          </div>
+          ${idx < data.chunks.length - 1 ? `
+            <div style="font-size: 0.68rem; color: #94A3B8; font-weight: 600; margin: 4px 6px 0 0;">
+              ↓ Paused for ${pauseSec}s before typing next message...
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }).join('');
+
+    const totalSec = Math.round(totalDurationMs / 1000);
+    if (modalDuration) {
+      modalDuration.textContent = `Estimated Human Delivery Duration: ~${totalSec} seconds (${data.chunks.length} chunks)`;
+    }
+
+    modalBody.innerHTML = bubblesHtml;
+  } catch (err) {
+    modalBody.innerHTML = `<div style="text-align: center; color: #EF4444; padding: 30px;">${escapeHtml(err.message)}</div>`;
+  }
+}
+

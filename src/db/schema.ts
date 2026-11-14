@@ -182,8 +182,32 @@ export const outreach = pgTable('outreach', {
   instagramUrl: varchar('instagram_url', { length: 500 }),
   status: varchar('status', { length: 50 }).default('no_reply').notNull(), // 'no_reply', 'message_sent', 'responded', 'thinking', 'declined'
   notes: text('notes'),
+  lastContactedAt: timestamp('last_contacted_at'),
+  followUpCount: numeric('follow_up_count').default('0'),
+  customProposal: text('custom_proposal'),
+  whatsappChatJid: varchar('whatsapp_chat_jid', { length: 100 }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
+
+// 9. WhatsApp Bot Settings (Persistent configuration & safety gates)
+export const whatsappSettings = pgTable('whatsapp_settings', {
+  key: varchar('key', { length: 100 }).primaryKey(),
+  value: text('value').notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// 10. WhatsApp Logs (Audit log of all outbound chunks and inbound replies)
+export const whatsappLogs = pgTable('whatsapp_logs', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  outreachId: uuid('outreach_id').references(() => outreach.id),
+  phone: varchar('phone', { length: 50 }).notNull(),
+  direction: varchar('direction', { length: 20 }).notNull(), // 'outbound', 'inbound'
+  messageType: varchar('message_type', { length: 50 }).notNull(), // 'proposal', 'followup_1', 'followup_2', 'reply', 'test'
+  content: text('content').notNull(),
+  status: varchar('status', { length: 30 }).default('sent').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
 
 
