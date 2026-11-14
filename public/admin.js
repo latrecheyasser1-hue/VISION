@@ -5505,6 +5505,10 @@ async function refreshWhatsAppAgentStats() {
     if (queueEl) {
       queueEl.textContent = `${data.queuedInitialTotal} waiting`;
     }
+    const newBadge = document.getElementById('wa-new-count-badge');
+    if (newBadge) {
+      newBadge.textContent = String(data.queuedInitialTotal);
+    }
     if (followupEl) {
       followupEl.textContent = `${data.queuedFollowUpTotal} scheduled`;
     }
@@ -5648,6 +5652,62 @@ async function handleSendWhatsAppTest() {
     }
   }
 }
+
+async function handleSendNextNewProspect() {
+  if (!currentWhatsAppStats || currentWhatsAppStats.connection.status !== 'connected') {
+    showToast('Please connect WhatsApp first before dispatching.', 'error');
+    return;
+  }
+
+  const count = currentWhatsAppStats.queuedInitialTotal || 0;
+  if (count === 0) {
+    showToast('No new uncontacted prospects in queue. All prospects have already been contacted!', 'info');
+    return;
+  }
+
+  const confirmed = confirm(
+    `You have ${count} new uncontacted prospects.\n\nDo you want to send the personalized 4-chunk proposal to the next prospect in queue?\n\n(It will simulate authentic typing for ~30s, send ONLY to this new prospect, and set their status to "Message Sent" without touching any already contacted prospects).`
+  );
+  if (!confirmed) return;
+
+  const btn = document.getElementById('wa-send-new-btn');
+  const originalText = btn ? btn.textContent : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Typing & Sending...';
+  }
+
+  showToast('Dispatching 4 chunks with typing simulation to next new prospect...', 'info');
+
+  try {
+    const res = await fetch('/api/whatsapp/dispatch-next-new', {
+      method: 'POST',
+      headers: getAuthHeaders({ 'Content-Type': 'application/json' })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to dispatch to new prospect.');
+
+    if (data.success) {
+      showToast(`Success! Sent 4 chunks to "${data.prospectName}". Remaining new: ${data.remainingCount}`, 'success');
+      if (typeof loadOutreachData === 'function') {
+        loadOutreachData();
+      } else if (typeof renderOutreachView === 'function') {
+        renderOutreachView();
+      }
+      await refreshWhatsAppAgentStats();
+    } else {
+      showToast('No new uncontacted prospects found in queue.', 'info');
+    }
+  } catch (err) {
+    showToast(err.message, 'error');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = originalText;
+    }
+  }
+}
+
 
 async function openWhatsAppPreview(outreachId) {
   const modalBody = document.getElementById('wa-preview-body');

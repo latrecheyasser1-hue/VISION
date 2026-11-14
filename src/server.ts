@@ -1440,6 +1440,31 @@ app.post('/api/whatsapp/test', requireAdminAuth, async (req, res) => {
   }
 });
 
+// Get count of strictly new uncontacted prospects
+app.get('/api/whatsapp/new-count', requireAdminAuth, async (req, res) => {
+  try {
+    const agent = WhatsAppOutreachAgent.getInstance();
+    const count = await agent.getNewProspectsCount();
+    res.json({ count });
+  } catch (err: any) {
+    console.error('Error fetching new prospects count:', err);
+    res.status(500).json({ error: 'Failed to fetch count' });
+  }
+});
+
+// Dispatch proposal to the next new uncontacted prospect only
+app.post('/api/whatsapp/dispatch-next-new', requireAdminAuth, async (req, res) => {
+  try {
+    const agent = WhatsAppOutreachAgent.getInstance();
+    const result = await agent.dispatchNextNewProspect();
+    res.json(result);
+  } catch (err: any) {
+    console.error('Error dispatching to new prospect:', err);
+    res.status(500).json({ error: err.message || 'Failed to dispatch proposal.' });
+  }
+});
+
+
 // Retrieve WhatsApp communication logs
 app.get('/api/whatsapp/logs', requireAdminAuth, async (req, res) => {
   try {

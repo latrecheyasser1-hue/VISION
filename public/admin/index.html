@@ -871,12 +871,18 @@
               </span>
             </div>
 
-            <!-- Test Sandbox -->
-            <div style="display: flex; align-items: center; gap: 8px;">
+            <!-- Test Sandbox & Targeted Dispatch -->
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
               <span style="font-size: 0.8rem; font-weight: 700; color: #334155;">Test on your phone:</span>
               <input type="text" id="wa-test-phone-input" value="0771335039" placeholder="0771335039" style="width: 120px; padding: 6px 10px; border: 1px solid #CBD5E1; border-radius: 6px; font-size: 0.8rem; font-weight: 600;">
               <button id="wa-send-test-btn" type="button" class="btn btn-primary btn-sm" onclick="handleSendWhatsAppTest()" style="font-weight: 700; padding: 6px 14px; background: #2563EB; border-color: #1D4ED8;">
                 Send Test Chunks
+              </button>
+
+              <div style="height: 24px; width: 1px; background: #CBD5E1; margin: 0 4px;"></div>
+
+              <button id="wa-send-new-btn" type="button" class="btn btn-success btn-sm" onclick="handleSendNextNewProspect()" style="font-weight: 700; padding: 6px 14px; background: #059669; border-color: #047857; color: #FFFFFF;" title="Send 4-chunk proposal only to the newly added prospects">
+                Send to New Only (<span id="wa-new-count-badge">0</span>)
               </button>
             </div>
           </div>
@@ -1680,6 +1686,6 @@
 
 <div class="toast-container" id="toast-container"></div>
 <script src="/html2pdf.bundle.min.js"></script>
-<script src="/admin.js?v=117"></script>
+<script src="/admin.js?v=118"></script>
 </body>
 </html>

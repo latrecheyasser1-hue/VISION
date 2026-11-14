@@ -117,6 +117,77 @@ export class WhatsAppOutreachAgent {
   }
 
   /**
+   * Returns count of strictly new and uncontacted prospects in the ledger
+   */
+  public async getNewProspectsCount(): Promise<number> {
+    const rows: any[] = await sql.query(`
+      SELECT COUNT(*) as count
+      FROM outreach
+      WHERE status = 'no_reply'
+        AND phone IS NOT NULL
+        AND LENGTH(TRIM(phone)) >= 9
+        AND last_contacted_at IS NULL
+    `);
+    return parseInt(rows[0]?.count || '0', 10);
+  }
+
+  /**
+   * Dispatches the next uncontacted prospect immediately without touching any already contacted accounts
+   */
+  public async dispatchNextNewProspect(): Promise<{ success: boolean; prospectName?: string; remainingCount: number }> {
+    const candidateRows: any[] = await sql.query(`
+      SELECT id, business_name, business_type, wilaya, phone, instagram_url, custom_proposal
+      FROM outreach
+      WHERE status = 'no_reply'
+        AND phone IS NOT NULL
+        AND LENGTH(TRIM(phone)) >= 9
+        AND last_contacted_at IS NULL
+      ORDER BY created_at ASC
+      LIMIT 1
+    `);
+
+    if (!candidateRows || candidateRows.length === 0) {
+      return { success: false, remainingCount: 0 };
+    }
+
+    const prospect = candidateRows[0];
+    const generated = generateChunkedProposal({
+      businessName: prospect.business_name,
+      businessType: prospect.business_type,
+      wilaya: prospect.wilaya,
+      phone: prospect.phone,
+      instagramUrl: prospect.instagram_url,
+      customProposal: prospect.custom_proposal
+    });
+
+    console.log(`[MANUAL BATCH DISPATCH] Sending to new prospect: ${prospect.business_name} (${prospect.phone})`);
+    const result = await this.client.sendChunkedMessage(prospect.phone, generated.chunks);
+
+    await sql.query(`
+      UPDATE outreach
+      SET status = 'message_sent',
+          last_contacted_at = NOW(),
+          follow_up_count = 0,
+          whatsapp_chat_jid = $1,
+          updated_at = NOW()
+      WHERE id = $2
+    `, [result.jid, prospect.id]);
+
+    await sql.query(`
+      INSERT INTO whatsapp_logs (outreach_id, phone, direction, message_type, content, status, created_at)
+      VALUES ($1, $2, 'outbound', 'proposal', $3, 'sent', NOW())
+    `, [prospect.id, prospect.phone, generated.fullText]);
+
+    const remaining = await this.getNewProspectsCount();
+
+    return {
+      success: true,
+      prospectName: prospect.business_name,
+      remainingCount: remaining
+    };
+  }
+
+  /**
    * Summary metrics for the WhatsApp agent dashboard
    */
   public async getAgentStats() {
