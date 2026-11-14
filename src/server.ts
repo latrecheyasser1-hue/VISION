@@ -1519,6 +1519,9 @@ app.get('/api/admin-entry', (req, res) => {
   for (const p of candidates) {
     if (existsSync(p)) {
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
       return res.sendFile(p);
     }
   }
@@ -1537,6 +1540,9 @@ app.use((req, res, next) => {
       const p = existsSync(adminRootHtmlPath) ? adminRootHtmlPath : adminHtmlPath;
       if (existsSync(p)) {
         res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
         return res.sendFile(p);
       }
     }
@@ -1567,10 +1573,16 @@ app.use((req, res, next) => {
     const adminRootHtml = path.resolve(websitePublicDir, 'admin.html');
     if (existsSync(adminRootHtml)) {
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
       return res.sendFile(adminRootHtml);
     }
     if (existsSync(adminHtmlPath)) {
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
       return res.sendFile(adminHtmlPath);
     }
   }
