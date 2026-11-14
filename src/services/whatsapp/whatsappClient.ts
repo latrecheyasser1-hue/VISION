@@ -3,6 +3,7 @@ import QRCode from 'qrcode';
 import pino from 'pino';
 import path from 'path';
 import fs from 'fs';
+import os from 'os';
 import { sql } from '../../db/client.js';
 import { WhatsAppConnectionStatus, ChunkedMessage } from './types.js';
 
@@ -27,9 +28,17 @@ export class WhatsAppClient {
   private logger = pino({ level: 'silent' });
 
   private constructor() {
-    this.sessionDir = path.resolve(process.cwd(), 'data', 'whatsapp_session');
-    if (!fs.existsSync(this.sessionDir)) {
-      fs.mkdirSync(this.sessionDir, { recursive: true });
+    // On Vercel / AWS Lambda, process.cwd() is read-only (/var/task).
+    // The only writable directory is os.tmpdir() (/tmp).
+    const isServerless = !!(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+    const baseDir = isServerless ? os.tmpdir() : path.resolve(process.cwd(), 'data');
+    this.sessionDir = path.resolve(baseDir, 'whatsapp_session');
+    try {
+      if (!fs.existsSync(this.sessionDir)) {
+        fs.mkdirSync(this.sessionDir, { recursive: true });
+      }
+    } catch (err) {
+      console.error('Failed to create session directory in constructor:', err);
     }
   }
 
@@ -50,9 +59,58 @@ export class WhatsAppClient {
   }
 
   /**
+   * Restores Baileys session files from Neon Postgres into local session directory
+   */
+  private async restoreSessionFromDb(): Promise<void> {
+    try {
+      const rows: any[] = await sql.query(`
+        SELECT value FROM whatsapp_settings WHERE key = 'session_auth_data' LIMIT 1
+      `);
+      if (rows && rows.length > 0 && rows[0].value) {
+        const fileMap = JSON.parse(rows[0].value);
+        if (!fs.existsSync(this.sessionDir)) {
+          fs.mkdirSync(this.sessionDir, { recursive: true });
+        }
+        for (const [filename, content] of Object.entries(fileMap)) {
+          const filePath = path.join(this.sessionDir, filename);
+          fs.writeFileSync(filePath, String(content), 'utf-8');
+        }
+        console.log(`Restored WhatsApp session (${Object.keys(fileMap).length} files) from Postgres`);
+      }
+    } catch (e) {
+      console.error('Failed to restore WhatsApp session from DB:', e);
+    }
+  }
+
+  /**
+   * Persists Baileys session files to Neon Postgres for durability across serverless restarts
+   */
+  private async persistSessionToDb(): Promise<void> {
+    try {
+      if (!fs.existsSync(this.sessionDir)) return;
+      const files = fs.readdirSync(this.sessionDir);
+      const fileMap: Record<string, string> = {};
+      for (const file of files) {
+        const filePath = path.join(this.sessionDir, file);
+        if (fs.statSync(filePath).isFile()) {
+          fileMap[file] = fs.readFileSync(filePath, 'utf-8');
+        }
+      }
+      if (Object.keys(fileMap).length > 0) {
+        await sql.query(`
+          INSERT INTO whatsapp_settings (key, value, updated_at)
+          VALUES ('session_auth_data', $1, NOW())
+          ON CONFLICT (key) DO UPDATE
+          SET value = EXCLUDED.value, updated_at = NOW()
+        `, [JSON.stringify(fileMap)]);
+      }
+    } catch (e) {
+      console.error('Failed to persist WhatsApp session to DB:', e);
+    }
+  }
+
+  /**
    * Cleans and normalizes Algerian phone numbers into international WhatsApp JID format
-   * Examples: '0771335039' -> '213771335039@s.whatsapp.net'
-   *           '+213 550 12 34 56' -> '213550123456@s.whatsapp.net'
    */
   public normalizePhoneToJid(phone: string): string | null {
     if (!phone) return null;
@@ -75,7 +133,6 @@ export class WhatsAppClient {
 
   /**
    * Cleans JID back to an Algerian phone representation for database lookup
-   * '213771335039@s.whatsapp.net' -> '0771335039'
    */
   public cleanJidToLocalPhone(jid: string): string {
     const digits = jid.split('@')[0].replace(/[^0-9]/g, '');
@@ -93,7 +150,7 @@ export class WhatsAppClient {
       return;
     }
 
-    if (this.isConnecting) {
+    if (this.isConnecting && this.status === 'qr_ready') {
       return;
     }
 
@@ -101,6 +158,16 @@ export class WhatsAppClient {
     this.status = 'connecting';
 
     try {
+      if (!fs.existsSync(this.sessionDir)) {
+        fs.mkdirSync(this.sessionDir, { recursive: true });
+      }
+
+      // Check if local session exists, otherwise restore from Neon database
+      const credsFile = path.join(this.sessionDir, 'creds.json');
+      if (!fs.existsSync(credsFile)) {
+        await this.restoreSessionFromDb();
+      }
+
       const { state, saveCreds } = await useMultiFileAuthState(this.sessionDir);
       const { version } = await fetchLatestBaileysVersion();
 
@@ -114,7 +181,10 @@ export class WhatsAppClient {
         markOnlineOnConnect: true
       });
 
-      this.sock.ev.on('creds.update', saveCreds);
+      this.sock.ev.on('creds.update', async () => {
+        await saveCreds();
+        await this.persistSessionToDb();
+      });
 
       this.sock.ev.on('connection.update', async (update: any) => {
         const { connection, lastDisconnect, qr } = update;
@@ -140,10 +210,10 @@ export class WhatsAppClient {
             this.connectedPhone = null;
             this.qrCodeDataUrl = null;
             this.sock = null;
-            // Clean up session directory if logged out
             try {
               fs.rmSync(this.sessionDir, { recursive: true, force: true });
               fs.mkdirSync(this.sessionDir, { recursive: true });
+              await sql.query(`DELETE FROM whatsapp_settings WHERE key = 'session_auth_data'`);
             } catch (e) {
               console.error('Error clearing session dir:', e);
             }
@@ -167,6 +237,7 @@ export class WhatsAppClient {
           const rawId = this.sock?.user?.id || '';
           this.connectedPhone = this.cleanJidToLocalPhone(rawId);
           console.log(`WhatsApp Bot connected successfully as: ${this.connectedPhone}`);
+          await this.persistSessionToDb();
         }
       });
 
@@ -175,7 +246,6 @@ export class WhatsAppClient {
         if (type !== 'notify') return;
 
         for (const msg of messages) {
-          // Ignore own messages or system broadcasts
           if (msg.key.fromMe) continue;
           const remoteJid = msg.key.remoteJid;
           if (!remoteJid || remoteJid.includes('@g.us') || remoteJid.includes('broadcast')) continue;
@@ -188,6 +258,18 @@ export class WhatsAppClient {
 
           await this.handleIncomingClientMessage(remoteJid, rawText.trim());
         }
+      });
+
+      // Wait up to 6 seconds for QR code or open connection so the HTTP response returns it immediately
+      await new Promise<void>((resolve) => {
+        const timeout = setTimeout(() => resolve(), 6000);
+        const checkInterval = setInterval(() => {
+          if (this.status === 'qr_ready' || this.status === 'connected') {
+            clearInterval(checkInterval);
+            clearTimeout(timeout);
+            resolve();
+          }
+        }, 150);
       });
 
     } catch (err) {
@@ -211,7 +293,6 @@ export class WhatsAppClient {
       const localPhone = this.cleanJidToLocalPhone(remoteJid);
       const internationalDigits = remoteJid.split('@')[0];
 
-      // Query database for matching prospect by phone
       const matchingRows: any[] = await sql.query(`
         SELECT id, business_name, status, notes, phone
         FROM outreach
@@ -231,7 +312,6 @@ export class WhatsAppClient {
         const timeStampStr = new Date().toLocaleString('fr-FR', { timeZone: 'Africa/Algiers' });
         const updatedNotes = `${prospect.notes ? prospect.notes + '\n' : ''}[Client Replied on WhatsApp ${timeStampStr}]: "${text.substring(0, 150)}"`;
 
-        // Update status to responded and mark handoff
         await sql.query(`
           UPDATE outreach
           SET status = 'responded',
@@ -240,13 +320,11 @@ export class WhatsAppClient {
           WHERE id = $2
         `, [updatedNotes, prospect.id]);
 
-        // Audit log
         await sql.query(`
           INSERT INTO whatsapp_logs (outreach_id, phone, direction, message_type, content, status, created_at)
           VALUES ($1, $2, 'inbound', 'reply', $3, 'received', NOW())
         `, [prospect.id, prospect.phone, text]);
       } else {
-        // Unknown prospect response, log anyway
         await sql.query(`
           INSERT INTO whatsapp_logs (phone, direction, message_type, content, status, created_at)
           VALUES ($1, 'inbound', 'reply', $2, 'received', NOW())
@@ -279,13 +357,9 @@ export class WhatsAppClient {
     for (let i = 0; i < chunks.length; i++) {
       const chunk = chunks[i];
 
-      // 1. Send "composing..." (typing presence indicator)
       await this.sock.sendPresenceUpdate('composing', jid);
-
-      // 2. Wait typing delay
       await delay(chunk.typingDelayMs);
 
-      // 3. Send text message chunk
       await this.sock.sendMessage(jid, { text: chunk.text });
       chunksSent++;
 
@@ -293,10 +367,8 @@ export class WhatsAppClient {
         onProgress(chunk.partIndex, chunk.totalParts);
       }
 
-      // 4. Return presence to paused
       await this.sock.sendPresenceUpdate('paused', jid);
 
-      // 5. If there is a subsequent chunk, wait pauseAfterMs
       if (i < chunks.length - 1 && chunk.pauseAfterMs > 0) {
         await delay(chunk.pauseAfterMs);
       }
@@ -328,6 +400,7 @@ export class WhatsAppClient {
     try {
       fs.rmSync(this.sessionDir, { recursive: true, force: true });
       fs.mkdirSync(this.sessionDir, { recursive: true });
+      await sql.query(`DELETE FROM whatsapp_settings WHERE key = 'session_auth_data'`);
     } catch (e) {
       // Ignore
     }
