@@ -1,4 +1,4 @@
-import baileysPkg from '@whiskeysockets/baileys';
+import * as baileys from '@whiskeysockets/baileys';
 import QRCode from 'qrcode';
 import pino from 'pino';
 import path from 'path';
@@ -7,14 +7,14 @@ import os from 'os';
 import { sql } from '../../db/client.js';
 import { WhatsAppConnectionStatus, ChunkedMessage } from './types.js';
 
-// Resolve Baileys imports safely for Node ESM / CommonJS compatibility
-const makeWASocket = (baileysPkg as any).default || baileysPkg;
-const {
-  DisconnectReason,
-  useMultiFileAuthState,
-  fetchLatestBaileysVersion,
-  delay
-} = baileysPkg as any;
+// Resolve Baileys imports safely across Node ESM / CJS bundles
+const baileysObj = baileys as any;
+const makeWASocket = baileysObj.default || baileysObj.makeWASocket || baileysObj;
+const useMultiFileAuthState = baileysObj.useMultiFileAuthState || baileysObj.default?.useMultiFileAuthState;
+const DisconnectReason = baileysObj.DisconnectReason || baileysObj.default?.DisconnectReason;
+const fetchLatestBaileysVersion = baileysObj.fetchLatestBaileysVersion || baileysObj.default?.fetchLatestBaileysVersion;
+const delay = baileysObj.delay || baileysObj.default?.delay || ((ms: number) => new Promise(res => setTimeout(res, ms)));
+
 
 export class WhatsAppClient {
   private static instance: WhatsAppClient | null = null;
