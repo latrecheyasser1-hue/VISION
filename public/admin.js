@@ -4903,13 +4903,15 @@ function getRowPayloadFromDom(tr) {
   const phone = (tr.querySelector('[data-field="phone"]')?.value || '').trim();
   const instagramUrl = (tr.querySelector('[data-field="instagramUrl"]')?.value || '').trim();
   const status = tr.querySelector('[data-field="status"]')?.value || 'no_reply';
-  const notes = (tr.querySelector('[data-field="notes"]')?.value || '').trim();
-  return { businessName, businessType, wilaya, phone, instagramUrl, status, notes };
+  const notesEl = tr.querySelector('[data-field="notes"]');
+  const payload = { businessName, businessType, wilaya, phone, instagramUrl, status };
+  if (notesEl) payload.notes = notesEl.value.trim();
+  return payload;
 }
 
 function hasAnyRowValue(payload) {
   if (!payload) return false;
-  return Boolean(payload.businessName || payload.businessType || payload.wilaya || payload.phone || payload.instagramUrl || payload.notes);
+  return Boolean(payload.businessName || payload.businessType || payload.wilaya || payload.phone || payload.instagramUrl || (payload.notes && payload.notes.length));
 }
 
 function syncDraftStateFromDom(tr) {
@@ -5281,8 +5283,8 @@ function renderSheetRowHtml(rowObj, rowIndex, isDraft) {
           <a href="${instaUrl}" target="_blank" rel="noopener noreferrer" class="sheet-action-pill ig" style="${rowObj.instagramUrl ? '' : 'display:none;'}" title="Open Instagram profile">IG</a>
         </div>
       </td>
-      <td>
-        <select data-field="status" onchange="handleSheetStatusChange(this)" class="outreach-status-select status-${status}" style="width: calc(100% - 12px); margin: 0 6px;">
+      <td style="min-width: 160px; padding: 0 4px;">
+        <select data-field="status" onchange="handleSheetStatusChange(this)" class="outreach-status-select status-${status}" style="width: calc(100% - 8px); margin: 0 4px; min-width: 140px;">
           <option value="no_reply" ${status === 'no_reply' ? 'selected' : ''}>No Reply</option>
           <option value="message_sent" ${status === 'message_sent' ? 'selected' : ''}>Message Sent</option>
           <option value="responded" ${status === 'responded' ? 'selected' : ''}>Responded</option>
@@ -5290,8 +5292,13 @@ function renderSheetRowHtml(rowObj, rowIndex, isDraft) {
           <option value="declined" ${status === 'declined' ? 'selected' : ''}>Declined</option>
         </select>
       </td>
-      <td>
-        <input type="text" class="sheet-cell-input" value="${escapeHtml(rowObj.notes || '')}" placeholder="Notes..." data-field="notes" oninput="handleSheetInput(this)" onblur="handleSheetBlur(this)" onkeydown="handleSheetKeydown(event, this)">
+      <td style="text-align: center; vertical-align: middle; white-space: nowrap; width: 75px; min-width: 75px; padding: 0 4px;">
+        ${!isDraft && rowObj.id ? `
+          <button type="button" class="sheet-dm-copy-btn" onclick="copyOutreachDM('${rowObj.id}', this)" title="Copy tailored proposal for Instagram DM" style="display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 4px 8px; font-size: 0.72rem; font-weight: 700; border-radius: 6px; border: 1px solid #CBD5E1; background: #FFFFFF; color: #475569; cursor: pointer; transition: all 0.15s ease;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span>Copy</span>
+          </button>
+        ` : `<span style="font-size: 0.72rem; color: var(--ink-muted);">-</span>`}
       </td>
       <td style="text-align: center; vertical-align: middle; white-space: nowrap;">
         ${!isDraft && rowObj.id ? `
@@ -5962,4 +5969,65 @@ async function openWhatsAppPreview(outreachId) {
     modalBody.innerHTML = `<div style="text-align: center; color: #EF4444; padding: 30px;">${escapeHtml(err.message)}</div>`;
   }
 }
+
+window.copyOutreachDM = async function(outreachId, btn) {
+  const row = (state.outreach || []).find(r => String(r.id) === String(outreachId));
+  let textToCopy = row && row.customProposal ? row.customProposal : '';
+
+  if (!textToCopy && outreachId) {
+    try {
+      const res = await fetch(`/api/whatsapp/preview/${outreachId}`, { headers: getAuthHeaders() });
+      const data = await res.json();
+      if (data && data.chunks) {
+        textToCopy = data.chunks.map(c => c.content || c.text).join('\n\n');
+      }
+    } catch(e) {}
+  }
+
+  if (!textToCopy) {
+    if (typeof showToast === 'function') showToast('No proposal found to copy', 'error');
+    return;
+  }
+
+  // Format message cleanly by converting \n---\n chunk dividers to clean paragraphs
+  const cleanMessage = textToCopy.replace(/\n---\n/g, '\n\n').trim();
+
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(cleanMessage);
+    } else {
+      throw new Error('Clipboard API not available');
+    }
+  } catch (err) {
+    const ta = document.createElement('textarea');
+    ta.value = cleanMessage;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    ta.style.top = '0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  }
+
+  if (btn) {
+    const originalHtml = btn.innerHTML;
+    btn.style.background = '#ECFDF5';
+    btn.style.borderColor = '#A7F3D0';
+    btn.style.color = '#047857';
+    btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> <span>Copied</span>`;
+    setTimeout(() => {
+      btn.style.background = '#FFFFFF';
+      btn.style.borderColor = '#CBD5E1';
+      btn.style.color = '#475569';
+      btn.innerHTML = originalHtml;
+    }, 1800);
+  }
+
+  if (typeof showToast === 'function') {
+    showToast('DM message copied to clipboard!', 'success');
+  }
+};
+
 
