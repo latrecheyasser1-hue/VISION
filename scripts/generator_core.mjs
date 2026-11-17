@@ -53,43 +53,43 @@ export function resolveTrueWilaya(wilaya, name, notes) {
   return wilaya || 'Alger';
 }
 
-// 3. Dialect greeting
+// 3. Dialect greeting (Natural Algerian conversational greetings per region - NO tourist clichés)
 export function getDialectGreeting(wilaya, name, notes) {
   const w = (wilaya || 'Alger').toLowerCase();
 
   if (w.includes('blida')) {
-    return `السلام عليكم خاوتنا ناس البليدة مدينة الورد، ما شاء الله على خدمة وسلعة ${name} وعلى الأناقة والذوق الرفيع اللي راكم تقدموه.`;
+    return `سلام عليكم خويا، واش راك لاباس؟ تبارك الله على السلعة والخدمة تاع ${name} فالبليدة، ما شاء الله سلعة نقية ربي يبارك.`;
   }
   if (w.includes('oran') || w.includes('mostaganem') || w.includes('bel abbes') || w.includes('mascara') || w.includes('tiaret')) {
-    return `السلام عليكم خوتنا ناس وهران الباهية وناس الغرب، تبارك الله على الهمة والنشاط تاع ${name} وعلى السلعة الشابة اللي راكم تقدموها للزبائن.`;
+    return `سلام عليكم خويا، كي راك داير لاباس؟ ربي يبارك فـ السلعة تاع ${name} فـ وهران، ما شاء الله خدمة شابة بزاف.`;
   }
   if (w.includes('tlemcen')) {
-    return `السلام عليكم خوتنا ناس تلمسان عاصمة التاريخ والهمة، ما شاء الله على الذوق الراقي والسلعة المتقونة عند ${name}.`;
+    return `سلام عليكم خويا، كي راك لاباس؟ تبارك الله على السلعة والخدمة تاع ${name} فـ تلمسان، ما شاء الله خدمة شابة ربي يبارك.`;
   }
   if (w.includes('constantine')) {
-    return `عسلامة وخير عليكم خاوتنا ناس قسنطينة مدينة الجسور والهمة، تبارك الله على سلعة وخدمة ${name} وربي يبارك في رزقكم.`;
+    return `سلام عليكم خويا، واش أحوالك لاباس؟ ربي يبارك فـ السلعة والخدمة تاع ${name} فـ قسنطينة، ما شاء الله سلعة متقونة.`;
   }
   if (w.includes('setif') || w.includes('sétif') || w.includes('bordj') || w.includes('m\'sila') || w.includes('mila')) {
-    return `السلام عليكم خاوتنا ناس سطيف العالي أهل التجارة والشطارة، ما شاء الله على سلعة ${name} وعلى السمعة الطيبة اللي بنيتوها.`;
+    return `سلام عليكم خويا، واش راك لاباس؟ تبارك الله على السلعة والنشاط تاع ${name} فـ سطيف، خدمة مليحة بزاف ربي يبارك.`;
   }
   if (w.includes('batna') || w.includes('khenchela') || w.includes('tebessa') || w.includes('oum el bouaghi')) {
-    return `السلام عليكم خاوتنا ناس باتنة والأوراس الأحرار، تبارك الله على السلعة والخدمة المتقونة عند ${name} ربي يبارك فيكم.`;
+    return `سلام عليكم خويا، واش راك لاباس؟ تبارك الله على السلعة والخدمة المتقونة تاع ${name} فـ باتنة، ربي يبارك في خدمتكم.`;
   }
   if (w.includes('annaba') || w.includes('skikda') || w.includes('guelma') || w.includes('el tarf')) {
-    return `السلام عليكم خاوتنا ناس عنابة بونة الجميلة وناس الشرق، تبارك الله على السلعة الزينة والنشاط المتميز تاع ${name}.`;
+    return `سلام عليكم خويا، واش راك لاباس؟ تبارك الله على السلعة والخدمة تاع ${name} فـ عنابة، ما شاء الله سلعة زينة ربي يبارك.`;
   }
   if (w.includes('chlef') || w.includes('ain defla') || w.includes('relizane')) {
-    return `السلام عليكم خاوتنا ناس الشلف الكرماء، ما شاء الله على السلعة والنشاط المتقون تاع ${name} ربي يحفظكم.`;
+    return `سلام عليكم خويا، واش راك لاباس؟ ما شاء الله على السلعة والخدمة تاع ${name} فـ الشلف، خدمة نقية تبارك الله.`;
   }
   if (w.includes('bejaia') || w.includes('béjaïa') || w.includes('tizi') || w.includes('bouira')) {
-    return `السلام عليكم ليكيب ${name}، ربي يبارك على الخدمة النقية والسلعة الممتازة اللي راكم تعرضوها فـ ${wilaya}.`;
+    return `سلام عليكم خويا، واش راك لاباس؟ تبارك الله على السلعة والخدمة النقية تاع ${name} فـ ${wilaya}، ربي يبارك فيكم.`;
   }
   if (w.includes('ouargla') || w.includes('biskra') || w.includes('el oued') || w.includes('ghardaia') || w.includes('djelfa') || w.includes('laghouat')) {
-    return `السلام عليكم خاوتنا ناس ${wilaya} الكرام أهل الجود والكرم، تبارك الله على السلعة النظيفة والخدمة المتقونة عند ${name}.`;
+    return `سلام عليكم خويا، واش راك لاباس؟ تبارك الله على السلعة والخدمة تاع ${name} فـ ${wilaya}، ربي يبارك في رزقكم.`;
   }
 
   // Default: Alger / Algérois
-  return `السلام عليكم ليكيب ${name}، تبارك الله عليكم وعلى السلعة النقية والخدمة الاحترافية اللي راكم تعرضوها فـ Alger.`;
+  return `سلام عليكم خويا، واش راك لاباس؟ تبارك الله على السلعة النقية والخدمة تاع ${name} فـ Alger، ربي يبارك فـ خدمتكم.`;
 }
 
 // 4. Pain points + Concrete Results + CTA
