@@ -2,8 +2,8 @@
 export function cleanBusinessName(rawName) {
   if (!rawName) return 'المحل';
   let name = rawName
-    // remove emojis
-    .replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '')
+    // remove all emojis comprehensively
+    .replace(/[\p{Extended_Pictographic}\u{1F300}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '')
     // remove suffixes like | Blida, - Setif, etc.
     .replace(/\|\s*(blida|oran|alger|setif|tlemcen|constantine|annaba|chlef|batna|[^\w\s]+)/gi, '')
     .replace(/-\s*(blida|oran|alger|setif|tlemcen|constantine|annaba|chlef|batna)/gi, '')
