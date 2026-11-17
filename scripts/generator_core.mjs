@@ -25,71 +25,44 @@ export function resolveTrueWilaya(wilaya, name, notes) {
       text.includes('hydra') || text.includes('حيدرة') || text.includes('sidi yahia') || text.includes('سيدي يحيى') ||
       text.includes('bab ezzouar') || text.includes('birtouta') || text.includes('birkhadem') || text.includes('بئر خادم') ||
       text.includes('ouled fayet') || text.includes('أولاد فايت') || text.includes('staoueli') || text.includes('سطاوالي')) {
-    return 'Alger';
+    return 'الجزائر العاصمة';
   }
 
-  if (text.includes('blida') || text.includes('بليدة') || text.includes('boufarik') || text.includes('بوفاريك') || text.includes('أولاد يعيش') || text.includes('موزاية')) return 'Blida';
-  if (text.includes('oran') || text.includes('وهران') || text.includes('wahran') || text.includes('es-senia') || text.includes('السانية') || text.includes('boulevard dubai')) return 'Oran';
-  if (text.includes('tlemcen') || text.includes('تلمسان') || text.includes('imama') || text.includes('مغنية')) return 'Tlemcen';
-  if (text.includes('constantine') || text.includes('قسنطينة') || text.includes('الخروب') || text.includes('علي منجلي')) return 'Constantine';
-  if (text.includes('sétif') || text.includes('setif') || text.includes('سطيف') || text.includes('صالح باي') || text.includes('العلمة') || text.includes('عين ولمان')) return 'Setif';
-  if (text.includes('batna') || text.includes('باتنة') || text.includes('أوراس') || text.includes('aures')) return 'Batna';
-  if (text.includes('chlef') || text.includes('الشلف') || text.includes('تنس') || text.includes('tnes')) return 'Chlef';
-  if (text.includes('annaba') || text.includes('عنابة') || text.includes('بونة')) return 'Annaba';
-  if (text.includes('skikda') || text.includes('سكيكدة')) return 'Skikda';
-  if (text.includes('bejaia') || text.includes('béjaïa') || text.includes('بجاية')) return 'Bejaia';
-  if (text.includes('tizi') || text.includes('تيزي')) return 'Tizi Ouzou';
-  if (text.includes('djelfa') || text.includes('الجلفة')) return 'Djelfa';
-  if (text.includes('m\'sila') || text.includes('msila') || text.includes('المسيلة')) return 'M\'sila';
-  if (text.includes('bordj بوعريريج') || text.includes('bba') || text.includes('برج بوعريريج')) return 'Bordj Bou Arreridj';
-  if (text.includes('mostaganem') || text.includes('مستغانم')) return 'Mostaganem';
-  if (text.includes('ouargla') || text.includes('ورقلة')) return 'Ouargla';
-  if (text.includes('biskra') || text.includes('بسكرة')) return 'Biskra';
-  if (text.includes('el oued') || text.includes('الوادي')) return 'El Oued';
-  if (text.includes('ghardaia') || text.includes('غرداية')) return 'Ghardaia';
-  if (text.includes('laghouat') || text.includes('الأغواط')) return 'Laghouat';
-  if (text.includes('alger') || text.includes('عاصمة') || text.includes('العاصمة')) return 'Alger';
+  if (text.includes('blida') || text.includes('بليدة') || text.includes('boufarik') || text.includes('بوفاريك') || text.includes('أولاد يعيش') || text.includes('موزاية')) return 'البليدة';
+  if (text.includes('oran') || text.includes('وهران') || text.includes('wahran') || text.includes('es-senia') || text.includes('السانية') || text.includes('boulevard dubai')) return 'وهران';
+  if (text.includes('tlemcen') || text.includes('تلمسان') || text.includes('imama') || text.includes('مغنية')) return 'تلمسان';
+  if (text.includes('constantine') || text.includes('قسنطينة') || text.includes('الخروب') || text.includes('علي منجلي')) return 'قسنطينة';
+  if (text.includes('sétif') || text.includes('setif') || text.includes('سطيف') || text.includes('صالح باي') || text.includes('العلمة') || text.includes('عين ولمان')) return 'سطيف';
+  if (text.includes('batna') || text.includes('باتنة') || text.includes('أوراس') || text.includes('aures')) return 'باتنة';
+  if (text.includes('chlef') || text.includes('الشلف') || text.includes('تنس') || text.includes('tnes')) return 'الشلف';
+  if (text.includes('annaba') || text.includes('عنابة') || text.includes('بونة')) return 'عنابة';
+  if (text.includes('skikda') || text.includes('سكيكدة')) return 'سكيكدة';
+  if (text.includes('bejaia') || text.includes('béjaïa') || text.includes('بجاية')) return 'بجاية';
+  if (text.includes('tizi') || text.includes('تيزي')) return 'تيزي وزو';
+  if (text.includes('djelfa') || text.includes('الجلفة')) return 'الجلفة';
+  if (text.includes('m\'sila') || text.includes('msila') || text.includes('المسيلة')) return 'المسيلة';
+  if (text.includes('bordj بوعريريج') || text.includes('bba') || text.includes('برج بوعريريج')) return 'برج بوعريريج';
+  if (text.includes('mostaganem') || text.includes('مستغانم')) return 'مستغانم';
+  if (text.includes('ouargla') || text.includes('ورقلة')) return 'ورقلة';
+  if (text.includes('biskra') || text.includes('بسكرة')) return 'بسكرة';
+  if (text.includes('el oued') || text.includes('الوادي')) return 'الوادي';
+  if (text.includes('ghardaia') || text.includes('غرداية')) return 'غرداية';
+  if (text.includes('laghouat') || text.includes('الأغواط')) return 'الأغواط';
+  if (text.includes('alger') || text.includes('عاصمة') || text.includes('العاصمة')) return 'الجزائر العاصمة';
 
-  return wilaya || 'Alger';
+  return wilaya || 'الجزائر';
 }
 
-// 3. Dialect greeting (Natural Algerian conversational greetings per region - NO tourist clichés)
-export function getDialectGreeting(wilaya, name, notes) {
-  const w = (wilaya || 'Alger').toLowerCase();
+// 3. Normal Algerian Arabic greeting (Clean, professional, natural - NO "تبارك الله", NO forced dialects)
+export function getNormalGreeting(name, wilaya, businessType) {
+  const bt = (businessType || '').toLowerCase();
+  const wStr = (wilaya && wilaya !== 'الجزائر' && wilaya !== 'MULTIPLE') ? ` في ${wilaya}` : '';
 
-  if (w.includes('blida')) {
-    return `سلام عليكم خويا، واش راك لاباس؟ تبارك الله على السلعة والخدمة تاع ${name} فالبليدة، ما شاء الله سلعة نقية ربي يبارك.`;
-  }
-  if (w.includes('oran') || w.includes('mostaganem') || w.includes('bel abbes') || w.includes('mascara') || w.includes('tiaret')) {
-    return `سلام عليكم خويا، كي راك داير لاباس؟ ربي يبارك فـ السلعة تاع ${name} فـ وهران، ما شاء الله خدمة شابة بزاف.`;
-  }
-  if (w.includes('tlemcen')) {
-    return `سلام عليكم خويا، كي راك لاباس؟ تبارك الله على السلعة والخدمة تاع ${name} فـ تلمسان، ما شاء الله خدمة شابة ربي يبارك.`;
-  }
-  if (w.includes('constantine')) {
-    return `سلام عليكم خويا، واش أحوالك لاباس؟ ربي يبارك فـ السلعة والخدمة تاع ${name} فـ قسنطينة، ما شاء الله سلعة متقونة.`;
-  }
-  if (w.includes('setif') || w.includes('sétif') || w.includes('bordj') || w.includes('m\'sila') || w.includes('mila')) {
-    return `سلام عليكم خويا، واش راك لاباس؟ تبارك الله على السلعة والنشاط تاع ${name} فـ سطيف، خدمة مليحة بزاف ربي يبارك.`;
-  }
-  if (w.includes('batna') || w.includes('khenchela') || w.includes('tebessa') || w.includes('oum el bouaghi')) {
-    return `سلام عليكم خويا، واش راك لاباس؟ تبارك الله على السلعة والخدمة المتقونة تاع ${name} فـ باتنة، ربي يبارك في خدمتكم.`;
-  }
-  if (w.includes('annaba') || w.includes('skikda') || w.includes('guelma') || w.includes('el tarf')) {
-    return `سلام عليكم خويا، واش راك لاباس؟ تبارك الله على السلعة والخدمة تاع ${name} فـ عنابة، ما شاء الله سلعة زينة ربي يبارك.`;
-  }
-  if (w.includes('chlef') || w.includes('ain defla') || w.includes('relizane')) {
-    return `سلام عليكم خويا، واش راك لاباس؟ ما شاء الله على السلعة والخدمة تاع ${name} فـ الشلف، خدمة نقية تبارك الله.`;
-  }
-  if (w.includes('bejaia') || w.includes('béjaïa') || w.includes('tizi') || w.includes('bouira')) {
-    return `سلام عليكم خويا، واش راك لاباس؟ تبارك الله على السلعة والخدمة النقية تاع ${name} فـ ${wilaya}، ربي يبارك فيكم.`;
-  }
-  if (w.includes('ouargla') || w.includes('biskra') || w.includes('el oued') || w.includes('ghardaia') || w.includes('djelfa') || w.includes('laghouat')) {
-    return `سلام عليكم خويا، واش راك لاباس؟ تبارك الله على السلعة والخدمة تاع ${name} فـ ${wilaya}، ربي يبارك في رزقكم.`;
+  if (bt.includes('femme') || bt.includes('robe') || bt.includes('abaya') || bt.includes('hijab')) {
+    return `السلام عليكم، شفت la page تاع ${name}${wStr} ما شاء الله les modèles والموضة النسائية قمة في الأناقة والخدمة تاعكم الله يبارك.`;
   }
 
-  // Default: Alger / Algérois
-  return `سلام عليكم خويا، واش راك لاباس؟ تبارك الله على السلعة النقية والخدمة تاع ${name} فـ Alger، ربي يبارك فـ خدمتكم.`;
+  return `السلام عليكم خويا، شفت la page تاع ${name}${wStr} ما شاء الله سلعة نقية واحترافية والخدمة تاعكم الله يبارك.`;
 }
 
 // 4. Pain points + Concrete Results + CTA
@@ -118,7 +91,7 @@ export function getNicheAndResult(businessType, notes) {
   // C. Chaussures / Sneakers
   if (bt.includes('chaussure') || bt.includes('sneaker') || bt.includes('pied') || bt.includes('escarpin') || bt.includes('حذاء') || bt.includes('أحذية')) {
     return {
-      pain: `المشكل الكبير فتجارة الأحذية هو مقاسات الـ pointures، كل ما يخلص مقاس يقعدو الزبائن يسقسو عليه فالشات، والتأكيد اليدوي بالهاتف يدي ساعات وتصرى معاه نسبة من les retours بسبب الخطأ في اختيار المقاس.`,
+      pain: `المشكل الكبير في تجارة الأحذية هو مقاسات الـ pointures، كل ما يخلص مقاس يقعدو الزبائن يسقسو عليه فالشات، والتأكيد اليدوي بالهاتف يدي ساعات وتصرى معاه نسبة من les retours بسبب الخطأ في اختيار المقاس.`,
       result: `تضاعفوا الطلبيات المؤكدة وتربحوا الزبائن المستعجلين، المقاس اللي يخلص يتنحى أوتوماتيكياً فالحين، ونسبة les retours تهبط بأكثر من 40%.`,
       cta: `واش هو أكبر عائق راه يتعب الفريق تاعكم فالحساب اليومي: الرد على رسائل المقاسات فالشات ولا تأكيد العناوين وles retours تاع التوصيل؟`
     };
@@ -137,7 +110,7 @@ export function getNicheAndResult(businessType, notes) {
   if (bt.includes('abaya') || bt.includes('hijab') || bt.includes('voile') || bt.includes('mastour') || bt.includes('عباية') || bt.includes('حجاب')) {
     return {
       pain: `في مجال العبايات، أكبر ضياع وقت هو السؤال المتكرر على أطوال العباية (52, 54, 56, 58) ونوعية القماش، والزبونة فالشات تتردد بزاف وتأخذ وقت طويل قبل ما تقرر وتكوموندي.`,
-      result: `تضاعفوا مبيعاتكم وترتاحوا من ضغط الرسائل، الزبونة تختار طولها وتشوف تفاصيل القماش وتأكد طلبها فـ 20 ثانية، مع انعدام أخطاء المقاسات تماماً.`,
+      result: `تضاعفوا مبيعاتكم وترتاحوا من ضغط الرسائل، الزبونة تختار طولها وتشوف تفاصيل القماش وتأكد طلبها في 20 ثانية، مع انعدام أخطاء المقاسات تماماً.`,
       cta: `واش رايكم فالاعتماد على كتالوج ذكي يفرز الأطوال المتوفرة أوتوماتيكياً ويريحكم من الإجابة الفردية على كل زبونة؟`
     };
   }
@@ -171,7 +144,7 @@ export function getNicheAndResult(businessType, notes) {
 
   // Default: Prêt-à-porter féminin / Vêtements
   return {
-    pain: `المشكل في تجارة الملابس الجاهزة هو كثرة الرسائل على المقاسات والألوان المتوفرة فـ les DMs، والرد اليدوي ياكل نص نهار ويخلي بزاف زبونات يترددوا ويخرجوا بلا ما يكومونديو.`,
+    pain: `المشكل في تجارة الملابس الجاهزة هو كثرة الرسائل على المقاسات والألوان المتوفرة في les DMs، والرد اليدوي ياكل نص نهار ويخلي بزاف زبونات يترددوا ويخرجوا بلا ما يكومونديو.`,
     result: `ترفعوا مبيعاتكم بـ 35% وتسترجعوا الزبونات اللي كانو يضيعوا فالانتظار، الكتالوج يعرض السلعة بمقاساتها الحقيقية والطلب يوصلكم مؤكد ومنظم فالحين.`,
     cta: `واش هو أكبر مشكل راه يدي وقت الفريق تاعكم حالياً: كثرة رسائل المقاسات والألوان ولا تأكيد طلبيات التوصيل؟`
   };
@@ -182,8 +155,8 @@ export function generateTailoredProposal(store) {
   const trueWilaya = resolveTrueWilaya(store.wilaya, store.business_name, store.notes);
   const cleanName = cleanBusinessName(store.business_name);
 
-  // Part 1: Dialect Greeting
-  const part1 = getDialectGreeting(trueWilaya, cleanName, store.notes);
+  // Part 1: Normal Algerian Arabic Greeting (No "تبارك الله", No regional gimmick accents)
+  const part1 = getNormalGreeting(cleanName, trueWilaya, store.business_type);
 
   // Part 2: Pain Point + Immediate Result
   const niche = getNicheAndResult(store.business_type, store.notes);
